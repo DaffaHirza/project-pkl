@@ -1,0 +1,54 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: theme("colors.gray.200");
+    }
+
+    .dark *,
+    .dark ::after,
+    .dark ::before {
+        border-color: theme("colors.gray.800");
+    }
+
+    button:not(:disabled),
+    [role="button"]:not(:disabled) {
+        cursor: pointer;
+    }
+
+    body {
+        @apply font-sans relative bg-gray-50 text-base font-normal antialiased;
+    }
+
+    .dark body {
+        @apply bg-gray-900;
+    }
+}
+
+@layer utilities {
+    /* For Remove Date Icon */
+    input[type="date"]::-webkit-inner-spin-button,
+    input[type="time"]::-webkit-inner-spin-button,
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+        display: none;
+        -webkit-appearance: none;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+}
