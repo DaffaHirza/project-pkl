@@ -90,7 +90,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#" @click="selected = 'AI Assistant'"
+                            <a href="/assistantai" @click="selected = 'AI Assistant'"
                                 class="group relative flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
                                 :class="selected === 'AI Assistant' ?
                                     'bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400' :

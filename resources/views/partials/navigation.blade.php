@@ -36,13 +36,12 @@
         </div>
 
         <!-- Sidebar Toggle for Desktop -->
-        <!-- Sidebar Toggle for Desktop -->
         <button @click.stop="sidebarToggle = !sidebarToggle"
             class="hidden lg:flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/5">
             <svg class="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
-                <path d="M2.25 6.75H15.75M2.25 11.25H15.75" stroke="currentColor" stroke-width="1.5"
-                    stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M2.25 6.75H15.75M2.25 11.25H15.75" stroke="black" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
             </svg>
         </button>
 
@@ -122,7 +121,7 @@
                         <ul class="flex flex-col gap-5 border-b border-gray-200 px-6 py-7.5 dark:border-gray-800">
                             <li>
                                 <a href="{{ route('profile.edit') }}"
-                                    class="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-brand-500 lg:text-base">
+                                    class="text-gray-dark flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-brand-500 lg:text-base">
                                     <svg class="fill-current" width="22" height="22" viewBox="0 0 22 22"
                                         fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path
@@ -139,7 +138,7 @@
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit"
-                                class="flex w-full items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-brand-500 lg:text-base">
+                                class="text-gray-dark flex w-full items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-brand-500 lg:text-base">
                                 <svg class="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path
