@@ -25,6 +25,7 @@ class DocumentController extends Controller
      */
     public function create()
     {
+
         return view('assistantai.pages.create');
     }
 
@@ -33,6 +34,7 @@ class DocumentController extends Controller
      */
     public function store(Request $request, GeminiServices $geminiServices)
     {
+        set_time_limit(300);
         $request->validate([
             'files.laporan_utama' => 'required|mimes:pdf,doc,docx,xlsx,xls,jpg,jpeg,png',
             'files.proposal'      => 'required|mimes:pdf,doc,docx,xlsx,xls,jpg,jpeg,png',
@@ -68,8 +70,10 @@ class DocumentController extends Controller
                 $geminiServices->prosesDokumen($document);
                 $document->refresh();
                 $document->load('documentItems');
-                return redirect()->back()->with('hasil_ai', $document);
-            } elseif ($action === 'save_draft') {
+                return redirect()->route('assistantai.pages.create')
+                    ->with('hasil_ai', $document)
+                    ->with('success', 'Analisis Selesai!');
+            } elseif ($action === 'savedraft') {
                 return redirect()->route('assistantai.pages.index')
                     ->with('success', 'Dokumen berhasil disimpan sebagai Draft.');
             } else {
@@ -77,6 +81,14 @@ class DocumentController extends Controller
                     ->with('error', 'Terjadi kesalahan: Aksi tidak dikenali.');
             }
         } catch (\Exception $e) {
+            \Log::error('Error Store Document: ' . $e->getMessage());
+
+            // Jika document sudah terbuat tapi AI gagal, kita tetap redirect ke hasil (meski error)
+            if (isset($document) && $document->id) {
+                return redirect()->route('assistantai.pages.create')
+                    ->with('hasil_ai', $document)
+                    ->with('error', 'Analisis terhenti: ' . $e->getMessage());
+            }
             DB::rollBack();
             return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan dokumen.');
         }
@@ -92,7 +104,9 @@ class DocumentController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $document = Document::with('documentItems')->findOrFail($id);
+        session()->now('hasil_ai', $document);
+        return view('assistantai.pages.create', compact('document'));
     }
 
     /**

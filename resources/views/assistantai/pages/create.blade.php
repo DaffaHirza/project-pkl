@@ -174,4 +174,7 @@
             }
         });
     </script>
+
+    {{-- Include Modal Detail --}}
+    @include('assistantai.pages.components.detail')
 @endsection

@@ -69,7 +69,7 @@
                                         <div class="flex items-center gap-x-2">
                                             <span
                                                 class="text-sm font-semibold uppercase text-gray-800 dark:text-neutral-200">
-                                                Date
+                                                Tanggal
                                             </span>
                                         </div>
                                     </th>
@@ -134,7 +134,7 @@
                                         </td>
                                         <td class="px-6 py-4 align-top">
                                             <div class="flex gap-2">
-                                                <button
+                                                <a href="{{ route('assistantai.pages.edit', $document->id) }}"
                                                     class="py-2 px-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                         xmlns="http://www.w3.org/2000/svg">
@@ -144,7 +144,7 @@
                                                         <path d="M12.5 7.5L15.5 5.5L18.5 8.5L16.5 11.5L12.5 7.5Z"
                                                             fill="#FFFFFF" />
                                                     </svg>
-                                                </button>
+                                                </a>
                                                 <button
                                                     class="py-2 px-3 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-700">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"

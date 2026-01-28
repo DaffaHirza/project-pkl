@@ -19,13 +19,12 @@
 
 <body x-data="{ page: 'ecommerce', 'loaded': true, 'darkMode': $persist(false), 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }" x-init="$watch('darkMode', value => document.documentElement.classList.toggle('dark', value))" :class="{ 'dark': darkMode === true }"
     class="font-sans antialiased">
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex w-full h-screen overflow-hidden">
 
         @include('partials.sidebar')
 
-        <div class="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+        <div class="relative w-full flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
             @include('partials.navigation')
-
             <main>
                 <div class="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
                     @yield('content')

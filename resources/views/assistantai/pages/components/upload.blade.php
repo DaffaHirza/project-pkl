@@ -6,7 +6,7 @@
 
         <div class="relative w-full flex-grow min-h-[300px] h-full">
             <input id="main-upload" name="files[laporan_utama]" type="file" class="hidden" accept=".pdf"
-                onchange="handleFileSelect(this, 'main')" />
+                onchange="handleFileSelect(this, 'main')" required />
 
             <label for="main-upload" id="main-default"
                 class="flex flex-col justify-center items-center w-full h-full p-6 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 hover:bg-blue-50 hover:border-blue-500 transition-all cursor-pointer absolute inset-0">
@@ -55,7 +55,7 @@
                 </label>
                 <div class="relative w-full h-32 sm:h-full min-h-[140px]">
                     <input id="upload-proposal" name="files[proposal]" type="file" class="hidden"
-                        onchange="handleFileSelect(this, 'proposal')" accept=".pdf,.docx,.doc" />
+                        onchange="handleFileSelect(this, 'proposal')" accept=".pdf,.docx,.doc" required />
 
                     <label for="upload-proposal" id="default-proposal"
                         class="flex flex-col justify-center items-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer absolute inset-0">
@@ -99,7 +99,7 @@
                 </label>
                 <div class="relative w-full h-32 sm:h-full min-h-[140px]">
                     <input id="upload-kertas_kerja" name="files[kertas_kerja]" type="file" class="hidden"
-                        onchange="handleFileSelect(this, 'kertas_kerja')" accept=".pdf,.docx,.doc" />
+                        onchange="handleFileSelect(this, 'kertas_kerja')" accept=".pdf,.docx,.doc" required />
 
                     <label for="upload-kertas_kerja" id="default-kertas_kerja"
                         class="flex flex-col justify-center items-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer absolute inset-0">
@@ -143,7 +143,7 @@
                 </label>
                 <div class="relative w-full h-32 sm:h-full min-h-[140px]">
                     <input id="upload-resume" name="files[resume]" type="file" class="hidden"
-                        onchange="handleFileSelect(this, 'resume')" accept=".pdf,.docx,.doc" />
+                        onchange="handleFileSelect(this, 'resume')" accept=".pdf,.docx,.doc" required />
 
                     <label for="upload-resume" id="default-resume"
                         class="flex flex-col justify-center items-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer absolute inset-0">
@@ -186,7 +186,7 @@
                 </label>
                 <div class="relative w-full h-32 sm:h-full min-h-[140px]">
                     <input id="upload-sertifikat" name="files[sertifikat]" type="file" class="hidden"
-                        onchange="handleFileSelect(this, 'sertifikat')" accept=".pdf,.docx,.doc" />
+                        onchange="handleFileSelect(this, 'sertifikat')" accept=".pdf,.docx,.doc" required />
 
                     <label for="upload-sertifikat" id="default-sertifikat"
                         class="flex flex-col justify-center items-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer absolute inset-0">

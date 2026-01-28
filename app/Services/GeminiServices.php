@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Document;
 use Smalot\PdfParser\Parser;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class GeminiServices
 {
@@ -13,6 +14,8 @@ class GeminiServices
      */
     public function prosesDokumen(Document $document)
     {
+        Log::info('Starting document analysis', ['document_id' => $document->id]);
+
         $laporanUtamaItem = $document->documentItems()
             ->where('kategori', 'LIKE', '%laporan_utama%')
             ->first();
@@ -91,8 +94,11 @@ class GeminiServices
             // }
 
             $hasilTeks = $this->analisisAI($promptPerItem, $isImage ? $teksItem : "", $isImage, $mimeType);
-            // Pastikan respons AI bisa dibaca$statusDB = 'tidak_ditemukan';
-            if (stripos($hasilTeks, 'VALID') !== false || stripos($hasilTeks, 'SESUAI') !== false || stripos($hasilTeks, 'COCOK') !== false) {
+            // Pastikan respons AI bisa dibaca - cek INVALID dulu sebelum VALID
+            $statusDB = 'tidak_ditemukan';
+            if (stripos($hasilTeks, '[INVALID]') === 0 || stripos($hasilTeks, 'INVALID') === 0 || stripos($hasilTeks, '[TIDAK') !== false || stripos($hasilTeks, 'TIDAK SESUAI') !== false || stripos($hasilTeks, 'TIDAK COCOK') !== false) {
+                $statusDB = 'tidak_ditemukan';
+            } elseif (stripos($hasilTeks, '[VALID]') !== false || stripos($hasilTeks, 'VALID') !== false || stripos($hasilTeks, 'SESUAI') !== false || stripos($hasilTeks, 'COCOK') !== false) {
                 $statusDB = 'ditemukan';
             }
 
@@ -112,24 +118,43 @@ class GeminiServices
         DATA TEMUAN AUDIT:
         $kesimpulanItem
         
-        \n[INSTRUKSI WAJIB]:
+        [INSTRUKSI WAJIB]:
         1. Buat kesimpulan akhir audit dalam format MARKDOWN RAPI.
         2. Berikan SKOR AKHIR dari 0-100 berdasarkan tingkat kesesuaian dokumen pendukung dengan laporan utama.
-        3. Buat daftar TEMUAN AUDIT terpisah untuk setiap kategori dokumen (PROPOSAL, KERTAS_KERJA, RESUME, SERTIFIKAT) jika ada ketidaksesuaian atau masalah.
+        3. WAJIB tulis skor dalam format: **Skor Akhir: [ANGKA]/100**
+        4. Buat daftar TEMUAN AUDIT terpisah untuk setiap kategori dokumen (PROPOSAL, KERTAS_KERJA, RESUME, SERTIFIKAT) jika ada ketidaksesuaian atau masalah.
+        
+        Contoh format skor yang benar:
+        **Skor Akhir: 85/100**
         ";
 
         $kesimpulanFinal = $this->analisisAI($promptFinal, "", false);
+
+        // Extract skor dengan multiple pattern
         $skor = 0;
-        if (preg_match('/(\d{1,3})\/100/', $kesimpulanFinal, $matches)) {
+        if (preg_match('/(\d{1,3})\s*\/\s*100/', $kesimpulanFinal, $matches)) {
             $skor = (int)$matches[1];
-        } elseif (preg_match('/Skor:\s*(\d{1,3})/', $kesimpulanFinal, $matches)) {
+        } elseif (preg_match('/Skor\s*(?:Akhir)?:?\s*\*?\*?(\d{1,3})\*?\*?/i', $kesimpulanFinal, $matches)) {
+            $skor = (int)$matches[1];
+        } elseif (preg_match('/Score:?\s*(\d{1,3})/i', $kesimpulanFinal, $matches)) {
+            $skor = (int)$matches[1];
+        } elseif (preg_match('/\b(\d{1,3})\s*poin/i', $kesimpulanFinal, $matches)) {
             $skor = (int)$matches[1];
         }
+
+        $status = '';
+
+        if ($skor == 100) {
+            $status = 'cocok';
+        } else {
+            $status = 'tidak_cocok';
+        }
+
 
         $document->update([
             'kesimpulan' => $kesimpulanFinal,
             'skor'       => $skor,
-            'status'     => 'selesai'
+            'status'     => $status
         ]);
     }
 
@@ -150,43 +175,94 @@ class GeminiServices
     /**
      * Analisis teks menggunakan Gemini AI
      */
-    private function analisisAI($promptText, $imageData = "", $isImage = false, $mimeType = '')
+    // private function analisisAI($promptText, $imageData = "", $isImage = false, $mimeType = '')
+    // {
+    //     $apiKey = env('GEMINI_API_KEY');
+    //     if (!$apiKey) {
+    //         throw new \Exception('Gemini API key not configured');
+    //     }
+    //     $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}";
+
+
+    //     $parts = [];
+    //     if ($isImage) {
+    //         $parts = [
+    //             ["text" => $promptText],
+    //             ["inline_data" => ["mime_type" => $mimeType, "data" => $imageData]]
+    //         ];
+    //     } else {
+    //         $parts = [["text" => $promptText]];
+    //     }
+
+    //     try {
+    //         $response = Http::timeout(120)
+    //             ->withHeaders(['Content-Type' => 'application/json'])
+    //             ->post($apiUrl, [
+    //                 "contents" => [["parts" => $parts]],
+    //                 "generationConfig" => [
+    //                     "temperature" => 0.3,
+    //                     "maxOutputTokens" => 2000
+    //                     // HAPUS responseMimeType JSON agar dia bebas ngomong
+    //                 ]
+    //             ]);
+
+    //         if ($response->failed()) return "Error API: " . $response->body();
+
+    //         // Langsung ambil teksnya, gak perlu json_decode aneh-aneh
+    //         return $response['candidates'][0]['content']['parts'][0]['text'] ?? 'Tidak ada respon.';
+    //     } catch (\Exception $e) {
+    //         return "Exception: " . $e->getMessage();
+    //     }
+    // }
+    private function analisisAI($promptFinal, $imageData = "", $isImage = false, $mimeType = '')
     {
-        $apiKey = env('GEMINI_API_KEY');
+        $apiKey = env('OPENROUTER_API_KEY');
         if (!$apiKey) {
-            throw new \Exception('Gemini API key not configured');
+            throw new \Exception('OpenRouter API key not configured');
         }
-        $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key={$apiKey}";
+        $apiUrl = "https://openrouter.ai/api/v1/chat/completions";
 
-
-        $parts = [];
+        $messages = [];
         if ($isImage) {
-            $parts = [
-                ["text" => $promptText],
-                ["inline_data" => ["mime_type" => $mimeType, "data" => $imageData]]
+            $messages = [
+                ["role" => "user", "content" => $promptFinal],
+                ["role" => "user", "content" => [
+                    "type" => "image_base64",
+                    "data" => $imageData,
+                    "mime_type" => $mimeType
+                ]]
             ];
         } else {
-            $parts = [["text" => $promptText]];
+            $messages = [
+                ["role" => "user", "content" => $promptFinal]
+            ];
         }
 
         try {
             $response = Http::timeout(120)
-                ->withHeaders(['Content-Type' => 'application/json'])
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $apiKey
+                ])
                 ->post($apiUrl, [
-                    "contents" => [["parts" => $parts]],
-                    "generationConfig" => [
-                        "temperature" => 0.3,
-                        "maxOutputTokens" => 2000
-                        // HAPUS responseMimeType JSON agar dia bebas ngomong
-                    ]
+                    "model" => "meta-llama/llama-3.3-70b-instruct:free",
+                    "messages" => $messages,
+                    "temperature" => 0.2,
+                    "max_tokens" => 5000
                 ]);
 
-            if ($response->failed()) return "Error API: " . $response->body();
+            if ($response->failed()) {
+                $error = "Error API: " . $response->status() . " - " . $response->body();
+                Log::error('OpenRouter API Error', ['error' => $error]);
+                return $error;
+            }
 
-            // Langsung ambil teksnya, gak perlu json_decode aneh-aneh
-            return $response['candidates'][0]['content']['parts'][0]['text'] ?? 'Tidak ada respon.';
+            $content = $response['choices'][0]['message']['content'] ?? 'Tidak ada respon.';
+            return $content;
         } catch (\Exception $e) {
-            return "Exception: " . $e->getMessage();
+            $error = "Exception: " . $e->getMessage();
+            Log::error('OpenRouter Exception', ['error' => $error, 'trace' => $e->getTraceAsString()]);
+            return $error;
         }
     }
 }

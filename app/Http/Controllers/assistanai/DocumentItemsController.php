@@ -38,7 +38,8 @@ class DocumentItemsController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $documentItems = DocumentItems::findOrFail($id);
+        return view('assistantai.pages.components.detail', compact('documentItems'));
     }
 
     /**
