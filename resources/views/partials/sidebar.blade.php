@@ -55,22 +55,22 @@
                         </a>
                     </li>
 
-                    <!-- Appraisal Menu with Submenu -->
-                    <li x-data="{ open: openMenus.includes('Appraisal') }">
+                    <!-- Kanban Menu with Submenu -->
+                    <li x-data="{ open: openMenus.includes('Kanban') }">
                         <a href="javascript:void(0)" 
-                            @click="open = !open; openMenus.includes('Appraisal') ? openMenus = openMenus.filter(m => m !== 'Appraisal') : openMenus.push('Appraisal')"
+                            @click="open = !open; openMenus.includes('Kanban') ? openMenus = openMenus.filter(m => m !== 'Kanban') : openMenus.push('Kanban')"
                             class="group relative flex items-center justify-between gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
-                            :class="selected.startsWith('Appraisal') ?
+                            :class="selected.startsWith('Kanban') ?
                                 'bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400' :
                                 'text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-gray-300'">
                             <span class="flex items-center gap-2.5">
                                 <svg class="w-5 h-5 transition-colors duration-300"
-                                    :class="selected.startsWith('Appraisal') ? 'text-brand-500 dark:text-brand-400' :
+                                    :class="selected.startsWith('Kanban') ? 'text-brand-500 dark:text-brand-400' :
                                         'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                                Appraisal
+                                Penilaian
                             </span>
                             <svg class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -80,86 +80,83 @@
                         <!-- Submenu -->
                         <ul x-show="open" x-collapse class="mt-1 ml-6 flex flex-col gap-1">
                             <li>
-                                <a href="{{ route('appraisal.dashboard') }}" @click="selected = 'Appraisal.Dashboard'"
+                                <a href="{{ route('kanban.dashboard') }}" @click="selected = 'Kanban.Dashboard'"
                                     class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
-                                    :class="selected === 'Appraisal.Dashboard' ?
+                                    :class="selected === 'Kanban.Dashboard' ?
                                         'text-brand-500 dark:text-brand-400' :
                                         'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
-                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Appraisal.Dashboard' ? 'bg-brand-500' : 'bg-gray-400'"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Kanban.Dashboard' ? 'bg-brand-500' : 'bg-gray-400'"></span>
                                     Dashboard
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('appraisal.projects.index') }}" @click="selected = 'Appraisal.Projects'"
+                                <a href="{{ route('kanban.assets.index') }}" @click="selected = 'Kanban.Assets'"
                                     class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
-                                    :class="selected === 'Appraisal.Projects' ?
+                                    :class="selected === 'Kanban.Assets' ?
                                         'text-brand-500 dark:text-brand-400' :
                                         'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
-                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Appraisal.Projects' ? 'bg-brand-500' : 'bg-gray-400'"></span>
-                                    Kanban Proyek
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('appraisal.projects.list') }}" @click="selected = 'Appraisal.ProjectList'"
-                                    class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
-                                    :class="selected === 'Appraisal.ProjectList' ?
-                                        'text-brand-500 dark:text-brand-400' :
-                                        'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
-                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Appraisal.ProjectList' ? 'bg-brand-500' : 'bg-gray-400'"></span>
-                                    Daftar Proyek
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('appraisal.assets.index') }}" @click="selected = 'Appraisal.Assets'"
-                                    class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
-                                    :class="selected === 'Appraisal.Assets' ?
-                                        'text-brand-500 dark:text-brand-400' :
-                                        'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
-                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Appraisal.Assets' ? 'bg-brand-500' : 'bg-gray-400'"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Kanban.Assets' ? 'bg-brand-500' : 'bg-gray-400'"></span>
                                     Objek Penilaian
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('appraisal.clients.index') }}" @click="selected = 'Appraisal.Clients'"
+                                <a href="{{ route('kanban.assets.board') }}" @click="selected = 'Kanban.Board'"
                                     class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
-                                    :class="selected === 'Appraisal.Clients' ?
+                                    :class="selected === 'Kanban.Board' ?
                                         'text-brand-500 dark:text-brand-400' :
                                         'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
-                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Appraisal.Clients' ? 'bg-brand-500' : 'bg-gray-400'"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Kanban.Board' ? 'bg-brand-500' : 'bg-gray-400'"></span>
+                                    Kanban Board
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('kanban.projects.index') }}" @click="selected = 'Kanban.Projects'"
+                                    class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
+                                    :class="selected === 'Kanban.Projects' ?
+                                        'text-brand-500 dark:text-brand-400' :
+                                        'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
+                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Kanban.Projects' ? 'bg-brand-500' : 'bg-gray-400'"></span>
+                                    Proyek
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('kanban.clients.index') }}" @click="selected = 'Kanban.Clients'"
+                                    class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
+                                    :class="selected === 'Kanban.Clients' ?
+                                        'text-brand-500 dark:text-brand-400' :
+                                        'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
+                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Kanban.Clients' ? 'bg-brand-500' : 'bg-gray-400'"></span>
                                     Klien
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('appraisal.inspections.index') }}" @click="selected = 'Appraisal.Inspections'"
+                                <a href="{{ route('kanban.activity-log') }}" @click="selected = 'Kanban.ActivityLog'"
                                     class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
-                                    :class="selected === 'Appraisal.Inspections' ?
+                                    :class="selected === 'Kanban.ActivityLog' ?
                                         'text-brand-500 dark:text-brand-400' :
                                         'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
-                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Appraisal.Inspections' ? 'bg-brand-500' : 'bg-gray-400'"></span>
-                                    Inspeksi
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('appraisal.invoices.index') }}" @click="selected = 'Appraisal.Invoices'"
-                                    class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
-                                    :class="selected === 'Appraisal.Invoices' ?
-                                        'text-brand-500 dark:text-brand-400' :
-                                        'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
-                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Appraisal.Invoices' ? 'bg-brand-500' : 'bg-gray-400'"></span>
-                                    Invoice
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('appraisal.activities.index') }}" @click="selected = 'Appraisal.Activities'"
-                                    class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
-                                    :class="selected === 'Appraisal.Activities' ?
-                                        'text-brand-500 dark:text-brand-400' :
-                                        'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
-                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Appraisal.Activities' ? 'bg-brand-500' : 'bg-gray-400'"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Kanban.ActivityLog' ? 'bg-brand-500' : 'bg-gray-400'"></span>
                                     Log Aktivitas
                                 </a>
                             </li>
                         </ul>
+                    </li>
+
+                    <!-- Notifications Menu -->
+                    <li>
+                        <a href="{{ route('notifications.index') }}" @click="selected = 'Notifications'"
+                            class="group relative flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
+                            :class="selected === 'Notifications' ?
+                                'bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400' :
+                                'text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-gray-300'">
+                            <svg class="w-5 h-5 transition-colors duration-300"
+                                :class="selected === 'Notifications' ? 'text-brand-500 dark:text-brand-400' :
+                                    'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            Notifikasi
+                        </a>
                     </li>
 
                     <!-- Tracking Menu -->
@@ -197,23 +194,6 @@
                                 <path d="M14 11.5C14 10.6716 14.6716 10 15.5 10C16.3284 10 17 10.6716 17 11.5C17 12.3284 16.3284 13 15.5 13C14.6716 13 14 12.3284 14 11.5Z" />
                             </svg>
                             AI Assistant
-                        </a>
-                    </li>
-
-                    <!-- Kanban Menu -->
-                    <li>
-                        <a href="{{ route('kanban.index') }}" @click="selected = 'Kanban'"
-                            class="group relative flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
-                            :class="selected === 'Kanban' ?
-                                'bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400' :
-                                'text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-gray-300'">
-                            <svg class="w-5 h-5 transition-colors duration-300"
-                                :class="selected === 'Kanban' ? 'text-brand-500 dark:text-brand-400' :
-                                    'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-                            </svg>
-                            Kanban Board
                         </a>
                     </li>
                 </ul>

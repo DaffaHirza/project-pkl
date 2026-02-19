@@ -133,6 +133,27 @@ class NotificationController extends Controller
     }
 
     /**
+     * View notification - mark as read and redirect to action URL (GET request)
+     */
+    public function view(Request $request, Notification $notification)
+    {
+        // Verify ownership
+        if ($notification->notifiable_id != $request->user()->id ||
+            $notification->notifiable_type !== get_class($request->user())) {
+            abort(403, 'Unauthorized');
+        }
+
+        $notification->markAsRead();
+
+        // Redirect to action URL if exists
+        if ($notification->action_url) {
+            return redirect($notification->action_url);
+        }
+
+        return redirect()->route('notifications.index');
+    }
+
+    /**
      * Mark all notifications as read
      */
     public function markAllAsRead(Request $request)

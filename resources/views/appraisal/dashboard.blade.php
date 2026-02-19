@@ -161,10 +161,10 @@
         </div>
     </div>
 
-    <!-- Priority Alerts -->
-    @if($priorityStats['warning'] > 0 || $priorityStats['critical'] > 0)
+    <!-- Asset Priority Alerts -->
+    @if(($assetPriorityStats['warning'] ?? 0) > 0 || ($assetPriorityStats['critical'] ?? 0) > 0)
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        @if($priorityStats['critical'] > 0)
+        @if(($assetPriorityStats['critical'] ?? 0) > 0)
         <div class="flex items-center gap-4 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
             <div class="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
                 <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,13 +172,13 @@
                 </svg>
             </div>
             <div>
-                <p class="font-semibold text-red-800 dark:text-red-200">{{ $priorityStats['critical'] }} Proyek Kritis</p>
+                <p class="font-semibold text-red-800 dark:text-red-200">{{ $assetPriorityStats['critical'] }} Objek Kritis</p>
                 <p class="text-sm text-red-600 dark:text-red-400">Perlu perhatian segera!</p>
             </div>
         </div>
         @endif
 
-        @if($priorityStats['warning'] > 0)
+        @if(($assetPriorityStats['warning'] ?? 0) > 0)
         <div class="flex items-center gap-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
             <div class="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/50">
                 <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,7 +186,7 @@
                 </svg>
             </div>
             <div>
-                <p class="font-semibold text-yellow-800 dark:text-yellow-200">{{ $priorityStats['warning'] }} Proyek Perlu Perhatian</p>
+                <p class="font-semibold text-yellow-800 dark:text-yellow-200">{{ $assetPriorityStats['warning'] }} Objek Perlu Perhatian</p>
                 <p class="text-sm text-yellow-600 dark:text-yellow-400">Ada kendala yang perlu ditangani</p>
             </div>
         </div>
@@ -196,7 +196,7 @@
 
     <!-- Workflow Pipelines -->
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <!-- Project Pipeline (Administrative Level) -->
+        <!-- Project Status (Administrative Level) -->
         <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
             <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
                 <div class="flex items-center justify-between">
@@ -204,29 +204,31 @@
                         <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        Pipeline Proyek
+                        Status Proyek
                     </h2>
-                    <a href="{{ route('appraisal.projects.index') }}" class="text-sm text-brand-500 hover:text-brand-600">
-                        Lihat Kanban →
+                    <a href="{{ route('appraisal.projects.list') }}" class="text-sm text-brand-500 hover:text-brand-600">
+                        Lihat Semua →
                     </a>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Level administrasi (1 proyek = 1 proposal)</p>
             </div>
             <div class="p-6">
                 <div class="flex gap-3 overflow-x-auto pb-2">
-                    @foreach($projectsByStage as $stage => $data)
-                    <div class="flex-shrink-0 w-24">
+                    @foreach($projectsByStatus as $status => $data)
+                    <div class="flex-shrink-0 w-28">
                         <div class="text-center">
                             <div class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl 
-                                @if($stage === 'done') bg-green-100 dark:bg-green-900/30
-                                @elseif(in_array($stage, ['lead', 'proposal'])) bg-blue-100 dark:bg-blue-900/30
-                                @elseif(in_array($stage, ['contract', 'invoice'])) bg-yellow-100 dark:bg-yellow-900/30
+                                @if($status === 'completed') bg-green-100 dark:bg-green-900/30
+                                @elseif($status === 'ongoing') bg-blue-100 dark:bg-blue-900/30
+                                @elseif($status === 'on_hold') bg-yellow-100 dark:bg-yellow-900/30
+                                @elseif($status === 'cancelled') bg-red-100 dark:bg-red-900/30
                                 @else bg-gray-100 dark:bg-gray-800
                                 @endif">
                                 <span class="text-base font-bold 
-                                    @if($stage === 'done') text-green-600 dark:text-green-400
-                                    @elseif(in_array($stage, ['lead', 'proposal'])) text-blue-600 dark:text-blue-400
-                                    @elseif(in_array($stage, ['contract', 'invoice'])) text-yellow-600 dark:text-yellow-400
+                                    @if($status === 'completed') text-green-600 dark:text-green-400
+                                    @elseif($status === 'ongoing') text-blue-600 dark:text-blue-400
+                                    @elseif($status === 'on_hold') text-yellow-600 dark:text-yellow-400
+                                    @elseif($status === 'cancelled') text-red-600 dark:text-red-400
                                     @else text-gray-600 dark:text-gray-400
                                     @endif">
                                     {{ $data['count'] }}
@@ -235,13 +237,6 @@
                             <p class="text-xs font-medium text-gray-600 dark:text-gray-400 leading-tight">{{ $data['label'] }}</p>
                         </div>
                     </div>
-                    @if(!$loop->last)
-                    <div class="flex items-center justify-center flex-shrink-0 pt-1">
-                        <svg class="w-3 h-3 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                    @endif
                     @endforeach
                 </div>
             </div>

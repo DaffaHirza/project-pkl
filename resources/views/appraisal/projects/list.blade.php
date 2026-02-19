@@ -13,12 +13,6 @@ use App\Models\ProjectKanban;
             <p class="text-gray-600 dark:text-gray-400 mt-1">Kelola semua proyek penilaian</p>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ route('appraisal.projects.index') }}" class="btn btn-outline btn-sm gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-                </svg>
-                Kanban View
-            </a>
             <a href="{{ route('appraisal.projects.create') }}" class="btn btn-primary btn-sm gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -36,10 +30,10 @@ use App\Models\ProjectKanban;
                        placeholder="Cari kode proyek, nama, atau lokasi..." 
                        class="input input-bordered w-full">
             </div>
-            <select name="stage" class="select select-bordered w-full lg:w-40">
-                <option value="">Semua Stage</option>
-                @foreach(ProjectKanban::STAGES as $key => $label)
-                <option value="{{ $key }}" {{ request('stage') === $key ? 'selected' : '' }}>{{ $label }}</option>
+            <select name="status" class="select select-bordered w-full lg:w-40">
+                <option value="">Semua Status</option>
+                @foreach(ProjectKanban::STATUS as $key => $label)
+                <option value="{{ $key }}" {{ request('status') === $key ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach
             </select>
             <select name="client_id" class="select select-bordered w-full lg:w-48">
@@ -48,18 +42,12 @@ use App\Models\ProjectKanban;
                 <option value="{{ $client->id }}" {{ request('client_id') == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
                 @endforeach
             </select>
-            <select name="priority" class="select select-bordered w-full lg:w-36">
-                <option value="">Semua Prioritas</option>
-                <option value="critical" {{ request('priority') === 'critical' ? 'selected' : '' }}>🔴 Kritis</option>
-                <option value="warning" {{ request('priority') === 'warning' ? 'selected' : '' }}>🟡 Perhatian</option>
-                <option value="normal" {{ request('priority') === 'normal' ? 'selected' : '' }}>Normal</option>
-            </select>
             <button type="submit" class="btn btn-primary">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
             </button>
-            @if(request()->hasAny(['search', 'stage', 'client_id', 'priority']))
+            @if(request()->hasAny(['search', 'status', 'client_id']))
             <a href="{{ route('appraisal.projects.list') }}" class="btn btn-ghost">Reset</a>
             @endif
         </form>
@@ -88,8 +76,8 @@ use App\Models\ProjectKanban;
                         </th>
                         <th>Proyek</th>
                         <th>Klien</th>
-                        <th>Lokasi</th>
-                        <th>Stage</th>
+                        <th>Status</th>
+                        <th>Objek</th>
                         <th>
                             <a href="{{ request()->fullUrlWithQuery(['sort' => 'due_date', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                class="flex items-center gap-1 hover:text-blue-600">
@@ -141,28 +129,22 @@ use App\Models\ProjectKanban;
                             @endif
                         </td>
                         <td>
-                            <span class="text-sm text-gray-600 dark:text-gray-400">
-                                {{ $project->location ? Str::limit($project->location, 30) : '-' }}
+                            @php
+                                $statusLabel = ProjectKanban::STATUS[$project->status] ?? $project->status;
+                                $statusColors = [
+                                    'ongoing' => 'badge-info',
+                                    'completed' => 'badge-success',
+                                    'on_hold' => 'badge-warning',
+                                    'cancelled' => 'badge-error',
+                                ];
+                            @endphp
+                            <span class="badge {{ $statusColors[$project->status] ?? 'badge-ghost' }} badge-sm">
+                                {{ $statusLabel }}
                             </span>
                         </td>
                         <td>
-                            @php
-                                $stageLabel = ProjectKanban::STAGES[$project->current_stage] ?? null;
-                                $stageColors = [
-                                    'lead' => 'badge-ghost',
-                                    'proposal' => 'badge-info',
-                                    'contract' => 'badge-primary',
-                                    'inspection' => 'badge-secondary',
-                                    'analysis' => 'badge-accent',
-                                    'review' => 'badge-warning',
-                                    'client_approval' => 'badge-warning',
-                                    'final_report' => 'badge-info',
-                                    'invoicing' => 'badge-success',
-                                    'done' => 'badge-success',
-                                ];
-                            @endphp
-                            <span class="badge {{ $stageColors[$project->current_stage] ?? 'badge-ghost' }} badge-sm">
-                                {{ $stageLabel ?? $project->current_stage }}
+                            <span class="text-sm text-gray-600 dark:text-gray-400">
+                                {{ $project->total_assets }} objek
                             </span>
                         </td>
                         <td>

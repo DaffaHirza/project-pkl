@@ -101,7 +101,7 @@
         </div>
 
         <!-- Stage Actions -->
-        @if($asset->current_stage !== 'done')
+        @if($asset->current_stage !== 'arsip')
         <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
             <form action="{{ route('appraisal.assets.move-stage', $asset) }}" method="POST" class="flex items-center gap-4">
                 @csrf
@@ -166,13 +166,175 @@
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $asset->description }}</dd>
                         </div>
                         @endif
-                        @if($asset->notes)
-                        <div class="sm:col-span-2">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Catatan</dt>
-                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $asset->notes }}</dd>
-                        </div>
-                        @endif
                     </dl>
+                </div>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900" x-data="{ editing: false }">
+                <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Catatan</h2>
+                    <button @click="editing = !editing" 
+                            class="text-sm text-brand-500 hover:text-brand-600 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span x-text="editing ? 'Batal' : 'Edit'"></span>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div x-show="!editing">
+                        @if($asset->notes)
+                            <p class="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{{ $asset->notes }}</p>
+                        @else
+                            <p class="text-sm text-gray-500 dark:text-gray-400 italic">Belum ada catatan</p>
+                        @endif
+                    </div>
+                    <form x-show="editing" action="{{ route('appraisal.assets.update-notes', $asset) }}" method="POST">
+                        @csrf
+                        @method('PATCH')
+                        <textarea name="notes" rows="6" 
+                                  class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm focus:ring-brand-500 focus:border-brand-500"
+                                  placeholder="Tambahkan catatan untuk objek ini...">{{ $asset->notes }}</textarea>
+                        <div class="flex justify-end gap-2 mt-3">
+                            <button type="button" @click="editing = false" 
+                                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                                Batal
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium rounded-lg">
+                                Simpan Catatan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Documents Section -->
+            <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900" x-data="{ showUpload: false }">
+                <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Lampiran Dokumen</h2>
+                    <button @click="showUpload = !showUpload" 
+                            class="text-sm text-brand-500 hover:text-brand-600 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Upload Dokumen
+                    </button>
+                </div>
+                
+                <!-- Upload Form -->
+                <div x-show="showUpload" x-cloak class="border-b border-gray-200 dark:border-gray-700 p-6 bg-gray-50 dark:bg-gray-800/50">
+                    <form action="{{ route('appraisal.assets.upload-document', $asset) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">File (Max 100MB)</label>
+                                <input type="file" name="file" required
+                                       class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 dark:file:bg-brand-900/30 dark:file:text-brand-400">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
+                                <select name="category" required
+                                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm">
+                                    @foreach(\App\Models\DocumentKanban::CATEGORIES as $key => $label)
+                                        <option value="{{ $key }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Deskripsi (Opsional)</label>
+                                <input type="text" name="description" 
+                                       class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"
+                                       placeholder="Deskripsi singkat tentang dokumen...">
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button type="button" @click="showUpload = false" 
+                                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                                Batal
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium rounded-lg flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                Upload
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Documents List -->
+                <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                    @forelse($asset->documents as $document)
+                    <div class="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                @if(str_contains($document->file_type, 'image'))
+                                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                @elseif(str_contains($document->file_type, 'pdf'))
+                                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                @else
+                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                @endif
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ $document->file_name }}</p>
+                                <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                                        {{ $document->category_label }}
+                                    </span>
+                                    <span>{{ $document->file_size_human }}</span>
+                                    <span>•</span>
+                                    <span>{{ $document->created_at->diffForHumans() }}</span>
+                                    @if($document->uploader)
+                                        <span>•</span>
+                                        <span>{{ $document->uploader->name }}</span>
+                                    @endif
+                                </div>
+                                @if($document->description)
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $document->description }}</p>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0 ml-4">
+                            <a href="{{ route('appraisal.assets.download-document', [$asset, $document]) }}" 
+                               class="p-2 text-gray-500 hover:text-brand-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                               title="Download">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                            </a>
+                            <form action="{{ route('appraisal.assets.delete-document', [$asset, $document]) }}" method="POST" 
+                                  onsubmit="return confirm('Hapus dokumen ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" 
+                                        class="p-2 text-gray-500 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                                        title="Hapus">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        <p class="text-sm">Belum ada dokumen</p>
+                        <p class="text-xs mt-1">Klik "Upload Dokumen" untuk menambahkan lampiran</p>
+                    </div>
+                    @endforelse
                 </div>
             </div>
 
@@ -180,7 +342,7 @@
             <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
                 <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Inspeksi</h2>
-                    @if(in_array($asset->current_stage, ['pending', 'inspection']))
+                    @if(in_array($asset->current_stage, ['inisiasi', 'eksekusi_lapangan']))
                     <a href="{{ route('appraisal.inspections.create', ['asset' => $asset->id]) }}" 
                        class="text-sm text-brand-500 hover:text-brand-600">+ Tambah Inspeksi</a>
                     @endif
@@ -217,7 +379,7 @@
             <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
                 <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Laporan</h2>
-                    @if(in_array($asset->current_stage, ['analysis', 'review', 'client_approval', 'final_report']))
+                    @if(in_array($asset->current_stage, ['analisis', 'drafting', 'review_internal', 'approval_klien', 'finalisasi']))
                     <a href="{{ route('appraisal.reports.create', ['asset' => $asset->id]) }}" 
                        class="text-sm text-brand-500 hover:text-brand-600">+ Tambah Laporan</a>
                     @endif
@@ -310,7 +472,7 @@
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Aksi Cepat</h2>
                 </div>
                 <div class="p-4 space-y-2">
-                    @if(in_array($asset->current_stage, ['pending', 'inspection']))
+                    @if(in_array($asset->current_stage, ['inisiasi', 'eksekusi_lapangan']))
                     <a href="{{ route('appraisal.inspections.create', ['asset' => $asset->id]) }}" 
                        class="flex items-center gap-3 w-full px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
                         <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -320,7 +482,7 @@
                     </a>
                     @endif
                     
-                    @if(in_array($asset->current_stage, ['inspection', 'analysis']))
+                    @if(in_array($asset->current_stage, ['eksekusi_lapangan', 'analisis']))
                     <a href="{{ route('appraisal.working-papers.create', ['asset' => $asset->id]) }}" 
                        class="flex items-center gap-3 w-full px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
                         <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -330,7 +492,7 @@
                     </a>
                     @endif
 
-                    @if(in_array($asset->current_stage, ['analysis', 'review', 'client_approval', 'final_report']))
+                    @if(in_array($asset->current_stage, ['analisis', 'drafting', 'review_internal', 'approval_klien', 'finalisasi']))
                     <a href="{{ route('appraisal.reports.create', ['asset' => $asset->id]) }}" 
                        class="flex items-center gap-3 w-full px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
                         <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

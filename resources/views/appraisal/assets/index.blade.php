@@ -86,10 +86,10 @@
                         <div class="flex items-center gap-2">
                             <h3 class="font-semibold text-gray-900 dark:text-white text-sm">{{ $stageLabel }}</h3>
                             <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-medium rounded-full 
-                                @if($stageKey === 'done') bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400
-                                @elseif($stageKey === 'pending') bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300
-                                @elseif(in_array($stageKey, ['inspection', 'analysis'])) bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400
-                                @elseif(in_array($stageKey, ['review', 'client_approval'])) bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400
+                                @if($stageKey === 'arsip') bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400
+                                @elseif($stageKey === 'inisiasi') bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300
+                                @elseif(in_array($stageKey, ['eksekusi_lapangan', 'analisis'])) bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400
+                                @elseif(in_array($stageKey, ['review_internal', 'approval_klien'])) bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400
                                 @else bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400
                                 @endif">
                                 {{ count($assetsByStage[$stageKey] ?? []) }}
@@ -100,6 +100,7 @@
 
                 <!-- Column Content -->
                 <div class="flex-1 overflow-y-auto p-3 space-y-3"
+                     data-stage="{{ $stageKey }}"
                      x-data
                      x-init="Sortable.create($el, {
                          group: 'assets',
@@ -108,7 +109,8 @@
                          dragClass: 'shadow-2xl',
                          onEnd: function(evt) {
                              if (evt.from !== evt.to) {
-                                 moveAsset(evt.item.dataset.assetId, '{{ $stageKey }}');
+                                 const targetStage = evt.to.dataset.stage;
+                                 moveAsset(evt.item.dataset.assetId, targetStage);
                              }
                          }
                      })">

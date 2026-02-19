@@ -51,6 +51,70 @@
         </div>
 
         <div class="flex items-center gap-3 2xsm:gap-7">
+            <!-- Notifications Dropdown -->
+            @auth
+            <div x-data="{ 
+                open: false, 
+                notifications: [], 
+                unreadCount: 0,
+                loading: false,
+                async fetchNotifications() {
+                    if (this.loading) return;
+                    this.loading = true;
+                    try {
+                        const res = await fetch('{{ route('notifications.recent') }}');
+                        const data = await res.json();
+                        this.notifications = data.notifications;
+                        this.unreadCount = data.unread_count;
+                    } catch (e) {
+                        console.error(e);
+                    }
+                    this.loading = false;
+                }
+            }" 
+            x-init="fetchNotifications()"
+            class="relative">
+                <button @click="open = !open; if(open) fetchNotifications()" 
+                    class="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/5">
+                    <svg class="fill-gray-500 dark:fill-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 6.44V9.77M20.59 12.5C20.5 13.14 19.98 13.65 19.34 13.65C19.23 13.65 19.13 13.64 19.03 13.61L17.45 13.12C17.34 13.77 16.77 14.25 16.1 14.25H7.9C7.23 14.25 6.66 13.77 6.55 13.12L4.97 13.61C4.87 13.64 4.77 13.65 4.66 13.65C4.02 13.65 3.5 13.14 3.41 12.5C3.24 11.18 4.36 10.25 5.69 10.25H18.31C19.64 10.25 20.76 11.18 20.59 12.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 22C14.21 22 16 20.21 16 18H8C8 20.21 9.79 22 12 22ZM18 10V8C18 4.69 15.31 2 12 2C8.69 2 6 4.69 6 8V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span x-show="unreadCount > 0" 
+                          x-text="unreadCount > 9 ? '9+' : unreadCount"
+                          class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                    </span>
+                </button>
+
+                <!-- Notifications Panel -->
+                <div x-show="open" @click.outside="open = false" x-transition
+                     class="absolute right-0 mt-4 w-80 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900">
+                    <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 p-4">
+                        <h3 class="font-semibold text-gray-900 dark:text-white">Notifikasi</h3>
+                        <a href="{{ route('notifications.index') }}" class="text-xs text-brand-500 hover:text-brand-600">
+                            Lihat Semua
+                        </a>
+                    </div>
+                    <div class="max-h-80 overflow-y-auto">
+                        <template x-if="notifications.length === 0">
+                            <div class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                Tidak ada notifikasi
+                            </div>
+                        </template>
+                        <template x-for="notif in notifications" :key="notif.id">
+                            <a :href="notif.action_url ? '/notifications/' + notif.id + '/view' : '#'" 
+                               class="block p-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                               :class="{ 'bg-blue-50 dark:bg-blue-900/10': !notif.is_read }">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="notif.title"></p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2" x-text="notif.message"></p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1" x-text="notif.created_at"></p>
+                            </a>
+                        </template>
+                    </div>
+                </div>
+            </div>
+            @endauth
+
             <!-- Dark Mode Toggle -->
             <button @click="darkMode = !darkMode"
                 class="flex h-8.5 w-8.5 items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/5">

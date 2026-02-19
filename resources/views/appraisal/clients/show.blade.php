@@ -83,22 +83,16 @@
                         </div>
                         <div class="text-right">
                             @php
-                                $stageColors = [
-                                    'lead' => 'badge-ghost',
-                                    'proposal' => 'badge-info',
-                                    'contract' => 'badge-primary',
-                                    'inspection' => 'badge-secondary',
-                                    'analysis' => 'badge-accent',
-                                    'review' => 'badge-warning',
-                                    'client_approval' => 'badge-warning',
-                                    'final_report' => 'badge-info',
-                                    'invoicing' => 'badge-success',
-                                    'done' => 'badge-success',
+                                $statusColors = [
+                                    'ongoing' => 'badge-info',
+                                    'completed' => 'badge-success',
+                                    'on_hold' => 'badge-warning',
+                                    'cancelled' => 'badge-error',
                                 ];
-                                $stageLabels = \App\Models\ProjectKanban::STAGES;
+                                $statusLabels = \App\Models\ProjectKanban::STATUS;
                             @endphp
-                            <span class="badge {{ $stageColors[$project->current_stage] ?? 'badge-ghost' }}">
-                                {{ $stageLabels[$project->current_stage] ?? $project->current_stage }}
+                            <span class="badge {{ $statusColors[$project->status] ?? 'badge-ghost' }}">
+                                {{ $statusLabels[$project->status] ?? $project->status }}
                             </span>
                         </div>
                     </div>

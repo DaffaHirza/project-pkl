@@ -6,11 +6,27 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\AssetDocumentKanban;
+use App\Models\AssetNoteKanban;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
+
+    // ==========================================
+    // ROLE CONSTANTS
+    // ==========================================
+    
+    public const ROLE_USER = 'user';
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_SUPERUSER = 'superuser';
+
+    public const ROLES = [
+        self::ROLE_USER => 'User',
+        self::ROLE_ADMIN => 'Admin',
+        self::ROLE_SUPERUSER => 'Superuser (Developer)',
+    ];
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +37,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'is_active',
+        'last_login_at',
     ];
 
     /**
@@ -43,95 +62,110 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 
-    /**
-     * Get all boards created by this user
-     */
-    public function boards()
-    {
-        return $this->hasMany(Board::class, 'created_by');
-    }
-
-    /**
-     * Get all cards assigned to this user
-     */
-    public function assignedCards()
-    {
-        return $this->belongsToMany(Card::class, 'card_assignments');
-    }
-
-    /**
-     * Get all card assignments for this user
-     */
-    public function cardAssignments()
-    {
-        return $this->hasMany(CardAssignment::class);
-    }
-
     // ==========================================
-    // KANBAN PROJECT RELATIONSHIPS
+    // ROLE METHODS
     // ==========================================
 
     /**
-     * Get all inspections assigned to this user (as surveyor)
+     * Check if user is a regular user
      */
-    public function inspections()
+    public function isUser(): bool
     {
-        return $this->hasMany(InspectionKanban::class, 'surveyor_id');
+        return $this->role === self::ROLE_USER;
     }
 
     /**
-     * Get all working papers assigned to this user (as analyst)
+     * Check if user is admin
      */
-    public function workingPapers()
+    public function isAdmin(): bool
     {
-        return $this->hasMany(WorkingPaperKanban::class, 'analyst_id');
+        return $this->role === self::ROLE_ADMIN;
     }
 
     /**
-     * Get all approvals made by this user
+     * Check if user is superuser (developer)
      */
-    public function approvals()
+    public function isSuperuser(): bool
     {
-        return $this->hasMany(ApprovalKanban::class, 'user_id');
+        return $this->role === self::ROLE_SUPERUSER;
     }
+
+    /**
+     * Check if user has admin-level access (admin or superuser)
+     */
+    public function hasAdminAccess(): bool
+    {
+        return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_SUPERUSER]);
+    }
+
+    /**
+     * Get role display name
+     */
+    public function getRoleNameAttribute(): string
+    {
+        return self::ROLES[$this->role] ?? 'Unknown';
+    }
+
+    /**
+     * Check if user can perform action
+     * Superuser can do everything, admin can do most things, user is limited
+     */
+    public function can($ability, $arguments = []): bool
+    {
+        // Superuser bypass
+        if ($this->isSuperuser()) {
+            return true;
+        }
+
+        return parent::can($ability, $arguments);
+    }
+
+    /**
+     * Scope: Active users only
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope: Admins only
+     */
+    public function scopeAdmins($query)
+    {
+        return $query->whereIn('role', [self::ROLE_ADMIN, self::ROLE_SUPERUSER]);
+    }
+
+    /**
+     * Update last login timestamp
+     */
+    public function updateLastLogin(): void
+    {
+        $this->update(['last_login_at' => now()]);
+    }
+
+    // ==========================================
+    // KANBAN RELATIONSHIPS
+    // ==========================================
 
     /**
      * Get all documents uploaded by this user
      */
     public function uploadedDocuments()
     {
-        return $this->hasMany(DocumentKanban::class, 'uploader_id');
+        return $this->hasMany(AssetDocumentKanban::class, 'uploaded_by');
     }
 
     /**
-     * Get all activities by this user
+     * Get all notes created by this user
      */
-    public function kanbanActivities()
+    public function assetNotes()
     {
-        return $this->hasMany(ActivityKanban::class, 'user_id');
-    }
-
-    /**
-     * Get overdue assigned cards count
-     */
-    public function getOverdueCardsCountAttribute(): int
-    {
-        return $this->assignedCards()
-            ->whereNotNull('due_date')
-            ->where('due_date', '<', now())
-            ->count();
-    }
-
-    /**
-     * Get high priority assigned cards count
-     */
-    public function getHighPriorityCardsCountAttribute(): int
-    {
-        return $this->assignedCards()
-            ->where('priority', 'high')
-            ->count();
+        return $this->hasMany(AssetNoteKanban::class, 'user_id');
     }
 }

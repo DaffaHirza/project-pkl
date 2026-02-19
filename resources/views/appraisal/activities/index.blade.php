@@ -150,18 +150,19 @@ use App\Models\ProjectKanban;
                                     @if($activity->stage_context)
                                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                         @php
-                                            $stageLabel = ProjectKanban::STAGES[$activity->stage_context] ?? null;
+                                            $stageLabel = \App\Models\ProjectAsset::STAGES[$activity->stage_context] ?? null;
                                             $stageColors = [
-                                                'lead' => 'badge-ghost',
-                                                'proposal' => 'badge-info',
-                                                'contract' => 'badge-primary',
-                                                'inspection' => 'badge-secondary',
-                                                'analysis' => 'badge-accent',
-                                                'review' => 'badge-warning',
-                                                'client_approval' => 'badge-warning',
-                                                'final_report' => 'badge-info',
-                                                'invoicing' => 'badge-success',
-                                                'done' => 'badge-success',
+                                                'inisiasi' => 'badge-ghost',
+                                                'penawaran' => 'badge-info',
+                                                'kesepakatan' => 'badge-primary',
+                                                'eksekusi_lapangan' => 'badge-secondary',
+                                                'analisis' => 'badge-accent',
+                                                'drafting' => 'badge-warning',
+                                                'review_internal' => 'badge-warning',
+                                                'approval_klien' => 'badge-warning',
+                                                'finalisasi' => 'badge-info',
+                                                'delivery_payment' => 'badge-success',
+                                                'arsip' => 'badge-success',
                                             ];
                                         @endphp
                                         Stage: 

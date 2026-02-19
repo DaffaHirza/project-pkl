@@ -1,220 +1,167 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\KanbanController;
-use App\Http\Controllers\ColumnController;
-use App\Http\Controllers\CardController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\TrackingController;
-use App\Http\Controllers\Appraisal\DashboardController;
-use App\Http\Controllers\Appraisal\KanbanClientController;
-use App\Http\Controllers\Appraisal\ProjectKanbanController;
-use App\Http\Controllers\Appraisal\ProjectAssetController;
-use App\Http\Controllers\Appraisal\ProposalKanbanController;
-use App\Http\Controllers\Appraisal\ContractKanbanController;
-use App\Http\Controllers\Appraisal\InspectionKanbanController;
-use App\Http\Controllers\Appraisal\WorkingPaperKanbanController;
-use App\Http\Controllers\Appraisal\ReportKanbanController;
-use App\Http\Controllers\Appraisal\ApprovalKanbanController;
-use App\Http\Controllers\Appraisal\InvoiceKanbanController;
-use App\Http\Controllers\Appraisal\DocumentKanbanController;
-use App\Http\Controllers\Appraisal\ActivityKanbanController;
-use App\Http\Controllers\CardAttachmentController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Kanban\DashboardController;
+use App\Http\Controllers\Kanban\ClientController;
+use App\Http\Controllers\Kanban\ProjectController;
+use App\Http\Controllers\Kanban\AssetController;
+use App\Http\Controllers\Kanban\DocumentController;
+use App\Http\Controllers\Kanban\NoteController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn() => view('welcome'));
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', fn() => view('dashboard'))
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Kanban Routes
-    Route::get('/kanban', [KanbanController::class, 'index'])->name('kanban.index');
-    Route::post('/kanban', [KanbanController::class, 'store'])->name('kanban.store');
-    Route::get('/kanban/{board}', [KanbanController::class, 'show'])->name('kanban.show');
-    Route::patch('/kanban/{board}', [KanbanController::class, 'update'])->name('kanban.update');
-    Route::delete('/kanban/{board}', [KanbanController::class, 'destroy'])->name('kanban.destroy');
-
-    // Column Routes
-    Route::post('/kanban/{board}/columns', [ColumnController::class, 'store'])->name('columns.store');
-    Route::post('/kanban/{board}/columns/reorder', [ColumnController::class, 'reorder'])->name('columns.reorder');
-    Route::patch('/columns/{column}', [ColumnController::class, 'update'])->name('columns.update');
-    Route::post('/columns/{column}/move', [ColumnController::class, 'move'])->name('columns.move');
-    Route::delete('/columns/{column}', [ColumnController::class, 'destroy'])->name('columns.destroy');
-    Route::delete('/columns/{column}/force', [ColumnController::class, 'forceDestroy'])->name('columns.forceDestroy');
-
-    // Card Routes
-    Route::post('/columns/{column}/cards', [CardController::class, 'store'])->name('cards.store');
-    Route::post('/kanban/{board}/cards', [CardController::class, 'storeFromBoard'])->name('cards.storeFromBoard');
-    Route::patch('/cards/{card}', [CardController::class, 'update'])->name('cards.update');
-    Route::post('/cards/{card}/move', [CardController::class, 'move'])->name('cards.move');
-    Route::post('/cards/{card}/assign', [CardController::class, 'assignUsers'])->name('cards.assign');
-    Route::delete('/card-assignments/{assignment}', [CardController::class, 'removeUser'])->name('card-assignments.remove');
-    Route::delete('/cards/{card}', [CardController::class, 'destroy'])->name('cards.destroy');
-
-    // Card Attachment Routes
-    Route::get('/cards/{card}/attachments', [CardAttachmentController::class, 'index'])->name('attachments.index');
-    Route::post('/cards/{card}/attachments', [CardAttachmentController::class, 'store'])->name('attachments.store');
-    Route::post('/cards/{card}/attachments/multiple', [CardAttachmentController::class, 'storeMultiple'])->name('attachments.store-multiple');
-    Route::get('/attachments/{attachment}', [CardAttachmentController::class, 'show'])->name('attachments.show');
-    Route::get('/attachments/{attachment}/download', [CardAttachmentController::class, 'download'])->name('attachments.download');
-    Route::delete('/attachments/{attachment}', [CardAttachmentController::class, 'destroy'])->name('attachments.destroy');
-    Route::post('/cards/{card}/attachments/bulk-delete', [CardAttachmentController::class, 'bulkDestroy'])->name('attachments.bulk-destroy');
-    Route::get('/attachments/config', [CardAttachmentController::class, 'config'])->name('attachments.config');
-
-    // Notification Routes
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::get('/notifications/recent', [NotificationController::class, 'recent'])->name('notifications.recent');
-    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
-    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
-    Route::post('/notifications/{notification}/unread', [NotificationController::class, 'markAsUnread'])->name('notifications.mark-unread');
-    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
-    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
-    Route::delete('/notifications/read/all', [NotificationController::class, 'destroyAllRead'])->name('notifications.destroy-all-read');
-    Route::delete('/notifications/all', [NotificationController::class, 'destroyAll'])->name('notifications.destroy-all');
-    Route::get('/notifications/settings', [NotificationController::class, 'settings'])->name('notifications.settings');
-    Route::post('/notifications/settings', [NotificationController::class, 'updateSettings'])->name('notifications.update-settings');
+    // Profile
+    Route::controller(ProfileController::class)->prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', 'edit')->name('edit');
+        Route::patch('/', 'update')->name('update');
+        Route::delete('/', 'destroy')->name('destroy');
+    });
 
     Route::get('/assistant', [AssistantController::class, 'index'])->name('assistant.index');
-
     Route::get('/tracking', [TrackingController::class, 'index'])->name('tracking.index');
 
     // ============================================
-    // APPRAISAL KANBAN ROUTES
+    // NOTIFICATIONS
     // ============================================
-    Route::prefix('appraisal')->name('appraisal.')->group(function () {
+    Route::controller(NotificationController::class)->prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/recent', 'recent')->name('recent');
+        Route::get('/unread-count', 'unreadCount')->name('unread-count');
+        Route::get('/settings', 'settings')->name('settings');
+        Route::post('/settings', 'updateSettings')->name('update-settings');
+        Route::post('/mark-all-read', 'markAllAsRead')->name('mark-all-read');
+        Route::get('/{notification}/view', 'view')->name('view'); // GET to view & mark read
+        Route::post('/{notification}/mark-read', 'markAsRead')->name('mark-read');
+        Route::post('/{notification}/mark-unread', 'markAsUnread')->name('mark-unread');
+        Route::delete('/{notification}', 'destroy')->name('destroy');
+        Route::delete('/bulk/read', 'destroyAllRead')->name('destroy-all-read');
+        Route::delete('/bulk/all', 'destroyAll')->name('destroy-all');
+    });
+
+    // ============================================
+    // KANBAN ROUTES (WITH ROLE-BASED ACCESS)
+    // ============================================
+    Route::prefix('kanban')->name('kanban.')->group(function () {
         
-        // Dashboard
-        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-        Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
-        Route::get('/dashboard/needs-attention', [DashboardController::class, 'needsAttention'])->name('dashboard.needs-attention');
-        Route::get('/dashboard/workflow-summary', [DashboardController::class, 'workflowSummary'])->name('dashboard.workflow-summary');
+        // Dashboard - All authenticated users
+        Route::controller(DashboardController::class)->group(function () {
+            Route::get('/', 'index')->name('dashboard');
+            Route::get('/dashboard/data', 'data')->name('dashboard.data');
+            Route::get('/activity-log', 'activityLog')->name('activity-log');
+        });
 
-        // Clients
-        Route::get('/clients/search', [KanbanClientController::class, 'search'])->name('clients.search');
-        Route::resource('clients', KanbanClientController::class);
+        // ----------------------------------------
+        // CLIENTS - Admin only for CUD operations
+        // ----------------------------------------
+        Route::controller(ClientController::class)->prefix('clients')->name('clients.')->group(function () {
+            // Read - All users
+            Route::get('/', 'index')->name('index');
+            Route::get('/search', 'search')->name('search');
+            Route::get('/{client}', 'show')->name('show')->whereNumber('client');
+            
+            // Create/Update/Delete - Admin only
+            Route::middleware('admin')->group(function () {
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{client}/edit', 'edit')->name('edit')->whereNumber('client');
+                Route::put('/{client}', 'update')->name('update')->whereNumber('client');
+                Route::delete('/{client}', 'destroy')->name('destroy')->whereNumber('client');
+            });
+        });
 
-        // Projects (Admin/Contract Level)
-        Route::get('/projects/list', [ProjectKanbanController::class, 'list'])->name('projects.list');
-        Route::get('/projects/statistics', [ProjectKanbanController::class, 'statistics'])->name('projects.statistics');
-        Route::post('/projects/{project}/move-stage', [ProjectKanbanController::class, 'moveStage'])->name('projects.move-stage');
-        Route::post('/projects/{project}/update-priority', [ProjectKanbanController::class, 'updatePriority'])->name('projects.update-priority');
-        Route::post('/projects/{project}/update-global-status', [ProjectKanbanController::class, 'updateGlobalStatus'])->name('projects.update-global-status');
-        Route::post('/projects/{project}/restore', [ProjectKanbanController::class, 'restore'])->name('projects.restore');
-        Route::resource('projects', ProjectKanbanController::class);
+        // ----------------------------------------
+        // PROJECTS - Admin for delete, users for rest
+        // ----------------------------------------
+        Route::controller(ProjectController::class)->prefix('projects')->name('projects.')->group(function () {
+            // Read & Stats - All users
+            Route::get('/', 'index')->name('index');
+            Route::get('/statistics', 'statistics')->name('statistics');
+            Route::get('/{project}', 'show')->name('show')->whereNumber('project');
+            
+            // Create/Update - All users (can manage their assigned projects)
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('/{project}/edit', 'edit')->name('edit')->whereNumber('project');
+            Route::put('/{project}', 'update')->name('update')->whereNumber('project');
+            
+            // Delete - Admin only
+            Route::delete('/{project}', 'destroy')->name('destroy')
+                ->whereNumber('project')
+                ->middleware('admin');
+        });
 
-        // Project Assets (Technical/Per-Object Level) - NEW!
-        Route::get('/assets/list', [ProjectAssetController::class, 'list'])->name('assets.list');
-        Route::get('/assets/statistics', [ProjectAssetController::class, 'statistics'])->name('assets.statistics');
-        Route::post('/assets/bulk', [ProjectAssetController::class, 'bulkStore'])->name('assets.bulk-store');
-        Route::post('/assets/{asset}/move-stage', [ProjectAssetController::class, 'moveStage'])->name('assets.move-stage');
-        Route::post('/assets/{asset}/update-priority', [ProjectAssetController::class, 'updatePriority'])->name('assets.update-priority');
-        Route::post('/assets/{asset}/restore', [ProjectAssetController::class, 'restore'])->name('assets.restore');
-        Route::resource('assets', ProjectAssetController::class);
+        // ----------------------------------------
+        // ASSETS - Users can manage, admin for delete
+        // ----------------------------------------
+        Route::controller(AssetController::class)->prefix('assets')->name('assets.')->group(function () {
+            // Read - All users
+            Route::get('/', 'index')->name('index');
+            Route::get('/board', 'board')->name('board'); // Kanban board view
+            Route::get('/{asset}', 'show')->name('show')->whereNumber('asset');
+            
+            // Create/Update/Operations - All users
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::post('/bulk', 'bulkStore')->name('bulk-store');
+            Route::get('/{asset}/edit', 'edit')->name('edit')->whereNumber('asset');
+            Route::put('/{asset}', 'update')->name('update')->whereNumber('asset');
+            Route::post('/{asset}/move-stage', 'moveStage')->name('move-stage')->whereNumber('asset');
+            Route::post('/{asset}/update-position', 'updatePosition')->name('update-position')->whereNumber('asset');
+            Route::post('/{asset}/update-priority', 'updatePriority')->name('update-priority')->whereNumber('asset');
+            
+            // Delete - Admin only
+            Route::delete('/{asset}', 'destroy')->name('destroy')
+                ->whereNumber('asset')
+                ->middleware('admin');
+        });
 
-        // Inspections (NOW nested under ASSETS, not projects)
-        Route::get('/inspections/today', [InspectionKanbanController::class, 'today'])->name('inspections.today');
-        Route::get('/assets/{asset}/inspections/create', [InspectionKanbanController::class, 'create'])->name('inspections.create');
-        Route::post('/assets/{asset}/inspections', [InspectionKanbanController::class, 'store'])->name('inspections.store');
-        Route::get('/inspections', [InspectionKanbanController::class, 'index'])->name('inspections.index');
-        Route::get('/inspections/{inspection}', [InspectionKanbanController::class, 'show'])->name('inspections.show');
-        Route::put('/inspections/{inspection}', [InspectionKanbanController::class, 'update'])->name('inspections.update');
-        Route::post('/inspections/{inspection}/complete', [InspectionKanbanController::class, 'complete'])->name('inspections.complete');
-        Route::patch('/inspections/{inspection}/location', [InspectionKanbanController::class, 'updateLocation'])->name('inspections.update-location');
-        Route::delete('/inspections/{inspection}', [InspectionKanbanController::class, 'destroy'])->name('inspections.destroy');
+        // ----------------------------------------
+        // DOCUMENTS - Users can manage own, admin for all
+        // ----------------------------------------
+        Route::controller(DocumentController::class)->group(function () {
+            Route::prefix('assets/{asset}')->name('documents.')->whereNumber('asset')->group(function () {
+                Route::get('/documents', 'index')->name('index');
+                Route::get('/documents/stage/{stage}', 'byStage')->name('by-stage')->whereNumber('stage');
+                Route::post('/documents', 'store')->name('store');
+            });
+            Route::get('/documents/{document}/download', 'download')->name('documents.download')->whereNumber('document');
+            Route::delete('/documents/{document}', 'destroy')->name('documents.destroy')->whereNumber('document');
+        });
 
-        // Working Papers (NOW nested under ASSETS, not projects)
-        Route::get('/assets/{asset}/working-papers/create', [WorkingPaperKanbanController::class, 'create'])->name('working-papers.create');
-        Route::post('/assets/{asset}/working-papers', [WorkingPaperKanbanController::class, 'store'])->name('working-papers.store');
-        Route::get('/working-papers', [WorkingPaperKanbanController::class, 'index'])->name('working-papers.index');
-        Route::put('/working-papers/{workingPaper}', [WorkingPaperKanbanController::class, 'update'])->name('working-papers.update');
-        Route::post('/working-papers/{workingPaper}/complete', [WorkingPaperKanbanController::class, 'complete'])->name('working-papers.complete');
-        Route::delete('/working-papers/{workingPaper}', [WorkingPaperKanbanController::class, 'destroy'])->name('working-papers.destroy');
+        // ----------------------------------------
+        // NOTES - Users can manage own
+        // ----------------------------------------
+        Route::controller(NoteController::class)->group(function () {
+            Route::prefix('assets/{asset}')->name('notes.')->whereNumber('asset')->group(function () {
+                Route::get('/notes', 'index')->name('index');
+                Route::get('/notes/stage/{stage}', 'byStage')->name('by-stage')->whereNumber('stage');
+                Route::get('/notes/activity-log', 'activityLog')->name('activity-log');
+                Route::post('/notes', 'store')->name('store');
+            });
+            Route::delete('/notes/{note}', 'destroy')->name('notes.destroy')->whereNumber('note');
+        });
+    });
 
-        // Reports (NOW nested under ASSETS, not projects)
-        Route::get('/assets/{asset}/reports/create', [ReportKanbanController::class, 'create'])->name('reports.create');
-        Route::post('/assets/{asset}/reports', [ReportKanbanController::class, 'store'])->name('reports.store');
-        Route::get('/reports', [ReportKanbanController::class, 'index'])->name('reports.index');
-        Route::get('/reports/{report}', [ReportKanbanController::class, 'show'])->name('reports.show');
-        Route::post('/reports/{report}/upload-version', [ReportKanbanController::class, 'uploadVersion'])->name('reports.upload-version');
-        Route::post('/reports/{report}/approve', [ReportKanbanController::class, 'approve'])->name('reports.approve');
-        Route::post('/reports/{report}/request-revision', [ReportKanbanController::class, 'requestRevision'])->name('reports.request-revision');
-        Route::delete('/reports/{report}', [ReportKanbanController::class, 'destroy'])->name('reports.destroy');
-        Route::get('/reports/{report}/download', [ReportKanbanController::class, 'download'])->name('reports.download');
-
-        // Proposals (nested under PROJECTS - Global/Administrative)
-        Route::get('/projects/{project}/proposals/create', [ProposalKanbanController::class, 'create'])->name('proposals.create');
-        Route::post('/projects/{project}/proposals', [ProposalKanbanController::class, 'store'])->name('proposals.store');
-        Route::get('/proposals', [ProposalKanbanController::class, 'index'])->name('proposals.index');
-        Route::get('/proposals/{proposal}', [ProposalKanbanController::class, 'show'])->name('proposals.show');
-        Route::put('/proposals/{proposal}', [ProposalKanbanController::class, 'update'])->name('proposals.update');
-        Route::patch('/proposals/{proposal}/status', [ProposalKanbanController::class, 'updateStatus'])->name('proposals.update-status');
-        Route::delete('/proposals/{proposal}', [ProposalKanbanController::class, 'destroy'])->name('proposals.destroy');
-
-        // Contracts (nested under PROJECTS - Global/Administrative)
-        Route::get('/projects/{project}/contracts/create', [ContractKanbanController::class, 'create'])->name('contracts.create');
-        Route::post('/projects/{project}/contracts', [ContractKanbanController::class, 'store'])->name('contracts.store');
-        Route::get('/contracts', [ContractKanbanController::class, 'index'])->name('contracts.index');
-        Route::get('/contracts/{contract}', [ContractKanbanController::class, 'show'])->name('contracts.show');
-        Route::put('/contracts/{contract}', [ContractKanbanController::class, 'update'])->name('contracts.update');
-        Route::delete('/contracts/{contract}', [ContractKanbanController::class, 'destroy'])->name('contracts.destroy');
-        Route::get('/contracts/{contract}/download', [ContractKanbanController::class, 'download'])->name('contracts.download');
-
-        // Approvals - PROJECT LEVEL (Administrative workflow)
-        Route::get('/approvals', [ApprovalKanbanController::class, 'index'])->name('approvals.index');
-        Route::get('/approvals/{approval}', [ApprovalKanbanController::class, 'show'])->name('approvals.show');
-        Route::get('/approvals/pending/count', [ApprovalKanbanController::class, 'pendingCount'])->name('approvals.pending-count');
-        Route::post('/projects/{project}/approvals/proposal', [ApprovalKanbanController::class, 'storeProposalApproval'])->name('approvals.proposal');
-        Route::post('/projects/{project}/approvals/contract', [ApprovalKanbanController::class, 'storeContractApproval'])->name('approvals.contract');
-        Route::post('/projects/{project}/approvals/invoice', [ApprovalKanbanController::class, 'storeInvoiceApproval'])->name('approvals.invoice');
-
-        // Approvals - ASSET LEVEL (Technical workflow)
-        Route::post('/assets/{asset}/approvals/internal-review', [ApprovalKanbanController::class, 'storeAssetInternalReview'])->name('approvals.asset-internal-review');
-        Route::post('/assets/{asset}/approvals/client-approval', [ApprovalKanbanController::class, 'storeAssetClientApproval'])->name('approvals.asset-client-approval');
-
-        // Invoices
-        Route::get('/invoices/overdue', [InvoiceKanbanController::class, 'overdue'])->name('invoices.overdue');
-        Route::get('/projects/{project}/invoices/create', [InvoiceKanbanController::class, 'create'])->name('invoices.create');
-        Route::post('/projects/{project}/invoices', [InvoiceKanbanController::class, 'store'])->name('invoices.store');
-        Route::get('/invoices', [InvoiceKanbanController::class, 'index'])->name('invoices.index');
-        Route::get('/invoices/{invoice}', [InvoiceKanbanController::class, 'show'])->name('invoices.show');
-        Route::put('/invoices/{invoice}', [InvoiceKanbanController::class, 'update'])->name('invoices.update');
-        Route::post('/invoices/{invoice}/mark-paid', [InvoiceKanbanController::class, 'markAsPaid'])->name('invoices.mark-paid');
-        Route::post('/invoices/{invoice}/cancel', [InvoiceKanbanController::class, 'cancel'])->name('invoices.cancel');
-        Route::delete('/invoices/{invoice}', [InvoiceKanbanController::class, 'destroy'])->name('invoices.destroy');
-
-        // Documents - Support both PROJECT and ASSET level
-        Route::get('/projects/{project}/documents/create', [DocumentKanbanController::class, 'create'])->name('documents.create');
-        Route::post('/projects/{project}/documents', [DocumentKanbanController::class, 'store'])->name('documents.store');
-        Route::get('/projects/{project}/documents/category/{category}', [DocumentKanbanController::class, 'byCategory'])->name('documents.by-category');
-        Route::get('/assets/{asset}/documents/create', [DocumentKanbanController::class, 'createForAsset'])->name('documents.create-for-asset');
-        Route::post('/assets/{asset}/documents', [DocumentKanbanController::class, 'storeForAsset'])->name('documents.store-for-asset');
-        Route::get('/documents', [DocumentKanbanController::class, 'index'])->name('documents.index');
-        Route::get('/documents/{document}', [DocumentKanbanController::class, 'show'])->name('documents.show');
-        Route::put('/documents/{document}', [DocumentKanbanController::class, 'update'])->name('documents.update');
-        Route::delete('/documents/{document}', [DocumentKanbanController::class, 'destroy'])->name('documents.destroy');
-        Route::get('/documents/{document}/download', [DocumentKanbanController::class, 'download'])->name('documents.download');
-        Route::post('/documents/bulk-delete', [DocumentKanbanController::class, 'bulkDelete'])->name('documents.bulk-delete');
-
-        // Activities - Support both PROJECT and ASSET level
-        Route::get('/activities', [ActivityKanbanController::class, 'index'])->name('activities.index');
-        Route::get('/activities/recent', [ActivityKanbanController::class, 'recent'])->name('activities.recent');
-        Route::get('/activities/statistics', [ActivityKanbanController::class, 'statistics'])->name('activities.statistics');
-        Route::post('/projects/{project}/activities/comment', [ActivityKanbanController::class, 'storeComment'])->name('activities.comment');
-        Route::post('/projects/{project}/activities/obstacle', [ActivityKanbanController::class, 'storeObstacle'])->name('activities.obstacle');
-        Route::post('/projects/{project}/activities/resolve-obstacle', [ActivityKanbanController::class, 'resolveObstacle'])->name('activities.resolve-obstacle');
-        Route::get('/projects/{project}/activities', [ActivityKanbanController::class, 'projectActivities'])->name('activities.project');
-        Route::post('/assets/{asset}/activities/comment', [ActivityKanbanController::class, 'storeAssetComment'])->name('activities.asset-comment');
-        Route::get('/assets/{asset}/activities', [ActivityKanbanController::class, 'assetActivities'])->name('activities.asset');
-        Route::delete('/activities/{activity}', [ActivityKanbanController::class, 'destroy'])->name('activities.destroy');
+    // ============================================
+    // ADMIN ONLY ROUTES
+    // ============================================
+    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        // User management - Superuser only
+        Route::middleware('role:superuser')->group(function () {
+            // Future: user management routes
+        });
+        
+        // Reports & Stats - Admin+
+        Route::get('/reports', fn() => view('admin.reports'))->name('reports');
     });
 });
 

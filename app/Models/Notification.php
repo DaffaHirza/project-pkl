@@ -43,14 +43,31 @@ class Notification extends Model
      * Notification types
      */
     public const TYPES = [
+        // Card/Legacy types
         'card_assigned' => 'Ditugaskan ke Card',
         'card_due_soon' => 'Deadline Mendekat',
         'card_overdue' => 'Card Overdue',
         'card_comment' => 'Komentar Baru',
         'card_attachment' => 'Attachment Baru',
         'card_moved' => 'Card Dipindahkan',
+        
+        // Kanban Asset types
+        'asset_stage_changed' => 'Stage Asset Berubah',
+        'asset_created' => 'Asset Baru Dibuat',
+        'asset_document_uploaded' => 'Dokumen Asset Diupload',
+        'asset_note_added' => 'Catatan Asset Ditambahkan',
+        'asset_priority_critical' => 'Asset Priority Critical',
+        
+        // Project types
+        'project_created' => 'Project Baru Dibuat',
         'project_stage_changed' => 'Stage Project Berubah',
         'project_assigned' => 'Ditugaskan ke Project',
+        'project_completed' => 'Project Selesai',
+        
+        // Client types
+        'client_created' => 'Client Baru Ditambahkan',
+        
+        // Other types
         'inspection_scheduled' => 'Jadwal Inspeksi',
         'inspection_reminder' => 'Pengingat Inspeksi',
         'approval_required' => 'Perlu Approval',

@@ -99,36 +99,19 @@ use App\Models\ProjectKanban;
                 @enderror
             </div>
 
-            {{-- Current Stage --}}
+            {{-- Status --}}
             <div class="form-control">
                 <label class="label">
-                    <span class="label-text font-medium">Stage</span>
+                    <span class="label-text font-medium">Status</span>
                 </label>
-                <select name="current_stage" class="select select-bordered w-full @error('current_stage') select-error @enderror">
-                    @foreach(ProjectKanban::STAGES as $key => $label)
-                    <option value="{{ $key }}" {{ old('current_stage', $project->current_stage) == $key ? 'selected' : '' }}>
+                <select name="status" class="select select-bordered w-full @error('status') select-error @enderror">
+                    @foreach(ProjectKanban::STATUS as $key => $label)
+                    <option value="{{ $key }}" {{ old('status', $project->status) == $key ? 'selected' : '' }}>
                         {{ $label }}
                     </option>
                     @endforeach
                 </select>
-                @error('current_stage')
-                <label class="label">
-                    <span class="label-text-alt text-error">{{ $message }}</span>
-                </label>
-                @enderror
-            </div>
-
-            {{-- Priority Status --}}
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text font-medium">Status Prioritas</span>
-                </label>
-                <select name="priority_status" class="select select-bordered w-full @error('priority_status') select-error @enderror">
-                    <option value="normal" {{ old('priority_status', $project->priority_status) == 'normal' ? 'selected' : '' }}>Normal</option>
-                    <option value="warning" {{ old('priority_status', $project->priority_status) == 'warning' ? 'selected' : '' }}>⚠️ Perhatian</option>
-                    <option value="critical" {{ old('priority_status', $project->priority_status) == 'critical' ? 'selected' : '' }}>🔴 Kritis</option>
-                </select>
-                @error('priority_status')
+                @error('status')
                 <label class="label">
                     <span class="label-text-alt text-error">{{ $message }}</span>
                 </label>

@@ -108,7 +108,7 @@
                     {{-- Actions --}}
                     <div class="flex items-center gap-2">
                         @if($notification->action_url)
-                        <a href="{{ route('notifications.mark-read', $notification) }}" 
+                        <a href="{{ route('notifications.view', $notification) }}" 
                            class="text-xs text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300">
                             Lihat
                         </a>
