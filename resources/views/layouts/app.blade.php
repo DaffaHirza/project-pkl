@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>@yield('title', 'Dashboard') | {{ config('app.name', 'Laravel') }}</title>
+    <title>@yield('title', 'Dashboard') | {{ config('app.name', 'KJPP Mushofah dan Rekan') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

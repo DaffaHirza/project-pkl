@@ -30,12 +30,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('project_id')->constrained('projects_kanban')->onDelete('cascade');
             $table->string('asset_code', 20)->unique()->nullable(); // AST-2026-0001
-            $table->string('name');                         // Nama objek
+            $table->string('name'); // Nama objek
             $table->text('description')->nullable();
             $table->string('asset_type', 30)->default('lainnya'); 
             // tanah, bangunan, tanah_bangunan, mesin, kendaraan, inventaris, aset_tak_berwujud, lainnya
             
-            $table->text('location')->nullable();           // Alamat lokasi objek
+            $table->text('location')->nullable(); // Alamat lokasi objek
             
             // Workflow Stage (1-13)
             $table->unsignedTinyInteger('current_stage')->default(1);
