@@ -10,7 +10,7 @@
                 <h1 class="text-gray-dark dark:text-white text-2xl font-semibold">Masukan Dokumen</h1>
                 <span class="text-xs text-gray-400">Unggah dokumen untuk diproses oleh AI Assistant</span>
             </div>
-            <a href="/assistantai"
+            <a href="{{ route('assistantai.pages.index') }}"
                 class="group flex border-2 border-gray-300 rounded-xl items-center justify-center px-3 py-2 gap-1 cursor-pointer hover:bg-gray-100 transition-colors">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15 18L9 12L15 6" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"

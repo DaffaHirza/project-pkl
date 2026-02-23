@@ -120,7 +120,7 @@
                         class="absolute right-0 mt-4 flex w-62.5 flex-col rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-dark">
                         <ul class="flex flex-col gap-5 border-b border-gray-200 px-6 py-7.5 dark:border-gray-800">
                             <li>
-                                    <a href="{{ route('profile.edit') }}"
+                                <a href="{{ route('admin.profile.edit') }}"
                                     class="text-gray-dark flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-brand-500 lg:text-base">
                                     <svg class="fill-current" width="22" height="22" viewBox="0 0 22 22"
                                         fill="none" xmlns="http://www.w3.org/2000/svg">

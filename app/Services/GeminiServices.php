@@ -11,11 +11,13 @@ class GeminiServices
 {
     /**
      * Proses seluruh dokumen dengan ekstraksi dan analisis AI
+     * Strategi baru: pecah LAPORAN UTAMA per bagian, lalu tiap bagian dicek ke dokumen pendukung tertentu
      */
     public function prosesDokumen(Document $document)
     {
-        Log::info('Starting document analysis', ['document_id' => $document->id]);
+        Log::info('Starting section-based document analysis', ['document_id' => $document->id]);
 
+        // 1. Extract Laporan Utama
         $laporanUtamaItem = $document->documentItems()
             ->where('kategori', 'LIKE', '%laporan_utama%')
             ->first();
@@ -24,138 +26,284 @@ class GeminiServices
             $document->update(['kesimpulan' => 'Error: Laporan Utama tidak ditemukan.']);
             return;
         }
+
         $pathLaporan = storage_path('app/public/' . $laporanUtamaItem->path_file);
         $teksLaporanUtama = $this->ekstrakTeksPDF($pathLaporan);
+        
         if (!$teksLaporanUtama) {
             $document->update(['kesimpulan' => 'Error: Gagal mengekstrak teks dari Laporan Utama atau Laporan utama harus PDF.']);
             return;
         }
 
-        $laporanUtamaItem->update([
-            'hasil_ai' => 'Ini adalah dokumen acuan utama.',
-            'status_verifikasi' => 'ditemukan'
-        ]);
+        $teksLaporanUtama = $this->normalizeText($teksLaporanUtama);
 
-        $kesimpulanItem = '';
-
+        // 2. Extract semua dokumen pendukung ke map: kategori => teks
+        $dokumenPendukung = [];
         foreach ($document->documentItems as $item) {
             if ($item->id == $laporanUtamaItem->id) continue;
 
             $path = storage_path('app/public/' . $item->path_file);
             $ext  = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-
-            $teksItem = '';
-            $isImage   = false;
-            $mimeType  = "";
+            $kategori = strtolower(trim($item->kategori));
 
             if ($ext == 'pdf') {
-                $teksItem = $this->ekstrakTeksPDF($path);
+                $dokumenPendukung[$kategori] = $this->normalizeText($this->ekstrakTeksPDF($path));
             } elseif (in_array($ext, ['jpg', 'jpeg', 'png'])) {
-                if (file_exists($path)) {
-                    $teksItem = base64_encode(file_get_contents($path));
-                    $isImage   = true;
-                    $mimeType = ($ext == 'png') ? 'image/png' : 'image/jpeg';
-                } else {
-                    $item->update(['hasil_ai' => 'Error: File gambar tidak ditemukan.']);
-                    continue;
+                // Untuk gambar, simpan metadata saja untuk saat ini
+                $dokumenPendukung[$kategori] = "[GAMBAR: {$item->nama_file}]";
+            }
+
+            // Update status dokumen pendukung
+            $item->update([
+                'hasil_ai' => 'Dokumen pendukung berhasil diekstrak.',
+                'status_verifikasi' => 'pending'
+            ]);
+        }
+
+        // 3. Loop per section dari laporan utama
+        $sections = config('document_rules.laporan_sections', []);
+        $hasilPerSection = [];
+        $totalValid = 0;
+        $totalSection = count($sections);
+
+        foreach ($sections as $sectionName => $sectionConfig) {
+            $keywords = $sectionConfig['keywords'] ?? [];
+            $checkAgainst = $sectionConfig['check_against'] ?? [];
+            $instruction = $sectionConfig['instruction'] ?? '';
+
+            // 3a. Extract bagian dari laporan utama
+            $sectionSnippet = $this->extractSectionFromLaporan($sectionName, $teksLaporanUtama, $keywords);
+
+            // 3b. Ambil teks dokumen pendukung yang relevan
+            $relevantDocs = '';
+            $availableDocs = [];
+            foreach ($checkAgainst as $kategoriTarget) {
+                if (isset($dokumenPendukung[$kategoriTarget])) {
+                    $relevantDocs .= "\n\n[{$kategoriTarget}]:\n" . mb_substr($dokumenPendukung[$kategoriTarget], 0, 2000);
+                    $availableDocs[] = $kategoriTarget;
                 }
-            } else {
+            }
+
+            if (empty($relevantDocs)) {
+                $hasilPerSection[$sectionName] = [
+                    'status' => 'tidak_ditemukan',
+                    'hasil' => "[SKIP] Dokumen pendukung tidak tersedia untuk bagian '{$sectionName}'.",
+                    'found_in' => []
+                ];
                 continue;
             }
 
-            $promptPerItem = "
-            Peran: Auditor Dokumen.
-            Tugas: Bandingkan Laporan Utama vs Dokumen Pendukung ini. 
-            
-            [LAPORAN UTAMA]: " . $teksLaporanUtama . "
-            
-            INSTRUKSI:
-            1. Analisis apakah data di Laporan Utama ini SESUAI dengan dokumen pendukung.
-            2. Berikan output berupa PARAGRAF PENDEK (maksimal 3 kalimat).
-            3. Jika Sesuai, awali kalimat dengan kata [VALID].
-            4. Jika Tidak Sesuai/Tidak Ada, awali dengan kata [INVALID].
-            ";
+            // 3c. Validasi section laporan vs dokumen pendukung
+            $prompt = $this->buildSectionPrompt($sectionName, $sectionSnippet, $relevantDocs, $instruction, $availableDocs);
+            $hasilValidasi = $this->analisisAI($prompt, "", false);
 
-            if (!$isImage) {
-                $promptPerItem .= "\n\n[DOKUMEN PENDUKUNG]:\n" . $teksItem;
-            } else {
-                $promptPerItem .= "\n\n(Lihat Gambar Lampiran)";
-            }
-            // if ($isImage) {
-            //     $promptPerItem = "Peran: Auditor. Tugas: Lihat gambar ini. Apakah data/nama/info di gambar ini VALID dan SESUAI dengan Teks Laporan Utama berikut?\n\n[TEKS LAPORAN]:\n" . substr($teksLaporanUtama, 0, 3000);
-            // } else {
-            //     $promptPerItem = "
-            //     Peran: Senior Quality Assurance & Compliance Auditor.
-            //     Tugas: Lakukan CROSS-CHECK VALIDATION. Bandingkan 'LAPORAN_UTAMA'\n$teksLaporanUtama\n sebagai acuan kebenaran (Source of Truth) dengan dokumen pendukung lainnya (PROPOSAL, RESUME, SERTIFIKAT, KERTAS_KERJA) \n$teksItem\n.
-            //     Apakah informasi, data, dan detail dalam APORAN_UTAMA? tersebut SESUAI dan VALID berdasarkan dokumen pendukung?
-            //     Berikan analisis mendetail. Jika ada ketidaksesuaian, tandai sebagai 'tidak_ditemukan'.
-            //     Output: Berikan analisis dalam format Markdown rapi.
-            //     ";
-            // }
-
-            $hasilTeks = $this->analisisAI($promptPerItem, $isImage ? $teksItem : "", $isImage, $mimeType);
-            // Pastikan respons AI bisa dibaca - cek INVALID dulu sebelum VALID
-            $statusDB = 'tidak_ditemukan';
-            if (stripos($hasilTeks, '[INVALID]') === 0 || stripos($hasilTeks, 'INVALID') === 0 || stripos($hasilTeks, '[TIDAK') !== false || stripos($hasilTeks, 'TIDAK SESUAI') !== false || stripos($hasilTeks, 'TIDAK COCOK') !== false) {
-                $statusDB = 'tidak_ditemukan';
-            } elseif (stripos($hasilTeks, '[VALID]') !== false || stripos($hasilTeks, 'VALID') !== false || stripos($hasilTeks, 'SESUAI') !== false || stripos($hasilTeks, 'COCOK') !== false) {
-                $statusDB = 'ditemukan';
+            // Parse status
+            $status = 'tidak_ditemukan';
+            if (stripos($hasilValidasi, '[VALID]') !== false || stripos($hasilValidasi, 'SESUAI') !== false) {
+                $status = 'ditemukan';
+                $totalValid++;
             }
 
-            $item->update([
-                'hasil_ai' => $hasilTeks,
-                'status_verifikasi' => $statusDB
+            $hasilPerSection[$sectionName] = [
+                'status' => $status,
+                'hasil' => $hasilValidasi,
+                'checked_against' => $availableDocs,
+                'snippet_found' => !empty($sectionSnippet['snippet'])
+            ];
+
+            Log::info("Section validated", [
+                'section' => $sectionName,
+                'status' => $status,
+                'docs' => $availableDocs
             ]);
 
-            $kesimpulanItem = "- Dokumen {$item->kategori}: {$hasilTeks} (Status: {$statusDB})\n";
-            sleep(2);
+            sleep(2); // Rate limiting
         }
 
-        $promptFinal = "
-        Peran: Kepala Auditor.
-        Tugas: Buat Kesimpulan Akhir & Skor Audit.
-        
-        DATA TEMUAN AUDIT:
-        $kesimpulanItem
-        
-        [INSTRUKSI WAJIB]:
-        1. Buat kesimpulan akhir audit dalam format MARKDOWN RAPI.
-        2. Berikan SKOR AKHIR dari 0-100 berdasarkan tingkat kesesuaian dokumen pendukung dengan laporan utama.
-        3. WAJIB tulis skor dalam format: **Skor Akhir: [ANGKA]/100**
-        4. Buat daftar TEMUAN AUDIT terpisah untuk setiap kategori dokumen (PROPOSAL, KERTAS_KERJA, RESUME, SERTIFIKAT) jika ada ketidaksesuaian atau masalah.
-        
-        Contoh format skor yang benar:
-        **Skor Akhir: 85/100**
-        ";
+        // 4. Buat kesimpulan final
+        $kesimpulanMarkdown = $this->buildFinalConclusion($hasilPerSection);
 
-        $kesimpulanFinal = $this->analisisAI($promptFinal, "", false);
+        // Hitung skor berdasarkan jumlah section yang valid
+        $skor = $totalSection > 0 ? round(($totalValid / $totalSection) * 100) : 0;
+        $status = ($skor == 100) ? 'cocok' : 'tidak_cocok';
 
-        // Extract skor dengan multiple pattern
-        $skor = 0;
-        if (preg_match('/(\d{1,3})\s*\/\s*100/', $kesimpulanFinal, $matches)) {
-            $skor = (int)$matches[1];
-        } elseif (preg_match('/Skor\s*(?:Akhir)?:?\s*\*?\*?(\d{1,3})\*?\*?/i', $kesimpulanFinal, $matches)) {
-            $skor = (int)$matches[1];
-        } elseif (preg_match('/Score:?\s*(\d{1,3})/i', $kesimpulanFinal, $matches)) {
-            $skor = (int)$matches[1];
-        } elseif (preg_match('/\b(\d{1,3})\s*poin/i', $kesimpulanFinal, $matches)) {
-            $skor = (int)$matches[1];
+        // Update status dokumen pendukung berdasarkan kontribusinya
+        foreach ($document->documentItems as $item) {
+            if ($item->id == $laporanUtamaItem->id) continue;
+            
+            $kategori = strtolower(trim($item->kategori));
+            $kontribusi = [];
+            
+            foreach ($hasilPerSection as $sectionName => $result) {
+                if (in_array($kategori, $result['checked_against'] ?? [])) {
+                    $kontribusi[] = "{$sectionName} ({$result['status']})";
+                }
+            }
+
+            if (!empty($kontribusi)) {
+                $item->update([
+                    'hasil_ai' => 'Digunakan untuk validasi: ' . implode(', ', $kontribusi),
+                    'status_verifikasi' => 'ditemukan'
+                ]);
+            }
         }
 
-        $status = '';
-
-        if ($skor == 100) {
-            $status = 'cocok';
-        } else {
-            $status = 'tidak_cocok';
-        }
-
+        // Update laporan utama
+        $laporanUtamaItem->update([
+            'hasil_ai' => 'Dokumen acuan utama - divalidasi per bagian.',
+            'status_verifikasi' => 'ditemukan'
+        ]);
 
         $document->update([
-            'kesimpulan' => $kesimpulanFinal,
+            'kesimpulan' => $kesimpulanMarkdown,
             'skor'       => $skor,
             'status'     => $status
         ]);
+
+        Log::info('Section-based analysis completed', [
+            'document_id' => $document->id,
+            'score' => $skor,
+            'total_sections' => $totalSection,
+            'valid_sections' => $totalValid
+        ]);
+    }
+
+    private function normalizeText(string $text): string
+    {
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $text = preg_replace('/[ \t]+/', ' ', $text);
+        $text = preg_replace('/\n{3,}/', "\n\n", $text);
+        return trim($text);
+    }
+
+    private function extractSectionFromLaporan(string $sectionName, string $laporanText, array $keywords): array
+    {
+        $maxChars = config('document_rules.max_snippet_chars', 3000);
+        $fallbackParagraphs = config('document_rules.fallback_paragraphs', 3);
+
+        if (empty($keywords) || empty($laporanText)) {
+            return [
+                'snippet' => mb_substr($laporanText, 0, $maxChars),
+                'fallback' => true,
+                'matched_keyword' => null
+            ];
+        }
+
+        $lowerText = mb_strtolower($laporanText);
+        $startPos = null;
+        $matchedKeyword = null;
+
+        // Cari keyword pertama yang cocok
+        foreach ($keywords as $keyword) {
+            $pos = mb_stripos($lowerText, mb_strtolower($keyword));
+            if ($pos !== false && ($startPos === null || $pos < $startPos)) {
+                $startPos = $pos;
+                $matchedKeyword = $keyword;
+            }
+        }
+
+        if ($startPos === null) {
+            // Fallback: ambil paragraf awal
+            $paragraphs = preg_split('/\n\s*\n/u', $laporanText);
+            $fallbackText = implode("\n\n", array_slice($paragraphs, 0, $fallbackParagraphs));
+
+            return [
+                'snippet' => mb_substr($fallbackText, 0, $maxChars),
+                'fallback' => true,
+                'matched_keyword' => null
+            ];
+        }
+
+        // Cari end position (keyword section berikutnya)
+        $allKeywords = $this->getAllSectionKeywords();
+        $endPos = null;
+
+        foreach ($allKeywords as $nextKeyword) {
+            $nextPos = mb_stripos($lowerText, mb_strtolower($nextKeyword), $startPos + 20);
+            if ($nextPos !== false && ($endPos === null || $nextPos < $endPos)) {
+                $endPos = $nextPos;
+            }
+        }
+
+        if ($endPos === null || $endPos <= $startPos) {
+            $snippet = mb_substr($laporanText, $startPos, $maxChars);
+        } else {
+            $snippet = mb_substr($laporanText, $startPos, min($endPos - $startPos, $maxChars));
+        }
+
+        return [
+            'snippet' => trim($snippet),
+            'fallback' => false,
+            'matched_keyword' => $matchedKeyword
+        ];
+    }
+
+    private function getAllSectionKeywords(): array
+    {
+        $sections = config('document_rules.laporan_sections', []);
+        $allKeywords = [];
+
+        foreach ($sections as $sectionConfig) {
+            if (!empty($sectionConfig['keywords']) && is_array($sectionConfig['keywords'])) {
+                $allKeywords = array_merge($allKeywords, $sectionConfig['keywords']);
+            }
+        }
+
+        $allKeywords = array_values(array_unique(array_filter($allKeywords)));
+        usort($allKeywords, fn($a, $b) => strlen($b) <=> strlen($a));
+
+        return $allKeywords;
+    }
+
+    private function buildSectionPrompt(string $sectionName, array $sectionData, string $dokumenPendukung, string $instruction, array $availableDocs): string
+    {
+        $sectionText = $sectionData['snippet'];
+        $fallbackInfo = $sectionData['fallback'] 
+            ? "\n⚠️ CATATAN: Keyword bagian '{$sectionName}' tidak ditemukan, menggunakan fallback paragraf awal.\n" 
+            : "";
+
+        $docsStr = implode(', ', $availableDocs);
+
+        return "
+Peran: Auditor Dokumen Senior.
+Tugas: Validasi bagian '{$sectionName}' dari LAPORAN UTAMA terhadap dokumen pendukung: {$docsStr}.
+
+[INSTRUKSI]:
+{$instruction}
+{$fallbackInfo}
+
+[BAGIAN '{$sectionName}' DARI LAPORAN UTAMA]:
+{$sectionText}
+
+[DOKUMEN PENDUKUNG]:
+{$dokumenPendukung}
+
+OUTPUT WAJIB:
+1. Awali dengan [VALID] jika data sesuai, atau [INVALID] jika tidak sesuai/tidak ditemukan.
+2. Sebutkan dokumen mana yang mendukung validasi (jika valid).
+3. Maksimal 3 kalimat, ringkas dan jelas.
+";
+    }
+
+    private function buildFinalConclusion(array $hasilPerSection): string
+    {
+        $markdown = "# Hasil Validasi Laporan Utama\n\n";
+        $markdown .= "Validasi dilakukan **per bagian** laporan utama terhadap dokumen pendukung yang relevan.\n\n";
+        $markdown .= "---\n\n";
+
+        foreach ($hasilPerSection as $sectionName => $result) {
+            $statusBadge = $result['status'] === 'ditemukan' ? '✅ VALID' : '❌ INVALID';
+            $markdown .= "## {$statusBadge} - " . ucwords(str_replace('_', ' ', $sectionName)) . "\n\n";
+            
+            if (!empty($result['checked_against'])) {
+                $markdown .= "**Dicek terhadap:** " . implode(', ', $result['checked_against']) . "\n\n";
+            }
+
+            $markdown .= $result['hasil'] . "\n\n";
+            $markdown .= "---\n\n";
+        }
+
+        return $markdown;
     }
 
     /**
