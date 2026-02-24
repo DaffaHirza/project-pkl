@@ -53,7 +53,9 @@ class AssessmentUpdated extends Notification implements ShouldQueue
      */
     public function toTelegram(object $notifiable): TelegramMessage
     {
-        $url = url("/kanban/assets/{$this->asset->id}");
+        // Use config('app.url') instead of url() helper for queue context
+        $appUrl = config('app.url');
+        $assetUrl = rtrim($appUrl, '/') . "/kanban/assets/{$this->asset->id}";
         $stageName = ProjectAssetKanban::STAGES[$this->asset->current_stage] ?? 'Unknown';
         
         switch ($this->type) {
@@ -102,9 +104,8 @@ class AssessmentUpdated extends Notification implements ShouldQueue
             ->content("{$emoji} *{$title}*\n\nHalo {$notifiable->name},\n{$content}\n\n🏢 Project: {$this->asset->project->name}\n\n📋 Kode Asset: {$this->asset->asset_code}");
         
         // Only add button if URL is not localhost (Telegram rejects localhost URLs)
-        $appUrl = config('app.url');
         if (!str_contains($appUrl, 'localhost') && !str_contains($appUrl, '127.0.0.1')) {
-            $message->button('Buka Aplikasi', $url);
+            $message->button('Buka Aplikasi', $assetUrl);
         }
         
         return $message;
@@ -117,6 +118,8 @@ class AssessmentUpdated extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
+        $appUrl = rtrim(config('app.url'), '/');
+        
         return [
             'type' => $this->type,
             'asset_id' => $this->asset->id,
@@ -126,7 +129,7 @@ class AssessmentUpdated extends Notification implements ShouldQueue
             'actor_id' => $this->actor->id,
             'actor_name' => $this->actor->name,
             'additional_info' => $this->additionalInfo,
-            'action_url' => url("/kanban/assets/{$this->asset->id}"),
+            'action_url' => "{$appUrl}/kanban/assets/{$this->asset->id}",
         ];
     }
 }

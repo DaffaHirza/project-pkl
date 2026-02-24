@@ -31,7 +31,7 @@ Contoh balasan:
 ```
 🎉 Selamat datang di Bot KJPP Mushofah dan Rekan!
 
-📋 Chat ID Anda: 827770943
+📋 Chat ID Anda: 123456789
 
 Gunakan Chat ID ini di halaman Profile aplikasi untuk menerima notifikasi.
 
@@ -42,7 +42,7 @@ Perintah yang tersedia:
 ```
 
 ### Langkah 4: Catat Chat ID
-**Catat nomor Chat ID** yang diberikan (contoh: `827770943`)
+**Catat nomor Chat ID** yang diberikan (contoh: `123456789`)
 
 ---
 
