@@ -167,7 +167,7 @@ Jika beberapa akun menggunakan Chat ID yang sama, sistem sudah otomatis mengirim
 
 File `.env` harus memiliki:
 ```env
-TELEGRAM_BOT_TOKEN=8797700772:AAFSAVH54S0TrJg9ha6DyihnsawXqO08Qp8
+TELEGRAM_BOT_TOKEN=
 ```
 
 ### Setup Webhook (Opsional)
