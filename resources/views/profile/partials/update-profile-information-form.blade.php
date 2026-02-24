@@ -47,6 +47,29 @@
             @endif
         </div>
 
+        <!-- Telegram Chat ID -->
+        <div>
+            <x-input-label for="telegram_chat_id" :value="__('Telegram Chat ID')" />
+            <x-text-input id="telegram_chat_id" name="telegram_chat_id" type="text" class="mt-1 block w-full" :value="old('telegram_chat_id', $user->telegram_chat_id)" placeholder="Contoh: 123456789" />
+            <x-input-error class="mt-2" :messages="$errors->get('telegram_chat_id')" />
+            
+            <div class="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p class="text-sm text-blue-700 dark:text-blue-300">
+                    <strong>Cara mendapatkan Chat ID:</strong>
+                </p>
+                <ol class="text-sm text-blue-600 dark:text-blue-400 mt-1 list-decimal list-inside space-y-1">
+                    <li>Buka Telegram dan cari bot <a href="https://t.me/kjpp_mushofah_bot" target="_blank" class="underline font-medium">@kjpp_mushofah_bot</a></li>
+                    <li>Klik <strong>Start</strong> atau ketik <code class="bg-blue-100 dark:bg-blue-800 px-1 rounded">/start</code></li>
+                    <li>Copy Chat ID yang diberikan bot dan paste di sini</li>
+                </ol>
+                @if($user->telegram_chat_id)
+                    <p class="text-sm text-green-600 dark:text-green-400 mt-2">
+                        Telegram sudah terhubung! Anda akan menerima notifikasi.
+                    </p>
+                @endif
+            </div>
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 

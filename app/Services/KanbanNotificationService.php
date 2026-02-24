@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Notification;
 use App\Models\ProjectAssetKanban;
 use App\Models\AssetNoteKanban;
+use App\Notifications\AssessmentUpdated;
 use Illuminate\Support\Str;
 
 class KanbanNotificationService
@@ -37,11 +38,20 @@ class KanbanNotificationService
             'action_url' => route('kanban.assets.show', $asset->id),
         ];
 
-        // Notify all admins
-        $admins = User::where('id', '!=', $changedBy->id)->get();
+        // Notify users with UNIQUE telegram_chat_id (prevent duplicates)
+        $users = User::whereNotNull('telegram_chat_id')
+            ->select('id', 'name', 'telegram_chat_id')
+            ->get()
+            ->unique('telegram_chat_id');
         
-        foreach ($admins as $admin) {
-            Notification::notify($admin, 'asset_stage_changed', $data);
+        foreach ($users as $user) {
+            // Database notification (existing) - except for self
+            if ($user->id !== $changedBy->id) {
+                Notification::notify($user, 'asset_stage_changed', $data);
+            }
+            
+            // Telegram notification - send to unique chat IDs only
+            $user->notify(new AssessmentUpdated($asset, 'stage_change', $changedBy, $note));
         }
     }
 
@@ -63,10 +73,11 @@ class KanbanNotificationService
             'action_url' => route('kanban.assets.show', $asset->id),
         ];
 
-        $admins = User::where('id', '!=', $uploadedBy->id)->get();
+        $users = User::where('id', '!=', $uploadedBy->id)->get();
         
-        foreach ($admins as $admin) {
-            Notification::notify($admin, 'asset_document_uploaded', $data);
+        foreach ($users as $user) {
+            // Database notification only (no Telegram for document uploads)
+            Notification::notify($user, 'asset_document_uploaded', $data);
         }
     }
 
@@ -89,10 +100,20 @@ class KanbanNotificationService
             'action_url' => route('kanban.assets.show', $asset->id),
         ];
 
-        $admins = User::where('id', '!=', $addedBy->id)->get();
+        // Notify users with UNIQUE telegram_chat_id (prevent duplicates)
+        $users = User::whereNotNull('telegram_chat_id')
+            ->select('id', 'name', 'telegram_chat_id')
+            ->get()
+            ->unique('telegram_chat_id');
         
-        foreach ($admins as $admin) {
-            Notification::notify($admin, 'asset_note_added', $data);
+        foreach ($users as $user) {
+            // Database notification (existing) - except for self
+            if ($user->id !== $addedBy->id) {
+                Notification::notify($user, 'asset_note_added', $data);
+            }
+            
+            // Telegram notification - send to unique chat IDs only
+            $user->notify(new AssessmentUpdated($asset, 'new_note', $addedBy, $note->content));
         }
     }
 
@@ -114,10 +135,10 @@ class KanbanNotificationService
             'action_url' => route('kanban.assets.show', $asset->id),
         ];
 
-        $admins = User::where('id', '!=', $createdBy->id)->get();
+        $users = User::where('id', '!=', $createdBy->id)->get();
         
-        foreach ($admins as $admin) {
-            Notification::notify($admin, 'asset_created', $data);
+        foreach ($users as $user) {
+            Notification::notify($user, 'asset_created', $data);
         }
     }
 
@@ -138,10 +159,10 @@ class KanbanNotificationService
             'action_url' => route('kanban.projects.show', $project->id),
         ];
 
-        $admins = User::where('id', '!=', $createdBy->id)->get();
+        $users = User::where('id', '!=', $createdBy->id)->get();
         
-        foreach ($admins as $admin) {
-            Notification::notify($admin, 'project_created', $data);
+        foreach ($users as $user) {
+            Notification::notify($user, 'project_created', $data);
         }
     }
 
@@ -161,10 +182,11 @@ class KanbanNotificationService
             'action_url' => route('kanban.assets.show', $asset->id),
         ];
 
-        $admins = User::where('id', '!=', $changedBy->id)->get();
+        $users = User::where('id', '!=', $changedBy->id)->get();
         
-        foreach ($admins as $admin) {
-            Notification::notify($admin, 'asset_priority_critical', $data);
+        foreach ($users as $user) {
+            // Database notification only (no Telegram for priority changes)
+            Notification::notify($user, 'asset_priority_critical', $data);
         }
     }
 }

@@ -39,6 +39,7 @@ class User extends Authenticatable
         'password',
         'role',
         'is_active',
+        'telegram_chat_id',
         'last_login_at',
     ];
 
@@ -147,6 +148,12 @@ class User extends Authenticatable
     public function updateLastLogin(): void
     {
         $this->update(['last_login_at' => now()]);
+    }
+
+    public function routeNotificationForTelegram()
+    {
+        return $this->telegram_chat_id; 
+        // Pastikan user sudah input Chat ID mereka saat register/profile setup
     }
 
     // ==========================================

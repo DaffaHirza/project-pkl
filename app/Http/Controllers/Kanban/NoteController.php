@@ -37,10 +37,8 @@ class NoteController extends Controller
             'content' => $content,
         ]);
 
-        // Notify admins for approval/rejection notes
-        if (in_array($note->type, ['approval', 'rejection'])) {
-            KanbanNotificationService::notifyNoteAdded($asset, $note, Auth::user());
-        }
+        // Notify all users when a new note is added
+        KanbanNotificationService::notifyNoteAdded($asset, $note, Auth::user());
 
         if ($request->wantsJson()) {
             return response()->json([
