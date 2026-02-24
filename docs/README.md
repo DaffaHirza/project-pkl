@@ -70,20 +70,6 @@ Buka http://localhost:8000
 
 ---
 
-## Akun Default
-
-| Role | Email | Password |
-|------|-------|----------|
-| Superuser | developer@kjpp.id | developer123 |
-| Admin | admin@kjpp.id | admin123 |
-| Admin | supervisor@kjpp.id | supervisor123 |
-| User | andi@kjpp.id | password123 |
-| User | budi@kjpp.id | password123 |
-| User | citra@kjpp.id | password123 |
-| User | dian@kjpp.id | password123 |
-
----
-
 ## Fitur Utama
 
 ### Kanban Board
