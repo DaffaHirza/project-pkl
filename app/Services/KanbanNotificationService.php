@@ -6,10 +6,48 @@ use App\Models\User;
 use App\Models\Notification;
 use App\Models\ProjectAssetKanban;
 use App\Models\AssetNoteKanban;
+use App\Notifications\AssessmentUpdated;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class KanbanNotificationService
 {
+    /**
+     * Send Telegram notification to all eligible users
+     * Handles deduplication by telegram_chat_id to prevent duplicate notifications
+     */
+    private static function sendTelegramNotification(
+        string $type,
+        array $data,
+        ?int $excludeUserId = null
+    ): void {
+        try {
+            // Get users with telegram_chat_id, excluding the actor, and deduplicate by chat_id
+            $query = User::whereNotNull('telegram_chat_id')
+                ->where('telegram_chat_id', '!=', '');
+            
+            if ($excludeUserId) {
+                $query->where('id', '!=', $excludeUserId);
+            }
+            
+            $users = $query->get()->unique('telegram_chat_id');
+            
+            foreach ($users as $user) {
+                $user->notify(new AssessmentUpdated($type, $data));
+            }
+            
+            Log::info("Telegram notifications sent", [
+                'type' => $type,
+                'recipients_count' => $users->count(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to send Telegram notification", [
+                'type' => $type,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
     /**
      * Send notification when asset stage is changed
      */
