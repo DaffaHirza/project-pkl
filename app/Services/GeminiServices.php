@@ -29,7 +29,7 @@ class GeminiServices
 
         $pathLaporan = storage_path('app/public/' . $laporanUtamaItem->path_file);
         $teksLaporanUtama = $this->ekstrakTeksPDF($pathLaporan);
-        
+
         if (!$teksLaporanUtama) {
             $document->update(['kesimpulan' => 'Error: Gagal mengekstrak teks dari Laporan Utama atau Laporan utama harus PDF.']);
             return;
@@ -130,10 +130,10 @@ class GeminiServices
         // Update status dokumen pendukung berdasarkan kontribusinya
         foreach ($document->documentItems as $item) {
             if ($item->id == $laporanUtamaItem->id) continue;
-            
+
             $kategori = strtolower(trim($item->kategori));
             $kontribusi = [];
-            
+
             foreach ($hasilPerSection as $sectionName => $result) {
                 if (in_array($kategori, $result['checked_against'] ?? [])) {
                     $kontribusi[] = "{$sectionName} ({$result['status']})";
@@ -258,8 +258,8 @@ class GeminiServices
     private function buildSectionPrompt(string $sectionName, array $sectionData, string $dokumenPendukung, string $instruction, array $availableDocs): string
     {
         $sectionText = $sectionData['snippet'];
-        $fallbackInfo = $sectionData['fallback'] 
-            ? "\n⚠️ CATATAN: Keyword bagian '{$sectionName}' tidak ditemukan, menggunakan fallback paragraf awal.\n" 
+        $fallbackInfo = $sectionData['fallback']
+            ? "\n⚠️ CATATAN: Keyword bagian '{$sectionName}' tidak ditemukan, menggunakan fallback paragraf awal.\n"
             : "";
 
         $docsStr = implode(', ', $availableDocs);
@@ -294,7 +294,7 @@ OUTPUT WAJIB:
         foreach ($hasilPerSection as $sectionName => $result) {
             $statusBadge = $result['status'] === 'ditemukan' ? '✅ VALID' : '❌ INVALID';
             $markdown .= "## {$statusBadge} - " . ucwords(str_replace('_', ' ', $sectionName)) . "\n\n";
-            
+
             if (!empty($result['checked_against'])) {
                 $markdown .= "**Dicek terhadap:** " . implode(', ', $result['checked_against']) . "\n\n";
             }
