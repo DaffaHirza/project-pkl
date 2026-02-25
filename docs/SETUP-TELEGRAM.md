@@ -16,12 +16,7 @@ Sistem akan mengirim notifikasi ke Telegram saat:
 Buka aplikasi Telegram di HP atau desktop.
 
 ### Langkah 2: Cari Bot KJPP
-Cari bot dengan username:
-```
-@kjpp_mushofah_bot
-```
-
-Atau klik link langsung: https://t.me/kjpp_mushofah_bot
+Klik link langsung: https://t.me/appraisal_notif_bot
 
 ### Langkah 3: Start Bot
 1. Klik tombol **Start** atau ketik `/start`
