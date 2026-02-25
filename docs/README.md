@@ -90,13 +90,6 @@ Buka http://localhost:8000
 
 ---
 
-## Dokumentasi Lanjutan
-
-- [Setup Ngrok](./SETUP-NGROK.md) - Ekspos aplikasi ke internet
-- [Setup Telegram](./SETUP-TELEGRAM.md) - Konfigurasi notifikasi Telegram
-
----
-
 ## Tech Stack
 
 - **Backend:** Laravel 11
