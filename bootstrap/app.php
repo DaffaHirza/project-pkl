@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust all proxies (ngrok, load balancers, etc.)
+        $middleware->trustProxies(at: '*');
+
         // Register custom middleware aliases
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
