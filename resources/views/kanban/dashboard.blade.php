@@ -93,9 +93,9 @@
             @php
                 $stages = \App\Models\ProjectAssetKanban::STAGES;
                 $stageColors = [
-                    1 => 'blue', 2 => 'indigo', 3 => 'purple', 4 => 'pink',
-                    5 => 'orange', 6 => 'amber', 7 => 'yellow', 8 => 'lime',
-                    9 => 'green', 10 => 'emerald', 11 => 'teal', 12 => 'cyan', 13 => 'gray'
+                    1 => 'blue', 2 => 'blue', 3 => 'blue', 4 => 'blue',
+                    5 => 'blue', 6 => 'blue', 7 => 'blue', 8 => 'blue',
+                    9 => 'blue', 10 => 'blue', 11 => 'blue', 12 => 'blue', 13 => 'blue'
                 ];
             @endphp
             @foreach($stages as $stageNum => $stageName)

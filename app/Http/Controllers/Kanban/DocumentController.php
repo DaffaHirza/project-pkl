@@ -90,7 +90,8 @@ class DocumentController extends Controller
             $message .= ' ' . count($errors) . ' file gagal: ' . implode(', ', $errors);
         }
 
-        return back()->with(count($uploadedDocs) > 0 ? 'success' : 'error', $message);
+        // Use explicit route redirect instead of back() to avoid HTTPS/HTTP issues with ngrok
+        return redirect()->route('kanban.assets.show', $asset)->with(count($uploadedDocs) > 0 ? 'success' : 'error', $message);
     }
 
     // Download document
