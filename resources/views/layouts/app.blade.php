@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>@yield('title', 'Dashboard') | {{ config('app.name', 'Laravel') }}</title>
+    <title>@yield('title', 'Dashboard') | {{ config('app.name', 'KJPP Mushofah dan Rekan') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,21 +18,24 @@
 </head>
 
 <body x-data="{ page: 'ecommerce', 'loaded': true, 'darkMode': $persist(false), 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }" x-init="$watch('darkMode', value => document.documentElement.classList.toggle('dark', value))" :class="{ 'dark': darkMode === true }"
-    class="font-sans antialiased">
+    class="font-sans antialiased bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
     <div class="flex h-screen overflow-hidden">
 
         @include('partials.sidebar')
 
-        <div class="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+        <div class="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden bg-gray-50 dark:bg-gray-900">
             @include('partials.navigation')
 
-            <main>
+            <main class="bg-gray-50 dark:bg-gray-900 min-h-screen">
                 <div class="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
+                    {{ $slot ?? '' }}
                     @yield('content')
                 </div>
             </main>
         </div>
     </div>
+
+    @stack('scripts')
 </body>
 
 </html>
