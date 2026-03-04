@@ -51,6 +51,11 @@ class AssessmentUpdated extends Notification implements ShouldQueue
      */
     public function toTelegram(object $notifiable): TelegramMessage
     {
+        // Guard: ensure telegram_chat_id exists
+        if (empty($notifiable->telegram_chat_id)) {
+            throw new \RuntimeException("User {$notifiable->id} has no telegram_chat_id");
+        }
+        
         // Use config('app.url') instead of url() helper for queue context
         $appUrl = config('app.url');
         $assetUrl = rtrim($appUrl, '/') . "/kanban/assets/{$this->asset->id}";

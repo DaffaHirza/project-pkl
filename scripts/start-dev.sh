@@ -23,7 +23,7 @@ echo "   php artisan serve --port=8000"
 echo ""
 
 echo "3️⃣  Buka terminal baru lagi dan jalankan:"
-echo "   php artisan queue:work"
+echo "   npm run dev"
 echo ""
 
 echo "4️⃣  Buka terminal baru lagi dan jalankan:"

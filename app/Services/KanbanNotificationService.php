@@ -37,17 +37,20 @@ class KanbanNotificationService
             'action_url' => route('kanban.assets.show', $asset->id),
         ];
 
-        // Get all users except the one who made the change
-        $users = User::where('id', '!=', $changedBy->id)->get();
-        
-        foreach ($users as $user) {
-            // Database notification
+        // Database notification - exclude self (user doesn't need in-app notif for own action)
+        $otherUsers = User::where('id', '!=', $changedBy->id)->get();
+        foreach ($otherUsers as $user) {
             Notification::notify($user, 'asset_stage_changed', $data);
-            
-            // Telegram notification - only if user has telegram_chat_id
-            if (!empty($user->telegram_chat_id)) {
-                $user->notify(new AssessmentUpdated($asset, 'stage_change', $changedBy, $note));
-            }
+        }
+
+        // Telegram notification - send to ALL users with telegram_chat_id (including self)
+        $telegramUsers = User::whereNotNull('telegram_chat_id')
+            ->where('telegram_chat_id', '!=', '')
+            ->get()
+            ->unique('telegram_chat_id'); // Deduplicate same chat_id
+        
+        foreach ($telegramUsers as $user) {
+            $user->notify(new AssessmentUpdated($asset, 'stage_change', $changedBy, $note));
         }
     }
 
@@ -96,17 +99,20 @@ class KanbanNotificationService
             'action_url' => route('kanban.assets.show', $asset->id),
         ];
 
-        // Get all users except the one who added the note
-        $users = User::where('id', '!=', $addedBy->id)->get();
-        
-        foreach ($users as $user) {
-            // Database notification
+        // Database notification - exclude self
+        $otherUsers = User::where('id', '!=', $addedBy->id)->get();
+        foreach ($otherUsers as $user) {
             Notification::notify($user, 'asset_note_added', $data);
-            
-            // Telegram notification - only if user has telegram_chat_id
-            if (!empty($user->telegram_chat_id)) {
-                $user->notify(new AssessmentUpdated($asset, 'new_note', $addedBy, $note->content));
-            }
+        }
+
+        // Telegram notification - send to ALL users with telegram_chat_id (including self)
+        $telegramUsers = User::whereNotNull('telegram_chat_id')
+            ->where('telegram_chat_id', '!=', '')
+            ->get()
+            ->unique('telegram_chat_id');
+        
+        foreach ($telegramUsers as $user) {
+            $user->notify(new AssessmentUpdated($asset, 'new_note', $addedBy, $note->content));
         }
     }
 
