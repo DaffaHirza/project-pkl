@@ -13,7 +13,7 @@
             Kembali
         </a>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Proyek</h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1">{{ $project->project_code }}</p>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">{{ $project->name }}</p>
     </div>
 
     {{-- Form --}}
@@ -62,18 +62,6 @@
                     <textarea name="description" id="description" rows="3"
                               class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 @error('description') border-red-500 @enderror">{{ old('description', $project->description) }}</textarea>
                     @error('description')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Due Date --}}
-                <div>
-                    <label for="due_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Target Selesai
-                    </label>
-                    <input type="date" name="due_date" id="due_date" value="{{ old('due_date', $project->due_date?->format('Y-m-d')) }}"
-                           class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 @error('due_date') border-red-500 @enderror">
-                    @error('due_date')
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
                 </div>

@@ -46,42 +46,6 @@
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
-
-                {{-- Email --}}
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Email
-                    </label>
-                    <input type="email" name="email" id="email" value="{{ old('email', $client->email) }}"
-                           class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent @error('email') border-red-500 @enderror">
-                    @error('email')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Phone --}}
-                <div>
-                    <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        No. Telepon
-                    </label>
-                    <input type="text" name="phone" id="phone" value="{{ old('phone', $client->phone) }}"
-                           class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent @error('phone') border-red-500 @enderror">
-                    @error('phone')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Address --}}
-                <div>
-                    <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Alamat
-                    </label>
-                    <textarea name="address" id="address" rows="3"
-                              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent @error('address') border-red-500 @enderror">{{ old('address', $client->address) }}</textarea>
-                    @error('address')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
             </div>
 
             {{-- Actions --}}

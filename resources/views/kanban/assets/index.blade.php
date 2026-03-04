@@ -79,7 +79,7 @@
             <div class="flex items-start justify-between mb-3">
                 <div class="flex-1 min-w-0">
                     <p class="font-medium text-gray-900 dark:text-white truncate">{{ $asset->name }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $asset->asset_code }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ ucfirst(str_replace('_', ' ', $asset->asset_type)) }}</p>
                 </div>
                 @if($asset->priority === 'critical')
                 <span class="flex-shrink-0 px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 rounded">Kritikal</span>

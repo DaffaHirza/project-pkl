@@ -126,7 +126,7 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="font-medium text-gray-900 dark:text-white">{{ $asset->name }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $asset->asset_code }} • {{ $asset->project->name ?? '-' }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $asset->project->name ?? '-' }}</p>
                         </div>
                         <span class="text-xs bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 px-2 py-1 rounded">
                             {{ $asset->stage_label }}

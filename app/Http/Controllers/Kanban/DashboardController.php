@@ -18,7 +18,6 @@ class DashboardController extends Controller
         $projectStats = ProjectKanban::toBase()
             ->selectRaw("COUNT(*) as total")
             ->selectRaw("SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active")
-            ->selectRaw("SUM(CASE WHEN status = 'active' AND due_date IS NOT NULL AND due_date < NOW() THEN 1 ELSE 0 END) as overdue")
             ->first();
 
         // Single query for asset counts
@@ -39,7 +38,6 @@ class DashboardController extends Controller
             'total_clients' => ClientKanban::count(),
             'total_projects' => (int) $projectStats->total,
             'active_projects' => (int) $projectStats->active,
-            'overdue_projects' => (int) $projectStats->overdue,
             'total_assets' => (int) $assetStats->total,
             'completed_assets' => (int) $assetStats->completed,
             'critical_count' => (int) $assetStats->critical,
@@ -47,8 +45,8 @@ class DashboardController extends Controller
         ];
 
         // Critical Assets
-        $criticalAssets = ProjectAssetKanban::with('project:id,name,project_code')
-            ->select('id', 'project_id', 'name', 'asset_code', 'current_stage', 'priority', 'updated_at')
+        $criticalAssets = ProjectAssetKanban::with('project:id,name')
+            ->select('id', 'project_id', 'name', 'current_stage', 'priority', 'updated_at')
             ->where('priority', 'critical')
             ->where('current_stage', '<', 13)
             ->latest('updated_at')
@@ -56,7 +54,7 @@ class DashboardController extends Controller
             ->get();
 
         // Recent Activities (stage changes from notes)
-        $recentActivities = AssetNoteKanban::with(['user:id,name', 'asset:id,name,asset_code'])
+        $recentActivities = AssetNoteKanban::with(['user:id,name', 'asset:id,name'])
             ->select('id', 'asset_id', 'user_id', 'stage', 'type', 'content', 'created_at')
             ->latest()
             ->limit(10)
@@ -77,7 +75,6 @@ class DashboardController extends Controller
             ->selectRaw("COUNT(*) as total")
             ->selectRaw("SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active")
             ->selectRaw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed")
-            ->selectRaw("SUM(CASE WHEN status = 'active' AND due_date IS NOT NULL AND due_date < NOW() THEN 1 ELSE 0 END) as overdue")
             ->first();
 
         // Single query for asset stats
@@ -92,7 +89,6 @@ class DashboardController extends Controller
                 'total' => (int) $projectStats->total,
                 'active' => (int) $projectStats->active,
                 'completed' => (int) $projectStats->completed,
-                'overdue' => (int) $projectStats->overdue,
             ],
             'assets' => [
                 'total' => (int) $assetStats->total,
@@ -120,7 +116,7 @@ class DashboardController extends Controller
     // Activity Log page - all activities across all assets
     public function activityLog()
     {
-        $query = AssetNoteKanban::with(['user:id,name', 'asset:id,name,asset_code,project_id', 'asset.project:id,name,project_code'])
+        $query = AssetNoteKanban::with(['user:id,name', 'asset:id,name,project_id', 'asset.project:id,name'])
             ->select('id', 'asset_id', 'user_id', 'stage', 'type', 'content', 'created_at');
 
         // Filter by type
@@ -146,7 +142,7 @@ class DashboardController extends Controller
             $search = request('search');
             $query->where(function($q) use ($search) {
                 $q->where('content', 'like', "%{$search}%")
-                  ->orWhereHas('asset', fn($q2) => $q2->where('name', 'like', "%{$search}%")->orWhere('asset_code', 'like', "%{$search}%"))
+                  ->orWhereHas('asset', fn($q2) => $q2->where('name', 'like', "%{$search}%"))
                   ->orWhereHas('user', fn($q2) => $q2->where('name', 'like', "%{$search}%"));
             });
         }

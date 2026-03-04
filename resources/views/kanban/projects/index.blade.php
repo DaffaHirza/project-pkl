@@ -79,7 +79,6 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Klien</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Asset</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Due Date</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                     </tr>
                 </thead>
@@ -91,7 +90,6 @@
                                 <a href="{{ route('kanban.projects.show', $project) }}" class="font-medium text-gray-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400">
                                     {{ $project->name }}
                                 </a>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $project->project_code }}</p>
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -115,19 +113,6 @@
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                             {{ $project->assets_count ?? 0 }} asset
-                        </td>
-                        <td class="px-6 py-4 text-sm">
-                            @if($project->due_date)
-                                @php $isOverdue = $project->due_date->isPast() && $project->status === 'active'; @endphp
-                                <span class="{{ $isOverdue ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400' }}">
-                                    {{ $project->due_date->format('d M Y') }}
-                                    @if($isOverdue)
-                                    <span class="text-xs">(Lewat)</span>
-                                    @endif
-                                </span>
-                            @else
-                                <span class="text-gray-400">-</span>
-                            @endif
                         </td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex items-center justify-end gap-2">

@@ -38,14 +38,12 @@ class AssessmentUpdated extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
-        
-        // Only send Telegram if user has telegram_chat_id configured
+        // Only Telegram channel - database notification is handled by Notification model
         if (!empty($notifiable->telegram_chat_id)) {
-            $channels[] = TelegramChannel::class;
+            return [TelegramChannel::class];
         }
         
-        return $channels;
+        return [];
     }
 
     /**
@@ -62,7 +60,7 @@ class AssessmentUpdated extends Notification implements ShouldQueue
             case 'stage_change':
                 $emoji = "🔄";
                 $title = "Status Berubah!";
-                $content = "Asset *{$this->asset->name}* ({$this->asset->asset_code}) kini berada di stage: *{$stageName}*.";
+                $content = "Asset *{$this->asset->name}* kini berada di stage: *{$stageName}*.";
                 if ($this->additionalInfo) {
                     $content .= "\n\n📝 Catatan: " . Str::limit($this->additionalInfo, 100);
                 }
@@ -101,7 +99,7 @@ class AssessmentUpdated extends Notification implements ShouldQueue
 
         $message = TelegramMessage::create()
             ->to($notifiable->telegram_chat_id)
-            ->content("{$emoji} *{$title}*\n\nHalo {$notifiable->name},\n{$content}\n\n🏢 Project: {$this->asset->project->name}\n\n📋 Kode Asset: {$this->asset->asset_code}");
+            ->content("{$emoji} *{$title}*\n\nHalo {$notifiable->name},\n{$content}\n\n🏢 Project: {$this->asset->project->name}");
         
         // Only add button if URL is not localhost (Telegram rejects localhost URLs)
         if (!str_contains($appUrl, 'localhost') && !str_contains($appUrl, '127.0.0.1')) {
@@ -124,7 +122,6 @@ class AssessmentUpdated extends Notification implements ShouldQueue
             'type' => $this->type,
             'asset_id' => $this->asset->id,
             'asset_name' => $this->asset->name,
-            'asset_code' => $this->asset->asset_code,
             'project_id' => $this->asset->project_id,
             'actor_id' => $this->actor->id,
             'actor_name' => $this->actor->name,

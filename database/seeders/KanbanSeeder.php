@@ -37,25 +37,25 @@ class KanbanSeeder extends Seeder
 
         // Create sample clients
         $clients = collect([
-            ['name' => 'Budi Santoso', 'company_name' => 'PT Maju Bersama', 'email' => 'budi@majubersama.co.id', 'phone' => '081234567890'],
-            ['name' => 'Siti Rahayu', 'company_name' => 'CV Sejahtera', 'email' => 'siti@sejahtera.com', 'phone' => '082345678901'],
-            ['name' => 'Ahmad Hidayat', 'company_name' => 'PT Karya Mandiri', 'email' => 'ahmad@karyamandiri.id', 'phone' => '083456789012'],
-            ['name' => 'Dewi Lestari', 'company_name' => 'PT Bank Central', 'email' => 'dewi@bankcentral.co.id', 'phone' => '084567890123'],
-            ['name' => 'Rudi Hartono', 'company_name' => 'PT Properti Jaya', 'email' => 'rudi@propertijaya.com', 'phone' => '085678901234'],
+            ['name' => 'Budi Santoso', 'company_name' => 'PT Maju Bersama'],
+            ['name' => 'Siti Rahayu', 'company_name' => 'CV Sejahtera'],
+            ['name' => 'Ahmad Hidayat', 'company_name' => 'PT Karya Mandiri'],
+            ['name' => 'Dewi Lestari', 'company_name' => 'PT Bank Central'],
+            ['name' => 'Rudi Hartono', 'company_name' => 'PT Properti Jaya'],
         ])->map(fn($data) => ClientKanban::create($data));
 
         // Create sample projects with different statuses
         $projects = [
             // Active projects
-            ['client_idx' => 0, 'name' => 'Penilaian Gudang Kawasan Industri', 'status' => 'active', 'due_date' => now()->addDays(30)],
-            ['client_idx' => 1, 'name' => 'Penilaian Ruko Jalan Sudirman', 'status' => 'active', 'due_date' => now()->addDays(14)],
-            ['client_idx' => 2, 'name' => 'Penilaian Rumah Tinggal Kemang', 'status' => 'active', 'due_date' => now()->addDays(7)],
-            ['client_idx' => 3, 'name' => 'Penilaian Mesin Pabrik Tekstil', 'status' => 'active', 'due_date' => now()->subDays(3)], // Overdue
-            ['client_idx' => 0, 'name' => 'Penilaian Tanah Kavling BSD', 'status' => 'active', 'due_date' => now()->addDays(45)],
+            ['client_idx' => 0, 'name' => 'Penilaian Gudang Kawasan Industri', 'status' => 'active'],
+            ['client_idx' => 1, 'name' => 'Penilaian Ruko Jalan Sudirman', 'status' => 'active'],
+            ['client_idx' => 2, 'name' => 'Penilaian Rumah Tinggal Kemang', 'status' => 'active'],
+            ['client_idx' => 3, 'name' => 'Penilaian Mesin Pabrik Tekstil', 'status' => 'active'],
+            ['client_idx' => 0, 'name' => 'Penilaian Tanah Kavling BSD', 'status' => 'active'],
             // Completed projects
-            ['client_idx' => 4, 'name' => 'Penilaian Gedung Perkantoran', 'status' => 'completed', 'due_date' => now()->subDays(10)],
+            ['client_idx' => 4, 'name' => 'Penilaian Gedung Perkantoran', 'status' => 'completed'],
             // Cancelled
-            ['client_idx' => 1, 'name' => 'Penilaian Tanah Pertanian', 'status' => 'cancelled', 'due_date' => null],
+            ['client_idx' => 1, 'name' => 'Penilaian Tanah Pertanian', 'status' => 'cancelled'],
         ];
 
         $createdProjects = collect();
@@ -64,8 +64,6 @@ class KanbanSeeder extends Seeder
                 'client_id' => $clients[$p['client_idx']]->id,
                 'name' => $p['name'],
                 'status' => $p['status'],
-                'due_date' => $p['due_date'],
-                'description' => 'Project penilaian aset untuk keperluan agunan bank.',
             ]));
         }
 
@@ -105,7 +103,6 @@ class KanbanSeeder extends Seeder
                 'priority' => $a['priority'],
                 'position' => $idx,
                 'location' => 'Jakarta',
-                'description' => 'Objek penilaian untuk keperluan agunan.',
             ]);
             $createdAssets->push($asset);
 

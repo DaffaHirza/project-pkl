@@ -16,9 +16,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');                     // Nama kontak person
             $table->string('company_name')->nullable(); // Nama perusahaan/instansi
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->text('address')->nullable();
             $table->timestamps();
         });
     }

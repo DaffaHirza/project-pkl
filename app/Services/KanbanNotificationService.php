@@ -29,7 +29,6 @@ class KanbanNotificationService
             'message' => "{$changedBy->name} memindahkan '{$asset->name}' dari {$oldStageName} ke {$newStageName}",
             'asset_id' => $asset->id,
             'asset_name' => $asset->name,
-            'asset_code' => $asset->asset_code,
             'project_id' => $asset->project_id,
             'old_stage' => $oldStage,
             'new_stage' => $newStage,
@@ -38,20 +37,17 @@ class KanbanNotificationService
             'action_url' => route('kanban.assets.show', $asset->id),
         ];
 
-        // Notify users with UNIQUE telegram_chat_id (prevent duplicates)
-        $users = User::whereNotNull('telegram_chat_id')
-            ->select('id', 'name', 'telegram_chat_id')
-            ->get()
-            ->unique('telegram_chat_id');
+        // Get all users except the one who made the change
+        $users = User::where('id', '!=', $changedBy->id)->get();
         
         foreach ($users as $user) {
-            // Database notification (existing) - except for self
-            if ($user->id !== $changedBy->id) {
-                Notification::notify($user, 'asset_stage_changed', $data);
-            }
+            // Database notification
+            Notification::notify($user, 'asset_stage_changed', $data);
             
-            // Telegram notification - send to unique chat IDs only
-            $user->notify(new AssessmentUpdated($asset, 'stage_change', $changedBy, $note));
+            // Telegram notification - only if user has telegram_chat_id
+            if (!empty($user->telegram_chat_id)) {
+                $user->notify(new AssessmentUpdated($asset, 'stage_change', $changedBy, $note));
+            }
         }
     }
 
@@ -100,20 +96,17 @@ class KanbanNotificationService
             'action_url' => route('kanban.assets.show', $asset->id),
         ];
 
-        // Notify users with UNIQUE telegram_chat_id (prevent duplicates)
-        $users = User::whereNotNull('telegram_chat_id')
-            ->select('id', 'name', 'telegram_chat_id')
-            ->get()
-            ->unique('telegram_chat_id');
+        // Get all users except the one who added the note
+        $users = User::where('id', '!=', $addedBy->id)->get();
         
         foreach ($users as $user) {
-            // Database notification (existing) - except for self
-            if ($user->id !== $addedBy->id) {
-                Notification::notify($user, 'asset_note_added', $data);
-            }
+            // Database notification
+            Notification::notify($user, 'asset_note_added', $data);
             
-            // Telegram notification - send to unique chat IDs only
-            $user->notify(new AssessmentUpdated($asset, 'new_note', $addedBy, $note->content));
+            // Telegram notification - only if user has telegram_chat_id
+            if (!empty($user->telegram_chat_id)) {
+                $user->notify(new AssessmentUpdated($asset, 'new_note', $addedBy, $note->content));
+            }
         }
     }
 
@@ -129,7 +122,6 @@ class KanbanNotificationService
             'message' => "{$createdBy->name} membuat asset baru '{$asset->name}'",
             'asset_id' => $asset->id,
             'asset_name' => $asset->name,
-            'asset_code' => $asset->asset_code,
             'project_id' => $asset->project_id,
             'created_by' => $createdBy->id,
             'action_url' => route('kanban.assets.show', $asset->id),
@@ -154,7 +146,6 @@ class KanbanNotificationService
             'message' => "{$createdBy->name} membuat project baru '{$project->name}'",
             'project_id' => $project->id,
             'project_name' => $project->name,
-            'project_code' => $project->project_code,
             'created_by' => $createdBy->id,
             'action_url' => route('kanban.projects.show', $project->id),
         ];

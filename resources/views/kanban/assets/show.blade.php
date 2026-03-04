@@ -36,7 +36,7 @@
                 <span class="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 rounded">Tinggi</span>
                 @endif
             </div>
-            <p class="text-gray-600 dark:text-gray-400">{{ $asset->asset_code }} • {{ ucfirst(str_replace('_', ' ', $asset->asset_type)) }}</p>
+            <p class="text-gray-600 dark:text-gray-400">{{ ucfirst(str_replace('_', ' ', $asset->asset_type)) }}</p>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('kanban.assets.edit', $asset) }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition">
@@ -164,12 +164,6 @@
                         </dd>
                     </div>
                 </dl>
-                @if($asset->description)
-                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-                    <dt class="text-gray-500 dark:text-gray-400 text-sm mb-1">Deskripsi</dt>
-                    <dd class="text-gray-900 dark:text-white text-sm">{{ $asset->description }}</dd>
-                </div>
-                @endif
             </div>
 
             {{-- Documents Section --}}

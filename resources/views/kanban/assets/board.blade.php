@@ -99,8 +99,7 @@
                         <span class="flex-shrink-0 w-2 h-2 rounded-full bg-yellow-500" title="Warning"></span>
                         @endif
                     </div>
-                    <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                        <span>{{ $asset->asset_code }}</span>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
                         <span>{{ $asset->project->name ?? '-' }}</span>
                     </div>
                 </div>

@@ -18,15 +18,14 @@ class ClientController extends Controller
     public function index(Request $request)
     {
         $query = ClientKanban::query()
-            ->select('id', 'name', 'company_name', 'email', 'phone', 'created_at')
+            ->select('id', 'name', 'company_name', 'created_at')
             ->withCount('projects');
 
         if ($request->filled('search')) {
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('company_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('company_name', 'like', "%{$search}%");
             });
         }
 
@@ -48,12 +47,8 @@ class ClientController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|min:2',
             'company_name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255|unique:clients_kanban,email',
-            'phone' => 'nullable|string|max:50',
-            'address' => 'nullable|string|max:1000',
         ], [
             'name.required' => 'Nama client wajib diisi.',
-            'email.unique' => 'Email sudah terdaftar.',
         ]);
 
         // Sanitize input
@@ -77,7 +72,7 @@ class ClientController extends Controller
     {
         $client->load([
             'projects' => fn($q) => $q
-                ->select('id', 'client_id', 'name', 'project_code', 'status', 'due_date', 'created_at')
+                ->select('id', 'client_id', 'name', 'status', 'created_at')
                 ->withCount('assets')
                 ->latest()
                 ->limit(10)
@@ -96,9 +91,6 @@ class ClientController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|min:2',
             'company_name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255|unique:clients_kanban,email,' . $client->id,
-            'phone' => 'nullable|string|max:50',
-            'address' => 'nullable|string|max:1000',
         ]);
 
         $validated = array_map(fn($v) => is_string($v) ? strip_tags(trim($v)) : $v, $validated);

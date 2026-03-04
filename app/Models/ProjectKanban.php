@@ -16,15 +16,8 @@ class ProjectKanban extends Model
 
     protected $fillable = [
         'client_id',
-        'project_code',
         'name',
-        'description',
-        'due_date',
         'status',
-    ];
-
-    protected $casts = [
-        'due_date' => 'date',
     ];
 
     // ==========================================
@@ -36,23 +29,6 @@ class ProjectKanban extends Model
         'completed' => 'Selesai',
         'cancelled' => 'Dibatalkan',
     ];
-
-    // ==========================================
-    // BOOT
-    // ==========================================
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($project) {
-            if (empty($project->project_code)) {
-                $year = date('Y');
-                $count = self::whereYear('created_at', $year)->withTrashed()->count();
-                $project->project_code = sprintf('PRJ-%s-%03d', $year, $count + 1);
-            }
-        });
-    }
 
     // ==========================================
     // RELATIONSHIPS

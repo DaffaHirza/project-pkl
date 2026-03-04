@@ -17,9 +17,7 @@ class ProjectAssetKanban extends Model
 
     protected $fillable = [
         'project_id',
-        'asset_code',
         'name',
-        'description',
         'asset_type',
         'location',
         'current_stage',
@@ -68,23 +66,6 @@ class ProjectAssetKanban extends Model
         'warning' => 'Warning',
         'critical' => 'Critical',
     ];
-
-    // ==========================================
-    // BOOT
-    // ==========================================
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($asset) {
-            if (empty($asset->asset_code)) {
-                $year = date('Y');
-                $count = self::whereYear('created_at', $year)->withTrashed()->count();
-                $asset->asset_code = sprintf('AST-%s-%04d', $year, $count + 1);
-            }
-        });
-    }
 
     // ==========================================
     // RELATIONSHIPS

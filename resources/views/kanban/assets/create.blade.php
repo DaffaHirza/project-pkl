@@ -46,24 +46,14 @@
             </select>
         </div>
 
-        {{-- Asset Code & Name --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Kode Asset <span class="text-red-500">*</span>
-                </label>
-                <input type="text" name="asset_code" value="{{ old('asset_code') }}" required 
-                       placeholder="OBJ-001"
-                       class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Nama Asset <span class="text-red-500">*</span>
-                </label>
-                <input type="text" name="name" value="{{ old('name') }}" required 
-                       placeholder="Gedung Kantor, Tanah, dll"
-                       class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
-            </div>
+        {{-- Asset Name --}}
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Nama Asset <span class="text-red-500">*</span>
+            </label>
+            <input type="text" name="name" value="{{ old('name') }}" required 
+                   placeholder="Gedung Kantor, Tanah, dll"
+                   class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
         </div>
 
         {{-- Asset Type --}}
@@ -92,16 +82,6 @@
             <input type="text" name="location" value="{{ old('location') }}" 
                    placeholder="Alamat lengkap lokasi asset"
                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
-        </div>
-
-        {{-- Description --}}
-        <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Deskripsi
-            </label>
-            <textarea name="description" rows="3" 
-                      placeholder="Keterangan tambahan tentang asset"
-                      class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">{{ old('description') }}</textarea>
         </div>
 
         {{-- Priority & Initial Stage --}}

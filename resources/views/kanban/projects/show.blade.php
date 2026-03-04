@@ -15,7 +15,6 @@
             </a>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $project->name }}</h1>
             <div class="flex items-center gap-3 mt-2">
-                <span class="text-sm text-gray-500 dark:text-gray-400">{{ $project->project_code }}</span>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                     {{ $project->status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : '' }}
                     {{ $project->status === 'completed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : '' }}
@@ -75,12 +74,6 @@
                     </div>
                     @endif
                     <div>
-                        <dt class="text-xs text-gray-500 dark:text-gray-400 uppercase">Target Selesai</dt>
-                        <dd class="mt-1 text-gray-900 dark:text-white">
-                            {{ $project->due_date ? $project->due_date->format('d F Y') : '-' }}
-                        </dd>
-                    </div>
-                    <div>
                         <dt class="text-xs text-gray-500 dark:text-gray-400 uppercase">Dibuat</dt>
                         <dd class="mt-1 text-gray-900 dark:text-white">{{ $project->created_at->format('d F Y') }}</dd>
                     </div>
@@ -122,7 +115,7 @@
                                     <span class="flex-shrink-0 w-2 h-2 rounded-full bg-orange-500"></span>
                                     @endif
                                 </div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $asset->asset_code }} • {{ $asset->asset_type_name }}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $asset->asset_type_name }}</p>
                             </div>
                             <div class="text-right ml-4">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-400">

@@ -22,8 +22,7 @@ class ProjectController extends Controller
     {
         $query = ProjectKanban::query()
             ->select('projects_kanban.id', 'projects_kanban.client_id', 'projects_kanban.name', 
-                     'projects_kanban.project_code', 'projects_kanban.status', 
-                     'projects_kanban.due_date', 'projects_kanban.created_at')
+                     'projects_kanban.status', 'projects_kanban.created_at')
             ->with('client:id,name,company_name')
             ->withCount('assets');
 
@@ -41,8 +40,7 @@ class ProjectController extends Controller
         if ($request->filled('search')) {
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('project_code', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%");
             });
         }
 
@@ -76,17 +74,13 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients_kanban,id',
             'name' => 'required|string|max:255|min:3',
-            'description' => 'nullable|string|max:2000',
-            'due_date' => 'nullable|date|after_or_equal:today',
         ], [
             'name.required' => 'Nama project wajib diisi.',
             'name.min' => 'Nama minimal 3 karakter.',
-            'due_date.after_or_equal' => 'Deadline tidak boleh di masa lalu.',
         ]);
 
         // Sanitize
         $validated['name'] = strip_tags(trim($validated['name']));
-        $validated['description'] = $validated['description'] ? strip_tags($validated['description']) : null;
 
         $project = ProjectKanban::create($validated);
 
@@ -106,7 +100,7 @@ class ProjectController extends Controller
         $project->load([
             'client:id,name,company_name',
             'assets' => fn($q) => $q
-                ->select('id', 'project_id', 'name', 'asset_code', 'current_stage', 'priority', 'position')
+                ->select('id', 'project_id', 'name', 'current_stage', 'priority', 'position')
                 ->orderBy('position')
         ]);
 
@@ -140,13 +134,10 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients_kanban,id',
             'name' => 'required|string|max:255|min:3',
-            'description' => 'nullable|string|max:2000',
-            'due_date' => 'nullable|date',
             'status' => 'required|in:active,completed,cancelled',
         ]);
 
         $validated['name'] = strip_tags(trim($validated['name']));
-        $validated['description'] = $validated['description'] ? strip_tags($validated['description']) : null;
 
         $oldStatus = $project->status;
         $project->update($validated);

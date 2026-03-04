@@ -21,10 +21,10 @@ class AssetController extends Controller
     {
         $query = ProjectAssetKanban::query()
             ->select('project_assets_kanban.id', 'project_assets_kanban.project_id', 
-                     'project_assets_kanban.name', 'project_assets_kanban.asset_code',
+                     'project_assets_kanban.name',
                      'project_assets_kanban.asset_type', 'project_assets_kanban.current_stage',
                      'project_assets_kanban.priority', 'project_assets_kanban.created_at')
-            ->with(['project:id,name,project_code,client_id', 'project.client:id,name']);
+            ->with(['project:id,name,client_id', 'project.client:id,name']);
 
         // Filter by project
         if ($request->filled('project_id')) {
@@ -48,8 +48,7 @@ class AssetController extends Controller
         if ($request->filled('search')) {
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
-                $q->where('project_assets_kanban.name', 'like', "%{$search}%")
-                  ->orWhere('asset_code', 'like', "%{$search}%");
+                $q->where('project_assets_kanban.name', 'like', "%{$search}%");
             });
         }
 
@@ -66,9 +65,9 @@ class AssetController extends Controller
     public function board(Request $request)
     {
         $query = ProjectAssetKanban::query()
-            ->select('id', 'project_id', 'name', 'asset_code', 'asset_type', 
+            ->select('id', 'project_id', 'name', 'asset_type', 
                      'current_stage', 'priority', 'position', 'updated_at')
-            ->with(['project:id,name,project_code']);
+            ->with(['project:id,name']);
 
         // Filter by project
         if ($request->filled('project_id')) {
@@ -84,7 +83,7 @@ class AssetController extends Controller
         }
 
         $stages = ProjectAssetKanban::STAGES;
-        $projects = ProjectKanban::select('id', 'name', 'project_code')->where('status', 'active')->get();
+        $projects = ProjectKanban::select('id', 'name')->where('status', 'active')->get();
 
         return view('kanban.assets.board', compact('assetsByStage', 'stages', 'projects'));
     }
@@ -95,7 +94,7 @@ class AssetController extends Controller
     public function create(Request $request)
     {
         $projects = ProjectKanban::query()
-            ->select('projects_kanban.id', 'projects_kanban.name', 'projects_kanban.project_code', 'projects_kanban.client_id')
+            ->select('projects_kanban.id', 'projects_kanban.name', 'projects_kanban.client_id')
             ->with('client:id,name,company_name')
             ->where('status', 'active')
             ->orderBy('name')
@@ -115,7 +114,6 @@ class AssetController extends Controller
         $validated = $request->validate([
             'project_id' => 'required|exists:projects_kanban,id',
             'name' => 'required|string|max:255|min:3',
-            'description' => 'nullable|string|max:2000',
             'asset_type' => 'required|string|in:' . implode(',', array_keys(ProjectAssetKanban::ASSET_TYPES)),
             'location' => 'nullable|string|max:500',
         ], [
@@ -126,7 +124,6 @@ class AssetController extends Controller
 
         // Sanitize
         $validated['name'] = strip_tags(trim($validated['name']));
-        $validated['description'] = $validated['description'] ? strip_tags($validated['description']) : null;
         $validated['location'] = $validated['location'] ? strip_tags($validated['location']) : null;
 
         $asset = ProjectAssetKanban::create($validated);
@@ -153,7 +150,7 @@ class AssetController extends Controller
     public function show(ProjectAssetKanban $asset)
     {
         $asset->load([
-            'project:id,name,project_code,client_id',
+            'project:id,name,client_id',
             'project.client:id,name,company_name',
             'documents' => fn($q) => $q->select('id', 'asset_id', 'uploaded_by', 'stage', 'file_name', 'file_path', 'file_type', 'file_size', 'created_at')
                                        ->with('uploader:id,name')
@@ -183,7 +180,7 @@ class AssetController extends Controller
     public function edit(ProjectAssetKanban $asset)
     {
         $projects = ProjectKanban::query()
-            ->select('id', 'name', 'project_code', 'client_id')
+            ->select('id', 'name', 'client_id')
             ->with('client:id,name,company_name')
             ->where('status', 'active')
             ->orderBy('name')
@@ -202,14 +199,12 @@ class AssetController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|min:3',
-            'description' => 'nullable|string|max:2000',
             'asset_type' => 'required|string|in:' . implode(',', array_keys(ProjectAssetKanban::ASSET_TYPES)),
             'location' => 'nullable|string|max:500',
             'priority' => 'required|in:normal,warning,critical',
         ]);
 
         $validated['name'] = strip_tags(trim($validated['name']));
-        $validated['description'] = $validated['description'] ? strip_tags($validated['description']) : null;
         $validated['location'] = $validated['location'] ? strip_tags($validated['location']) : null;
 
         $asset->update($validated);
