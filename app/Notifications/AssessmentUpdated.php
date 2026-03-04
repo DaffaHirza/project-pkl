@@ -60,7 +60,7 @@ class AssessmentUpdated extends Notification implements ShouldQueue
             case 'stage_change':
                 $emoji = "🔄";
                 $title = "Status Berubah!";
-                $content = "Asset *{$this->asset->name}* kini berada di stage: *{$stageName}*.";
+                $content = "*{$this->actor->name}* memindahkan asset *{$this->asset->name}* ke stage: *{$stageName}*.";
                 if ($this->additionalInfo) {
                     $content .= "\n\n📝 Catatan: " . Str::limit($this->additionalInfo, 100);
                 }
@@ -88,13 +88,13 @@ class AssessmentUpdated extends Notification implements ShouldQueue
                 $emoji = "⚠️";
                 $title = "Prioritas Berubah!";
                 $priorityName = ProjectAssetKanban::PRIORITIES[$this->asset->priority] ?? $this->asset->priority;
-                $content = "Asset *{$this->asset->name}* kini memiliki prioritas: *{$priorityName}*.";
+                $content = "*{$this->actor->name}* mengubah prioritas asset *{$this->asset->name}* menjadi: *{$priorityName}*.";
                 break;
                 
             default:
                 $emoji = "🔔";
                 $title = "Update Asset";
-                $content = "Ada update pada asset *{$this->asset->name}*.";
+                $content = "*{$this->actor->name}* melakukan update pada asset *{$this->asset->name}*.";
         }
 
         $message = TelegramMessage::create()
