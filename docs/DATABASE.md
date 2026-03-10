@@ -1,19 +1,31 @@
 # Database
 
-Menggunakan PostgreSQL dengan 7 tabel utama.
+Menggunakan PostgreSQL dengan 8 tabel utama.
 
 
 ## Relasi Antar Tabel
 
 ```
 users
-  └── upload dokumen & buat catatan
+  └── upload dokumen & buat catatan & buat rekapitulasi
 
-clients_kanban
-  └── punya banyak projects_kanban
-        └── punya banyak project_assets_kanban
-              ├── punya banyak asset_documents_kanban
-              └── punya banyak asset_notes_kanban
+clients_kanban (type: bank / pt_cv / debitur)
+  ├── [Bank] punya banyak Debitur (child dengan type='debitur')
+  │     └── Debitur punya banyak assets_kanban
+  │           ├── punya banyak asset_documents_kanban
+  │           └── punya banyak asset_notes_kanban
+  │
+  ├── [PT/CV] punya banyak assets_kanban (langsung)
+  │     ├── punya banyak asset_documents_kanban
+  │     └── punya banyak asset_notes_kanban
+  │
+  └── [PT/CV] bisa punya banyak PT Anak (child dengan type='pt_cv')
+        └── PT Anak punya banyak assets_kanban
+              └── (struktur sama dengan di atas)
+
+recapitulations_kanban (rekapitulasi mingguan)
+  └── punya banyak recapitulation_items_kanban
+        └── bereferensi ke assets_kanban
 
 notifications (standalone)
 ```
@@ -36,31 +48,31 @@ Menyimpan akun pengguna.
 
 ## Tabel clients_kanban
 
-Menyimpan data klien.
+Menyimpan data klien (Bank, PT/CV, atau Debitur).
 
 - **id** - Primary key
-- **name** - Nama kontak person
-- **company_name** - Nama perusahaan
+- **name** - Nama kontak person / debitur
+- **company_name** - Nama perusahaan (nullable)
+- **type** - bank / pt_cv / debitur (default: pt_cv)
+- **parent_id** - FK ke clients_kanban (self-referential, nullable)
 - **timestamps**
 
+**Penjelasan Type:**
+- **bank**: Client perbankan yang memiliki debitur sebagai children.
+- **pt_cv**: Client PT/CV yang langsung memiliki aset. Bisa memiliki PT anak sebagai children.
+- **debitur**: Debitur dari bank. parent_id mengarah ke bank.
 
-## Tabel projects_kanban
-
-Menyimpan data project penilaian.
-
-- **id** - Primary key
-- **client_id** - FK ke clients_kanban
-- **name** - Nama project
-- **status** - active / completed / cancelled
-- **timestamps** + soft delete
+**Parent ID digunakan untuk:**
+- Debitur: parent_id = ID bank
+- PT Anak: parent_id = ID PT induk
 
 
-## Tabel project_assets_kanban
+## Tabel assets_kanban
 
 Menyimpan asset yang dinilai (objek penilaian).
 
 - **id** - Primary key
-- **project_id** - FK ke projects_kanban
+- **client_id** - FK ke clients_kanban (bisa mengarah ke debitur, pt_cv, atau pt_anak)
 - **name** - Nama objek
 - **asset_type** - tanah / bangunan / tanah_bangunan / mesin / kendaraan / inventaris / aset_tak_berwujud / lainnya
 - **location** - Alamat lokasi
@@ -90,7 +102,7 @@ Menyimpan asset yang dinilai (objek penilaian).
 Menyimpan dokumen/file asset.
 
 - **id** - Primary key
-- **asset_id** - FK ke project_assets_kanban
+- **asset_id** - FK ke assets_kanban
 - **uploaded_by** - FK ke users
 - **stage** - Stage saat upload (1-13)
 - **file_name** - Nama file asli
@@ -100,7 +112,7 @@ Menyimpan dokumen/file asset.
 - **description** - Keterangan
 - **timestamps**
 
-Max file size: 20MB
+Max file size: 100MB
 
 
 ## Tabel asset_notes_kanban
@@ -108,7 +120,7 @@ Max file size: 20MB
 Menyimpan catatan/komentar asset.
 
 - **id** - Primary key
-- **asset_id** - FK ke project_assets_kanban
+- **asset_id** - FK ke assets_kanban
 - **user_id** - FK ke users
 - **stage** - Stage saat catatan dibuat
 - **type** - note / stage_change / approval / rejection
@@ -129,16 +141,55 @@ Notifikasi in-app untuk user.
 - **timestamps**
 
 
+## Tabel recapitulations_kanban
+
+Menyimpan rekapitulasi progress mingguan untuk evaluasi meeting.
+
+- **id** - Primary key
+- **title** - Judul rekapitulasi (contoh: "Rekapitulasi Minggu 1 Maret 2026")
+- **period_start** - Tanggal mulai periode
+- **period_end** - Tanggal akhir periode
+- **summary** - Ringkasan/catatan umum (nullable)
+- **status** - draft / published (default: draft)
+- **created_by** - FK ke users (pembuat)
+- **published_at** - Tanggal dipublikasikan (nullable)
+- **timestamps**
+
+
+## Tabel recapitulation_items_kanban
+
+Menyimpan item-item pekerjaan dalam rekapitulasi.
+
+- **id** - Primary key
+- **recapitulation_id** - FK ke recapitulations_kanban
+- **asset_id** - FK ke assets_kanban
+- **stage_start** - Stage di awal periode
+- **stage_end** - Stage di akhir periode
+- **work_status** - Status pekerjaan (not_started / in_progress / completed / blocked / pending_review)
+- **activities** - JSON array aktivitas yang dilakukan
+- **notes** - Catatan tambahan (nullable)
+- **next_actions** - Langkah selanjutnya (nullable)
+- **timestamps**
+
+**Work Status:**
+- **not_started**: Belum dimulai
+- **in_progress**: Sedang dikerjakan
+- **completed**: Selesai
+- **blocked**: Terhambat
+- **pending_review**: Menunggu review
+
+
 ## Migration Files
 
 Urutan:
 1. create_users_table
 2. create_cache_table
 3. create_notifications_table
-4. create_clients_table
-5. create_projects_table
-6. create_project_assets_table
-7. create_asset_documents_table
-8. create_asset_notes_table
-9. create_jobs_table
-10. create_failed_jobs_table
+4. create_clients_table (dengan type & parent_id)
+5. create_assets_table
+6. create_asset_documents_table
+7. create_asset_notes_table
+8. create_jobs_table
+9. create_failed_jobs_table
+10. create_recapitulations_table
+11. create_recapitulation_items_table

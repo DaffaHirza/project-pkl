@@ -25,48 +25,37 @@ Model untuk akun pengguna.
 
 ## ClientKanban.php
 
-Model untuk data klien.
+Model untuk data klien dengan struktur hierarki.
 
-**Fillable:** name, company_name
+**Fillable:** name, company_name, type, parent_id
+
+**Type constants:**
+- TYPE_BANK = 'bank' - Bank yang memiliki debitur
+- TYPE_PT_CV = 'pt_cv' - PT/CV (bisa induk atau anak)
+- TYPE_DEBITUR = 'debitur' - Debitur dari bank
 
 **Relasi:**
-- projects() - Project milik client ini
+- parent() - Client induk (untuk debitur → bank, atau pt_anak → pt_induk)
+- children() - Child clients (semua tipe)
+- debiturs() - Khusus debitur (jika ini bank)
+- childCompanies() - Khusus PT/CV anak (jika ini PT induk)
+- assets() - Asset milik client ini
 
 **Accessor:**
 - display_name - Format "Nama (Perusahaan)"
-- projects_count - Jumlah project
-- active_projects_count - Jumlah project aktif
-
-
-## ProjectKanban.php
-
-Model untuk project penilaian.
-
-**Fillable:** client_id, name, status
-
-**Status constants:**
-- active, completed, cancelled
-
-**Relasi:**
-- client() - Client pemilik project
-- assets() - Asset dalam project ini
-
-**Accessor:**
-- status_label - Label status Indonesia
 - assets_count - Jumlah asset
-- progress - Persentase progress (0-100)
-- assets_by_stage - Asset dikelompokkan per stage
 
 **Scope:**
-- active() - Filter project aktif
-- withMinimalClient() - Eager load client
+- banks() - Filter hanya bank
+- companies() - Filter hanya PT/CV
+- rootClients() - Client tanpa parent
 
 
-## ProjectAssetKanban.php
+## AssetKanban.php
 
 Model utama untuk asset yang dinilai.
 
-**Fillable:** project_id, name, asset_type, location, current_stage, priority, position
+**Fillable:** client_id, name, asset_type, location, current_stage, priority, position
 
 **Constants:**
 - STAGES - 13 stage (lihat DATABASE.md)
@@ -74,7 +63,7 @@ Model utama untuk asset yang dinilai.
 - PRIORITIES - normal, warning, critical
 
 **Relasi:**
-- project() - Project induk
+- client() - Client pemilik asset
 - documents() - Dokumen asset
 - notes() - Catatan asset
 
@@ -104,7 +93,7 @@ Model untuk dokumen asset.
 **Fillable:** asset_id, uploaded_by, stage, file_name, file_path, file_type, file_size, description
 
 **Constants:**
-- MAX_FILE_SIZE = 20MB
+- MAX_FILE_SIZE = 100MB
 - ALLOWED_TYPES - pdf, doc, docx, xls, xlsx, jpg, png, dll
 
 **Relasi:**
@@ -145,8 +134,6 @@ Model untuk notifikasi in-app.
 - asset_document_uploaded
 - asset_note_added
 - asset_priority_critical
-- project_created
-- project_completed
 - client_created
 
 **Method:**
@@ -156,3 +143,75 @@ Model untuk notifikasi in-app.
 - unread() - Filter belum dibaca
 - read() - Filter sudah dibaca
 - recent(limit) - Ambil terbaru
+
+
+## RecapitulationKanban.php
+
+Model untuk rekapitulasi progress mingguan.
+
+**Fillable:** title, period_start, period_end, summary, status, created_by, published_at
+
+**Status constants:**
+- STATUS_DRAFT = 'draft'
+- STATUS_PUBLISHED = 'published'
+
+**Relasi:**
+- creator() - User pembuat rekapitulasi
+- items() - Item-item pekerjaan
+
+**Method:**
+- publish() - Publikasikan rekapitulasi
+- unpublish() - Kembalikan ke draft
+- generateTitle() - Generate judul otomatis berdasarkan periode
+- getSuggestedPeriod() - Dapatkan saran periode (7-14 hari dari hari ini)
+
+**Accessor:**
+- status_label - Label status (Draft/Dipublikasikan)
+- period_label - Format "DD MMM - DD MMM YYYY"
+- duration_days - Jumlah hari dalam periode
+- progress_summary - Ringkasan progress (X dari Y selesai)
+- completion_rate - Persentase penyelesaian
+
+**Scope:**
+- published() - Filter dipublikasikan
+- draft() - Filter draft
+- inPeriod(start, end) - Filter by periode
+
+
+## RecapitulationItemKanban.php
+
+Model untuk item pekerjaan dalam rekapitulasi.
+
+**Fillable:** recapitulation_id, asset_id, stage_start, stage_end, work_status, activities, notes, next_actions
+
+**Work Status constants:**
+- not_started - Belum Dimulai
+- in_progress - Dalam Proses
+- completed - Selesai
+- blocked - Terhambat
+- pending_review - Menunggu Review
+
+**WORK_STATUS_COLORS:**
+- not_started - gray
+- in_progress - blue
+- completed - green
+- blocked - red
+- pending_review - yellow
+
+**Relasi:**
+- recapitulation() - Rekapitulasi parent
+- asset() - Asset terkait
+
+**Method:**
+- generateActivitiesFromNotes(periodStart, periodEnd) - Generate aktivitas dari catatan dalam periode
+- determineWorkStatus() - Tentukan status berdasarkan stage progress
+
+**Accessor:**
+- work_status_label - Label status in Indonesian
+- work_status_color - Warna untuk badge
+- stage_start_label - Label stage awal
+- stage_end_label - Label stage akhir
+- stage_progress - Jumlah stage yang dilalui
+
+**Cast:**
+- activities => array (JSON)

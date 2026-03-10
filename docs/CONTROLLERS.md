@@ -8,7 +8,7 @@ Semua controller ada di `app/Http/Controllers/`
 Route: `/kanban/dashboard`
 
 **index()** - Tampilkan dashboard dengan statistik:
-- Total clients, projects aktif, assets
+- Total clients, assets
 - Asset critical
 - Aktivitas terbaru
 
@@ -20,38 +20,23 @@ Route: `/kanban/clients`
 **index()** - Daftar client dengan search & pagination
 **create()** - Form tambah client
 **store()** - Simpan client baru
-**show()** - Detail client + daftar project
+**show()** - Detail client + daftar asset
 **edit()** - Form edit client
 **update()** - Update client
-**destroy()** - Hapus client (jika tidak punya project)
+**destroy()** - Hapus client (jika tidak punya asset)
 
 Validasi store/update:
 - name: required, min:2, max:255
 - company_name: nullable, max:255
-
-
-## ProjectController
-
-Route: `/kanban/projects`
-
-**index()** - Daftar project dengan filter (status, client) & search
-**create()** - Form tambah project
-**store()** - Simpan project + kirim notifikasi
-**show()** - Detail project + daftar asset per stage
-**edit()** - Form edit project
-**update()** - Update project
-**destroy()** - Soft delete project
-
-Validasi store/update:
-- client_id: required, exists
-- name: required, min:3, max:255
+- type: required, in:bank,pt_cv,debitur
+- parent_id: nullable, exists (untuk debitur → bank, pt_anak → pt_induk)
 
 
 ## AssetController
 
 Route: `/kanban/assets`
 
-**index()** - Daftar asset dengan filter (project, stage, priority) & search
+**index()** - Daftar asset dengan filter (client, stage, priority) & search
 **board()** - Kanban board 13 stage
 **create()** - Form tambah asset
 **store()** - Simpan asset + kirim notifikasi
@@ -62,7 +47,7 @@ Route: `/kanban/assets`
 **moveStage()** - Pindah stage (untuk drag & drop) + kirim notifikasi Telegram
 
 Validasi store/update:
-- project_id: required, exists
+- client_id: required, exists
 - name: required, min:3, max:255
 - asset_type: required, in:[types]
 - location: nullable, max:500
@@ -79,7 +64,7 @@ Route: `/kanban/assets/{asset}/documents`
 
 Validasi upload:
 - files: required, array
-- files.*: file, max:20480 (20MB)
+- files.*: file, max:102400 (100MB)
 
 
 ## NoteController
@@ -129,6 +114,36 @@ Route: `/profile`
 **edit()** - Form edit profil
 **update()** - Update profil (name, email, telegram_chat_id)
 **destroy()** - Hapus akun
+
+
+## RecapitulationController
+
+Route: `/kanban/recapitulations`
+
+**index()** - Daftar rekapitulasi dengan filter status & pagination
+**create()** - Form buat rekapitulasi dengan saran periode
+**store()** - Simpan rekapitulasi baru + auto-generate items
+**show()** - Detail rekapitulasi dengan statistik & items
+**edit()** - Form edit rekapitulasi
+**update()** - Update info rekapitulasi
+**destroy()** - Hapus rekapitulasi + items
+**print()** - Tampilan cetak untuk rapat
+
+**publish()** - Publikasikan rekapitulasi
+**unpublish()** - Kembalikan ke draft
+**regenerate()** - Generate ulang items dari aktivitas
+
+**Item Management (AJAX):**
+- addItem(POST) - Tambah asset ke rekapitulasi
+- updateItem(PUT) - Update status/notes item
+- removeItem(DELETE) - Hapus item dari rekapitulasi
+- availableAssets(GET) - Daftar asset yang belum ada di rekapitulasi
+
+Validasi store/update:
+- title: required, max:255
+- period_start: required, date
+- period_end: required, date, after:period_start
+- summary: nullable, max:2000
 
 
 ## Auth Controllers (Laravel Breeze)

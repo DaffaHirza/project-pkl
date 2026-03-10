@@ -7,17 +7,18 @@ Semua view ada di `resources/views/`
 
 ```
 views/
-├── layouts/        - Layout utama
-├── components/     - Blade components
-├── kanban/         - Halaman kanban
-│   ├── assets/     - CRUD asset + board
-│   ├── clients/    - CRUD client
-│   └── projects/   - CRUD project
-├── auth/           - Login, register, dll
-├── profile/        - Halaman profil
-├── notifications/  - Daftar notifikasi
-├── admin/          - Halaman admin
-└── assistant/      - Halaman assistant
+├── layouts/           - Layout utama
+├── components/        - Blade components
+├── kanban/            - Halaman kanban
+│   ├── assets/        - CRUD asset + board
+│   ├── clients/       - CRUD client
+│   ├── projects/      - (legacy, deprecated)
+│   └── recapitulations/ - Rekapitulasi mingguan
+├── auth/              - Login, register, dll
+├── profile/           - Halaman profil
+├── notifications/     - Daftar notifikasi
+├── admin/             - Halaman admin
+└── assistant/         - Halaman assistant
 ```
 
 
@@ -83,6 +84,35 @@ views/
 - Info lengkap asset
 - Tab dokumen - upload & daftar file
 - Tab catatan - timeline & form tambah
+
+
+## Rekapitulasi Pages
+
+**kanban/recapitulations/index.blade.php**
+- Tabel rekapitulasi dengan pagination
+- Filter by status (draft/published)
+- Kolom: Judul, Periode, Status, Ringkasan Progress
+
+**kanban/recapitulations/create.blade.php**
+- Form: Judul, Tanggal Mulai, Tanggal Akhir, Ringkasan
+- Saran periode otomatis (7-14 hari)
+- Opsi auto-generate items dari aktivitas
+
+**kanban/recapitulations/show.blade.php** ⭐
+- Info rekapitulasi + statistik
+- Cards: Total Aset, Selesai, Dalam Proses, Pending Review, Terhambat
+- Tabel items: Asset, Status, Stage Progress, Aktivitas, Catatan
+- Modal: Tambah asset, Edit item
+- Tombol: Cetak, Regenerate, Publish/Unpublish
+
+**kanban/recapitulations/edit.blade.php**
+- Edit info dasar rekapitulasi (judul, periode, ringkasan)
+
+**kanban/recapitulations/print.blade.php** ⭐
+- Tampilan cetak untuk rapat evaluasi
+- Layout bersih & print-friendly
+- Header, statistik, tabel items lengkap
+- Standalone HTML (tanpa layout)
 
 
 ## Auth Pages
