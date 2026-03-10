@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Kanban;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProjectAssetKanban;
+use App\Models\AssetKanban;
 use App\Models\AssetNoteKanban;
 use App\Services\KanbanNotificationService;
 use Illuminate\Http\Request;
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class NoteController extends Controller
 {
     // Add note to an asset
-    public function store(Request $request, ProjectAssetKanban $asset)
+    public function store(Request $request, AssetKanban $asset)
     {
         $validated = $request->validate([
             'content' => 'required|string|min:3|max:2000',
@@ -69,7 +69,7 @@ class NoteController extends Controller
     }
 
     // Get notes by stage
-    public function byStage(ProjectAssetKanban $asset, int $stage)
+    public function byStage(AssetKanban $asset, int $stage)
     {
         $notes = $asset->notes()
             ->where('stage', $stage)
@@ -81,7 +81,7 @@ class NoteController extends Controller
     }
 
     // Get all notes for an asset
-    public function index(ProjectAssetKanban $asset)
+    public function index(AssetKanban $asset)
     {
         $notes = $asset->notes()
             ->with('user')
@@ -93,7 +93,7 @@ class NoteController extends Controller
     }
 
     // Get activity log (stage changes, approvals, rejections)
-    public function activityLog(ProjectAssetKanban $asset)
+    public function activityLog(AssetKanban $asset)
     {
         $activities = $asset->notes()
             ->activityLog()

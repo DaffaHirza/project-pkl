@@ -91,7 +91,7 @@
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Asset per Stage</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
             @php
-                $stages = \App\Models\ProjectAssetKanban::STAGES;
+                $stages = \App\Models\AssetKanban::STAGES;
                 $stageColors = [
                     1 => 'blue', 2 => 'blue', 3 => 'blue', 4 => 'blue',
                     5 => 'blue', 6 => 'blue', 7 => 'blue', 8 => 'blue',

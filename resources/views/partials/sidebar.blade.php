@@ -110,16 +110,6 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('kanban.projects.index') }}" @click="selected = 'Kanban.Projects'"
-                                    class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
-                                    :class="selected === 'Kanban.Projects' ?
-                                        'text-brand-500 dark:text-brand-400' :
-                                        'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
-                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Kanban.Projects' ? 'bg-brand-500' : 'bg-gray-400'"></span>
-                                    Proyek
-                                </a>
-                            </li>
-                            <li>
                                 <a href="{{ route('kanban.clients.index') }}" @click="selected = 'Kanban.Clients'"
                                     class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
                                     :class="selected === 'Kanban.Clients' ?

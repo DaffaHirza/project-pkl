@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('asset_documents_kanban', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('asset_id')->constrained('project_assets_kanban')->onDelete('cascade');
+            $table->foreignId('asset_id')->constrained('assets_kanban')->onDelete('cascade');
             $table->foreignId('uploaded_by')->constrained('users');
             $table->unsignedTinyInteger('stage');           // Stage saat upload (1-13)
             $table->string('file_name');                    // Nama file asli

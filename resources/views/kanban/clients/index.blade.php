@@ -10,14 +10,12 @@
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Daftar Klien</h1>
             <p class="text-gray-600 dark:text-gray-400 mt-1">Kelola data klien perusahaan</p>
         </div>
-        @if(auth()->user()->hasAdminAccess())
         <a href="{{ route('kanban.clients.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg font-medium text-sm transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
             Tambah Klien
         </a>
-        @endif
     </div>
 
     {{-- Alert Messages --}}
@@ -120,7 +118,6 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                     </svg>
                                 </a>
-                                @if(auth()->user()->hasAdminAccess())
                                 <a href="{{ route('kanban.clients.edit', $client) }}" class="p-2 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition" title="Edit">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -137,7 +134,6 @@
                                     </button>
                                 </form>
                                 @endif
-                                @endif
                             </div>
                         </td>
                     </tr>
@@ -149,9 +145,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
                                 <p class="text-gray-500 dark:text-gray-400">Belum ada klien terdaftar</p>
-                                @if(auth()->user()->hasAdminAccess())
                                 <a href="{{ route('kanban.clients.create') }}" class="mt-2 text-brand-600 hover:text-brand-700 dark:text-brand-400 font-medium">Tambah klien pertama →</a>
-                                @endif
                             </div>
                         </td>
                     </tr>

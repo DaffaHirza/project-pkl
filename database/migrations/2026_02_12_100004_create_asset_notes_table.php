@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('asset_notes_kanban', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('asset_id')->constrained('project_assets_kanban')->onDelete('cascade');
+            $table->foreignId('asset_id')->constrained('assets_kanban')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users');
             $table->unsignedTinyInteger('stage');           // Stage saat note dibuat (1-13)
             $table->string('type', 20)->default('note');    // note, stage_change, approval, rejection

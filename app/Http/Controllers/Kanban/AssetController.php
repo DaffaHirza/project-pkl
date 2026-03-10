@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Kanban;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProjectKanban;
-use App\Models\ProjectAssetKanban;
-use App\Models\User;
-use App\Models\Notification;
+use App\Models\ClientKanban;
+use App\Models\AssetKanban;
 use App\Services\KanbanNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,16 +17,16 @@ class AssetController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ProjectAssetKanban::query()
-            ->select('project_assets_kanban.id', 'project_assets_kanban.project_id', 
-                     'project_assets_kanban.name',
-                     'project_assets_kanban.asset_type', 'project_assets_kanban.current_stage',
-                     'project_assets_kanban.priority', 'project_assets_kanban.created_at')
-            ->with(['project:id,name,client_id', 'project.client:id,name']);
+        $query = AssetKanban::query()
+            ->select('assets_kanban.id', 'assets_kanban.client_id', 
+                     'assets_kanban.name',
+                     'assets_kanban.asset_type', 'assets_kanban.current_stage',
+                     'assets_kanban.priority', 'assets_kanban.created_at')
+            ->with(['client:id,name,company_name']);
 
-        // Filter by project
-        if ($request->filled('project_id')) {
-            $query->where('project_id', (int) $request->project_id);
+        // Filter by client
+        if ($request->filled('client_id')) {
+            $query->where('client_id', (int) $request->client_id);
         }
 
         // Filter by stage
@@ -48,13 +46,13 @@ class AssetController extends Controller
         if ($request->filled('search')) {
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
-                $q->where('project_assets_kanban.name', 'like', "%{$search}%");
+                $q->where('assets_kanban.name', 'like', "%{$search}%");
             });
         }
 
-        $assets = $query->latest('project_assets_kanban.created_at')->paginate(15)->withQueryString();
-        $stages = ProjectAssetKanban::STAGES;
-        $priorities = ProjectAssetKanban::PRIORITIES;
+        $assets = $query->latest('assets_kanban.created_at')->paginate(15)->withQueryString();
+        $stages = AssetKanban::STAGES;
+        $priorities = AssetKanban::PRIORITIES;
 
         return view('kanban.assets.index', compact('assets', 'stages', 'priorities'));
     }
@@ -64,46 +62,44 @@ class AssetController extends Controller
      */
     public function board(Request $request)
     {
-        $query = ProjectAssetKanban::query()
-            ->select('id', 'project_id', 'name', 'asset_type', 
+        $query = AssetKanban::query()
+            ->select('id', 'client_id', 'name', 'asset_type', 
                      'current_stage', 'priority', 'position', 'updated_at')
-            ->with(['project:id,name']);
+            ->with(['client:id,name,company_name']);
 
-        // Filter by project
-        if ($request->filled('project_id')) {
-            $query->where('project_id', (int) $request->project_id);
+        // Filter by client
+        if ($request->filled('client_id')) {
+            $query->where('client_id', (int) $request->client_id);
         }
 
         $assets = $query->orderBy('position')->orderBy('updated_at', 'desc')->get();
 
         // Group assets by stage
         $assetsByStage = [];
-        foreach (ProjectAssetKanban::STAGES as $stageNum => $stageName) {
+        foreach (AssetKanban::STAGES as $stageNum => $stageName) {
             $assetsByStage[$stageNum] = $assets->where('current_stage', $stageNum)->values();
         }
 
-        $stages = ProjectAssetKanban::STAGES;
-        $projects = ProjectKanban::select('id', 'name')->where('status', 'active')->get();
+        $stages = AssetKanban::STAGES;
+        $clients = ClientKanban::select('id', 'name', 'company_name')->orderBy('name')->get();
 
-        return view('kanban.assets.board', compact('assetsByStage', 'stages', 'projects'));
+        return view('kanban.assets.board', compact('assetsByStage', 'stages', 'clients'));
     }
 
     /**
-     * Show create form with active projects
+     * Show create form with clients dropdown
      */
     public function create(Request $request)
     {
-        $projects = ProjectKanban::query()
-            ->select('projects_kanban.id', 'projects_kanban.name', 'projects_kanban.client_id')
-            ->with('client:id,name,company_name')
-            ->where('status', 'active')
+        $clients = ClientKanban::query()
+            ->select('id', 'name', 'company_name', 'type', 'parent_id')
             ->orderBy('name')
             ->get();
         
-        $selectedProjectId = $request->get('project_id');
-        $assetTypes = ProjectAssetKanban::ASSET_TYPES;
+        $selectedClientId = $request->get('client_id');
+        $assetTypes = AssetKanban::ASSET_TYPES;
 
-        return view('kanban.assets.create', compact('projects', 'selectedProjectId', 'assetTypes'));
+        return view('kanban.assets.create', compact('clients', 'selectedClientId', 'assetTypes'));
     }
 
     /**
@@ -112,9 +108,9 @@ class AssetController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'project_id' => 'required|exists:projects_kanban,id',
+            'client_id' => 'required|exists:clients_kanban,id',
             'name' => 'required|string|max:255|min:3',
-            'asset_type' => 'required|string|in:' . implode(',', array_keys(ProjectAssetKanban::ASSET_TYPES)),
+            'asset_type' => 'required|string|in:' . implode(',', array_keys(AssetKanban::ASSET_TYPES)),
             'location' => 'nullable|string|max:500',
         ], [
             'name.required' => 'Nama asset wajib diisi.',
@@ -126,7 +122,7 @@ class AssetController extends Controller
         $validated['name'] = strip_tags(trim($validated['name']));
         $validated['location'] = $validated['location'] ? strip_tags($validated['location']) : null;
 
-        $asset = ProjectAssetKanban::create($validated);
+        $asset = AssetKanban::create($validated);
 
         // Log initial creation as activity
         $asset->notes()->create([
@@ -147,11 +143,11 @@ class AssetController extends Controller
     /**
      * Display asset detail with documents & notes grouped by stage
      */
-    public function show(ProjectAssetKanban $asset)
+    public function show(AssetKanban $asset)
     {
         $asset->load([
-            'project:id,name,client_id',
-            'project.client:id,name,company_name',
+            'client:id,name,company_name,type,parent_id',
+            'client.parent:id,name,company_name',
             'documents' => fn($q) => $q->select('id', 'asset_id', 'uploaded_by', 'stage', 'file_name', 'file_path', 'file_type', 'file_size', 'created_at')
                                        ->with('uploader:id,name')
                                        ->orderBy('created_at', 'desc'),
@@ -160,7 +156,7 @@ class AssetController extends Controller
                                    ->orderBy('created_at', 'desc')
         ]);
         
-        $stages = ProjectAssetKanban::STAGES;
+        $stages = AssetKanban::STAGES;
         
         // Group by stage efficiently (data already loaded)
         $documentsByStage = collect($stages)->mapWithKeys(fn($label, $num) => [
@@ -177,29 +173,27 @@ class AssetController extends Controller
     /**
      * Show edit form
      */
-    public function edit(ProjectAssetKanban $asset)
+    public function edit(AssetKanban $asset)
     {
-        $projects = ProjectKanban::query()
-            ->select('id', 'name', 'client_id')
-            ->with('client:id,name,company_name')
-            ->where('status', 'active')
+        $clients = ClientKanban::query()
+            ->select('id', 'name', 'company_name', 'type', 'parent_id')
             ->orderBy('name')
             ->get();
         
-        $assetTypes = ProjectAssetKanban::ASSET_TYPES;
-        $priorities = ProjectAssetKanban::PRIORITIES;
+        $assetTypes = AssetKanban::ASSET_TYPES;
+        $priorities = AssetKanban::PRIORITIES;
 
-        return view('kanban.assets.edit', compact('asset', 'projects', 'assetTypes', 'priorities'));
+        return view('kanban.assets.edit', compact('asset', 'clients', 'assetTypes', 'priorities'));
     }
 
     /**
      * Update asset with validation
      */
-    public function update(Request $request, ProjectAssetKanban $asset)
+    public function update(Request $request, AssetKanban $asset)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|min:3',
-            'asset_type' => 'required|string|in:' . implode(',', array_keys(ProjectAssetKanban::ASSET_TYPES)),
+            'asset_type' => 'required|string|in:' . implode(',', array_keys(AssetKanban::ASSET_TYPES)),
             'location' => 'nullable|string|max:500',
             'priority' => 'required|in:normal,warning,critical',
         ]);
@@ -217,15 +211,15 @@ class AssetController extends Controller
     /**
      * Soft delete asset
      */
-    public function destroy(ProjectAssetKanban $asset)
+    public function destroy(AssetKanban $asset)
     {
-        $projectId = $asset->project_id;
+        $clientId = $asset->client_id;
         $assetName = $asset->name;
         
         $asset->delete();
 
         return redirect()
-            ->route('kanban.projects.show', $projectId)
+            ->route('kanban.clients.show', $clientId)
             ->with('success', "Asset '{$assetName}' berhasil dihapus.");
     }
 
@@ -236,7 +230,7 @@ class AssetController extends Controller
     /**
      * Move asset to specific stage with notification & logging
      */
-    public function moveStage(Request $request, ProjectAssetKanban $asset)
+    public function moveStage(Request $request, AssetKanban $asset)
     {
         $validated = $request->validate([
             'stage' => 'nullable|integer|min:1|max:13',
@@ -288,14 +282,14 @@ class AssetController extends Controller
                 if ($request->wantsJson()) {
                     return response()->json([
                         'success' => true,
-                        'message' => 'Asset dipindahkan ke ' . ProjectAssetKanban::STAGES[$newStage],
-                        'asset' => $asset->fresh(['project:id,name']),
+                        'message' => 'Asset dipindahkan ke ' . AssetKanban::STAGES[$newStage],
+                        'asset' => $asset->fresh(['client:id,name']),
                         'old_stage' => $oldStage,
                         'new_stage' => $newStage,
                     ]);
                 }
                 
-                return back()->with('success', 'Asset dipindahkan ke ' . ProjectAssetKanban::STAGES[$newStage]);
+                return back()->with('success', 'Asset dipindahkan ke ' . AssetKanban::STAGES[$newStage]);
             }
 
             DB::rollBack();
@@ -316,7 +310,7 @@ class AssetController extends Controller
     /**
      * Update position within stage (drag & drop)
      */
-    public function updatePosition(Request $request, ProjectAssetKanban $asset)
+    public function updatePosition(Request $request, AssetKanban $asset)
     {
         $validated = $request->validate([
             'position' => 'required|integer|min:0|max:9999',
@@ -330,7 +324,7 @@ class AssetController extends Controller
     /**
      * Update priority with notification for critical
      */
-    public function updatePriority(Request $request, ProjectAssetKanban $asset)
+    public function updatePriority(Request $request, AssetKanban $asset)
     {
         $validated = $request->validate([
             'priority' => 'required|in:normal,warning,critical',
@@ -348,7 +342,7 @@ class AssetController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Priority diubah ke ' . ProjectAssetKanban::PRIORITIES[$newPriority],
+            'message' => 'Priority diubah ke ' . AssetKanban::PRIORITIES[$newPriority],
         ]);
     }
 
@@ -358,10 +352,10 @@ class AssetController extends Controller
     public function bulkStore(Request $request)
     {
         $validated = $request->validate([
-            'project_id' => 'required|exists:projects_kanban,id',
+            'client_id' => 'required|exists:clients_kanban,id',
             'assets' => 'required|array|min:1|max:50',
             'assets.*.name' => 'required|string|max:255|min:3',
-            'assets.*.asset_type' => 'required|string|in:' . implode(',', array_keys(ProjectAssetKanban::ASSET_TYPES)),
+            'assets.*.asset_type' => 'required|string|in:' . implode(',', array_keys(AssetKanban::ASSET_TYPES)),
             'assets.*.location' => 'nullable|string|max:500',
         ], [
             'assets.max' => 'Maksimal 50 asset per batch.',
@@ -372,8 +366,8 @@ class AssetController extends Controller
         DB::beginTransaction();
         try {
             foreach ($validated['assets'] as $assetData) {
-                $asset = ProjectAssetKanban::create([
-                    'project_id' => $validated['project_id'],
+                $asset = AssetKanban::create([
+                    'client_id' => $validated['client_id'],
                     'name' => strip_tags(trim($assetData['name'])),
                     'asset_type' => $assetData['asset_type'],
                     'location' => isset($assetData['location']) ? strip_tags($assetData['location']) : null,

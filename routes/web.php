@@ -6,7 +6,6 @@ use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Kanban\DashboardController;
 use App\Http\Controllers\Kanban\ClientController;
-use App\Http\Controllers\Kanban\ProjectController;
 use App\Http\Controllers\Kanban\AssetController;
 use App\Http\Controllers\Kanban\DocumentController;
 use App\Http\Controllers\Kanban\NoteController;
@@ -60,43 +59,17 @@ Route::middleware('auth')->group(function () {
         });
 
         // ----------------------------------------
-        // CLIENTS - Admin only for CUD operations
+        // CLIENTS - All users can CRUD
         // ----------------------------------------
         Route::controller(ClientController::class)->prefix('clients')->name('clients.')->group(function () {
-            // Read - All users
             Route::get('/', 'index')->name('index');
             Route::get('/search', 'search')->name('search');
-            Route::get('/{client}', 'show')->name('show')->whereNumber('client');
-            
-            // Create/Update/Delete - Admin only
-            Route::middleware('admin')->group(function () {
-                Route::get('/create', 'create')->name('create');
-                Route::post('/', 'store')->name('store');
-                Route::get('/{client}/edit', 'edit')->name('edit')->whereNumber('client');
-                Route::put('/{client}', 'update')->name('update')->whereNumber('client');
-                Route::delete('/{client}', 'destroy')->name('destroy')->whereNumber('client');
-            });
-        });
-
-        // ----------------------------------------
-        // PROJECTS - Admin for delete, users for rest
-        // ----------------------------------------
-        Route::controller(ProjectController::class)->prefix('projects')->name('projects.')->group(function () {
-            // Read & Stats - All users
-            Route::get('/', 'index')->name('index');
-            Route::get('/statistics', 'statistics')->name('statistics');
-            Route::get('/{project}', 'show')->name('show')->whereNumber('project');
-            
-            // Create/Update - All users (can manage their assigned projects)
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
-            Route::get('/{project}/edit', 'edit')->name('edit')->whereNumber('project');
-            Route::put('/{project}', 'update')->name('update')->whereNumber('project');
-            
-            // Delete - Admin only
-            Route::delete('/{project}', 'destroy')->name('destroy')
-                ->whereNumber('project')
-                ->middleware('admin');
+            Route::get('/{client}', 'show')->name('show')->whereNumber('client');
+            Route::get('/{client}/edit', 'edit')->name('edit')->whereNumber('client');
+            Route::put('/{client}', 'update')->name('update')->whereNumber('client');
+            Route::delete('/{client}', 'destroy')->name('destroy')->whereNumber('client');
         });
 
         // ----------------------------------------

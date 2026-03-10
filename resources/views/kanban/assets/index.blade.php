@@ -35,7 +35,7 @@
             </div>
             <select name="stage" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="">Semua Stage</option>
-                @foreach(\App\Models\ProjectAssetKanban::STAGES as $num => $name)
+                @foreach(\App\Models\AssetKanban::STAGES as $num => $name)
                 <option value="{{ $num }}" {{ request('stage') == $num ? 'selected' : '' }}>{{ $num }}. {{ $name }}</option>
                 @endforeach
             </select>
@@ -58,7 +58,7 @@
     {{-- Stage Overview --}}
     <div class="mb-6 overflow-x-auto pb-2">
         <div class="flex gap-2 min-w-max">
-            @php $stages = \App\Models\ProjectAssetKanban::STAGES; @endphp
+            @php $stages = \App\Models\AssetKanban::STAGES; @endphp
             @foreach($stages as $num => $name)
             @php $count = $assets->where('current_stage', $num)->count(); @endphp
             <a href="{{ route('kanban.assets.index', ['stage' => $num]) }}" 

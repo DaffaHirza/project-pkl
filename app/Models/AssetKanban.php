@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\ProjectKanban;
+use App\Models\ClientKanban;
 use App\Models\AssetDocumentKanban;
 use App\Models\AssetNoteKanban;
 
-class ProjectAssetKanban extends Model
+class AssetKanban extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'project_assets_kanban';
+    protected $table = 'assets_kanban';
 
     protected $fillable = [
-        'project_id',
+        'client_id',
         'name',
         'asset_type',
         'location',
@@ -71,9 +71,12 @@ class ProjectAssetKanban extends Model
     // RELATIONSHIPS
     // ==========================================
 
-    public function project()
+    /**
+     * Client pemilik asset (debitur, pt_cv, atau pt_anak)
+     */
+    public function client()
     {
-        return $this->belongsTo(ProjectKanban::class, 'project_id');
+        return $this->belongsTo(ClientKanban::class, 'client_id');
     }
 
     public function documents()
@@ -108,6 +111,17 @@ class ProjectAssetKanban extends Model
     public function getProgressAttribute(): int
     {
         return (int) round(($this->current_stage / 13) * 100);
+    }
+
+    /**
+     * Mendapatkan bank jika asset ini milik debitur
+     */
+    public function getBankAttribute()
+    {
+        if ($this->client?->type === 'debitur') {
+            return $this->client->parent;
+        }
+        return null;
     }
 
     // ==========================================

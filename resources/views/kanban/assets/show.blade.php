@@ -77,7 +77,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
-                    Kembali ke {{ \App\Models\ProjectAssetKanban::STAGES[$asset->current_stage - 1] ?? 'Prev' }}
+                    Kembali ke {{ \App\Models\AssetKanban::STAGES[$asset->current_stage - 1] ?? 'Prev' }}
                 </button>
             </form>
             @endif
@@ -87,7 +87,7 @@
                 @csrf
                 <input type="hidden" name="direction" value="next">
                 <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition">
-                    Lanjut ke {{ \App\Models\ProjectAssetKanban::STAGES[$asset->current_stage + 1] ?? 'Next' }}
+                    Lanjut ke {{ \App\Models\AssetKanban::STAGES[$asset->current_stage + 1] ?? 'Next' }}
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
@@ -110,7 +110,7 @@
                 </button>
                 <div x-show="open" @click.outside="open = false" x-transition
                     class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 py-1 z-50 max-h-80 overflow-y-auto">
-                    @foreach(\App\Models\ProjectAssetKanban::STAGES as $num => $label)
+                    @foreach(\App\Models\AssetKanban::STAGES as $num => $label)
                         @if($num != $asset->current_stage)
                         <form action="{{ route('kanban.assets.move-stage', $asset) }}" method="POST">
                             @csrf
@@ -295,7 +295,7 @@
             <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
                 <h3 class="font-semibold text-gray-900 dark:text-white mb-4">13 Stage</h3>
                 <div class="space-y-1">
-                    @foreach(\App\Models\ProjectAssetKanban::STAGES as $num => $name)
+                    @foreach(\App\Models\AssetKanban::STAGES as $num => $name)
                     <div class="flex items-center gap-2 p-2 rounded 
                         {{ $num == $asset->current_stage ? 'bg-brand-50 dark:bg-brand-900/20' : '' }}">
                         @if($num < $asset->current_stage)

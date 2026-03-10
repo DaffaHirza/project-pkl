@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\ProjectAssetKanban;
+use App\Models\AssetKanban;
 use App\Models\User;
 
 class AssetNoteKanban extends Model
@@ -42,7 +42,7 @@ class AssetNoteKanban extends Model
 
     public function asset()
     {
-        return $this->belongsTo(ProjectAssetKanban::class, 'asset_id');
+        return $this->belongsTo(AssetKanban::class, 'asset_id');
     }
 
     public function user()
@@ -56,7 +56,7 @@ class AssetNoteKanban extends Model
 
     public function getStageLabelAttribute(): string
     {
-        return ProjectAssetKanban::STAGES[$this->stage] ?? 'Unknown';
+        return AssetKanban::STAGES[$this->stage] ?? 'Unknown';
     }
 
     public function getTypeLabelAttribute(): string
