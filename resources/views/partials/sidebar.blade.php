@@ -129,6 +129,16 @@
                                     Log Aktivitas
                                 </a>
                             </li>
+                            <li>
+                                <a href="{{ route('kanban.recapitulations.index') }}" @click="selected = 'Kanban.Recapitulations'"
+                                    class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
+                                    :class="selected === 'Kanban.Recapitulations' ?
+                                        'text-brand-500 dark:text-brand-400' :
+                                        'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
+                                    <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Kanban.Recapitulations' ? 'bg-brand-500' : 'bg-gray-400'"></span>
+                                    Rekapitulasi
+                                </a>
+                            </li>
                         </ul>
                     </li>
 

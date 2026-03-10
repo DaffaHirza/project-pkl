@@ -9,6 +9,7 @@ use App\Http\Controllers\Kanban\ClientController;
 use App\Http\Controllers\Kanban\AssetController;
 use App\Http\Controllers\Kanban\DocumentController;
 use App\Http\Controllers\Kanban\NoteController;
+use App\Http\Controllers\Kanban\RecapitulationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => view('welcome'));
@@ -121,6 +122,34 @@ Route::middleware('auth')->group(function () {
                 Route::post('/notes', 'store')->name('store');
             });
             Route::delete('/notes/{note}', 'destroy')->name('notes.destroy')->whereNumber('note');
+        });
+
+        // ----------------------------------------
+        // RECAPITULATIONS - Weekly progress reports
+        // ----------------------------------------
+        Route::controller(RecapitulationController::class)->prefix('recapitulations')->name('recapitulations.')->group(function () {
+            // List & Create
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            
+            // Single recapitulation
+            Route::get('/{recapitulation}', 'show')->name('show')->whereNumber('recapitulation');
+            Route::get('/{recapitulation}/edit', 'edit')->name('edit')->whereNumber('recapitulation');
+            Route::put('/{recapitulation}', 'update')->name('update')->whereNumber('recapitulation');
+            Route::delete('/{recapitulation}', 'destroy')->name('destroy')->whereNumber('recapitulation');
+            
+            // Actions
+            Route::post('/{recapitulation}/publish', 'publish')->name('publish')->whereNumber('recapitulation');
+            Route::post('/{recapitulation}/unpublish', 'unpublish')->name('unpublish')->whereNumber('recapitulation');
+            Route::post('/{recapitulation}/regenerate', 'regenerate')->name('regenerate')->whereNumber('recapitulation');
+            Route::get('/{recapitulation}/print', 'print')->name('print')->whereNumber('recapitulation');
+            
+            // Item management
+            Route::post('/{recapitulation}/items', 'addItem')->name('addItem')->whereNumber('recapitulation');
+            Route::put('/items/{item}', 'updateItem')->name('updateItem')->whereNumber('item');
+            Route::delete('/items/{item}', 'removeItem')->name('removeItem')->whereNumber('item');
+            Route::get('/{recapitulation}/available-assets', 'availableAssets')->name('availableAssets')->whereNumber('recapitulation');
         });
     });
 
