@@ -157,7 +157,7 @@
                     </div>
                     <div>
                         <dt class="text-gray-500 dark:text-gray-400">Tipe Klien</dt>
-                        <dd class="text-gray-900 dark:text-white capitalize">{{ str_replace('_', '/', $asset->client->type ?? '-') }}</dd>
+                        <dd class="text-gray-900 dark:text-white">{{ $asset->client->type_name ?? '-' }}</dd>
                     </div>
                 </dl>
             </div>
@@ -416,6 +416,16 @@ document.getElementById('uploadForm')?.addEventListener('submit', function(e) {
         <form action="{{ route('kanban.notes.store', $asset) }}" method="POST">
             @csrf
             <input type="hidden" name="stage" value="{{ $asset->current_stage }}">
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipe Catatan</label>
+                <select name="type" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                    <option value="note">Catatan</option>
+                    <option value="approval">Approval</option>
+                    <option value="rejection">Penolakan / Terhambat</option>
+                </select>
+                <p class="mt-1 text-xs text-gray-500">Pilih "Penolakan" jika asset terhambat untuk rekapitulasi</p>
+            </div>
             
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Catatan *</label>

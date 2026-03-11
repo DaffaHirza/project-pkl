@@ -165,14 +165,33 @@ class RecapitulationItemKanban extends Model
     }
 
     /**
-     * Determine work status based on stage progress
+     * Determine work status based on stage progress and notes
      */
     public function determineWorkStatus(): string
     {
+        // Completed if final stage
         if ($this->stage_end >= 13) {
             return self::STATUS_COMPLETED;
         }
         
+        // Check if in review stages (6 = Review 1, 10 = Review 2)
+        if (in_array($this->stage_end, [6, 10])) {
+            return self::STATUS_PENDING_REVIEW;
+        }
+        
+        // Check for rejection notes (blocked)
+        if ($this->asset) {
+            $hasRejection = $this->asset->notes()
+                ->where('type', 'rejection')
+                ->where('created_at', '>=', now()->subDays(14))
+                ->exists();
+            
+            if ($hasRejection) {
+                return self::STATUS_BLOCKED;
+            }
+        }
+        
+        // In progress if stage moved forward
         if ($this->stage_end > $this->stage_start) {
             return self::STATUS_IN_PROGRESS;
         }

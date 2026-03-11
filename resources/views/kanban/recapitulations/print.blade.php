@@ -245,7 +245,7 @@
 </head>
 <body>
     <button class="print-btn no-print" onclick="window.print()">
-        🖨️ Cetak
+        Cetak Laporan
     </button>
     
     <div class="container">
