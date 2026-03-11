@@ -15,14 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('role', 20)->default('user'); // user, admin, superuser
+            $table->enum('role', ['admin', 'user', 'superuser'])->default('user'); // user, admin, superuser
             $table->boolean('is_active')->default(true);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->timestamp('last_login_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
-
+            $table->string('telegram_chat_id')->nullable()->after('is_active');
+            $table->index('telegram_chat_id');
             // Indexes
             $table->index('role');
             $table->index('is_active');
