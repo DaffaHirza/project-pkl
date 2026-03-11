@@ -219,7 +219,7 @@ class AssetKanban extends Model
 
     public function scopeForKanban($query)
     {
-        return $query->select('id', 'project_id', 'name', 'asset_code', 'current_stage', 'priority', 'position');
+        return $query->select('id', 'client_id', 'name', 'asset_code', 'current_stage', 'priority', 'position');
     }
 
     public function scopeOrdered($query)

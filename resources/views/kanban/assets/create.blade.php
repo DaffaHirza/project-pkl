@@ -31,16 +31,19 @@
     <form action="{{ route('kanban.assets.store') }}" method="POST" class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
         @csrf
 
-        {{-- Project --}}
+        {{-- Client --}}
         <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Proyek <span class="text-red-500">*</span>
+                Klien <span class="text-red-500">*</span>
             </label>
-            <select name="project_id" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
-                <option value="">Pilih Proyek</option>
-                @foreach($projects as $project)
-                <option value="{{ $project->id }}" {{ old('project_id') == $project->id ? 'selected' : '' }}>
-                    {{ $project->name }} - {{ $project->client->name ?? 'No Client' }}
+            <select name="client_id" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
+                <option value="">Pilih Klien</option>
+                @foreach($clients as $client)
+                @php
+                    $typeLabels = ['bank' => 'Bank', 'pt_cv' => 'PT/CV', 'debitur' => 'Debitur'];
+                @endphp
+                <option value="{{ $client->id }}" {{ old('client_id', $selectedClientId ?? '') == $client->id ? 'selected' : '' }}>
+                    {{ $client->name }} ({{ $typeLabels[$client->type] ?? ucfirst($client->type) }})
                 </option>
                 @endforeach
             </select>

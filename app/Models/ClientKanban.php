@@ -15,6 +15,7 @@ class ClientKanban extends Model
     protected $fillable = [
         'name',
         'company_name',
+        'spk_number',
         'type',
         'parent_id',
     ];
@@ -84,9 +85,19 @@ class ClientKanban extends Model
             : $this->name;
     }
 
-    public function getAssetsCountAttribute(): int
+    /**
+     * Total assets including children's assets
+     */
+    public function getTotalAssetsCountAttribute(): int
     {
-        return $this->assets()->count();
+        $directAssets = $this->assets()->count();
+        
+        // Also count assets from all children (debitur/anak)
+        $childrenAssets = AssetKanban::whereIn('client_id', 
+            $this->children()->pluck('id')
+        )->count();
+        
+        return $directAssets + $childrenAssets;
     }
 
     public function getTypeNameAttribute(): string
@@ -137,16 +148,5 @@ class ClientKanban extends Model
     {
         $childIds = $this->children()->pluck('id');
         return AssetKanban::whereIn('client_id', $childIds)->get();
-    }
-
-    /**
-     * Hitung total assets termasuk dari children
-     */
-    public function getTotalAssetsCountAttribute(): int
-    {
-        $own = $this->assets()->count();
-        $childIds = $this->children()->pluck('id');
-        $childAssets = AssetKanban::whereIn('client_id', $childIds)->count();
-        return $own + $childAssets;
     }
 }

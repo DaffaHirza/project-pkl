@@ -148,20 +148,16 @@
                         <dd class="text-gray-900 dark:text-white">{{ $asset->location ?: '-' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-gray-500 dark:text-gray-400">Proyek</dt>
+                        <dt class="text-gray-500 dark:text-gray-400">Klien</dt>
                         <dd>
-                            <a href="{{ route('kanban.projects.show', $asset->project) }}" class="text-brand-600 dark:text-brand-400 hover:underline">
-                                {{ $asset->project->name }}
+                            <a href="{{ route('kanban.clients.show', $asset->client) }}" class="text-brand-600 dark:text-brand-400 hover:underline">
+                                {{ $asset->client->display_name }}
                             </a>
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-gray-500 dark:text-gray-400">Klien</dt>
-                        <dd>
-                            <a href="{{ route('kanban.clients.show', $asset->project->client) }}" class="text-brand-600 dark:text-brand-400 hover:underline">
-                                {{ $asset->project->client->name }}
-                            </a>
-                        </dd>
+                        <dt class="text-gray-500 dark:text-gray-400">Tipe Klien</dt>
+                        <dd class="text-gray-900 dark:text-white capitalize">{{ str_replace('_', '/', $asset->client->type ?? '-') }}</dd>
                     </div>
                 </dl>
             </div>

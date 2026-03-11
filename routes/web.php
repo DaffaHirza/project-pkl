@@ -63,10 +63,24 @@ Route::middleware('auth')->group(function () {
         // CLIENTS - All users can CRUD
         // ----------------------------------------
         Route::controller(ClientController::class)->prefix('clients')->name('clients.')->group(function () {
-            Route::get('/', 'index')->name('index');
+            // List views
+            Route::get('/', 'index')->name('index'); // Type selector / overview
+            Route::get('/perusahaan', 'indexPerusahaan')->name('perusahaan'); // Bank & PT/CV Induk
+            Route::get('/debitur', 'indexDebitur')->name('debitur'); // Debitur & PT/CV Anak
             Route::get('/search', 'search')->name('search');
-            Route::get('/create', 'create')->name('create');
-            Route::post('/', 'store')->name('store');
+            
+            // Create forms
+            Route::get('/create', 'create')->name('create'); // Type selector
+            Route::get('/create/bank', 'createBank')->name('create.bank');
+            Route::get('/create/perusahaan-induk', 'createPerusahaanInduk')->name('create.perusahaan-induk');
+            Route::get('/create/klien', 'createKlien')->name('create.klien'); // Debitur / PT/CV anak
+            
+            // Store
+            Route::post('/bank', 'storeBank')->name('store.bank');
+            Route::post('/perusahaan-induk', 'storePerusahaanInduk')->name('store.perusahaan-induk');
+            Route::post('/klien', 'storeKlien')->name('store.klien');
+            
+            // Show/Edit/Delete
             Route::get('/{client}', 'show')->name('show')->whereNumber('client');
             Route::get('/{client}/edit', 'edit')->name('edit')->whereNumber('client');
             Route::put('/{client}', 'update')->name('update')->whereNumber('client');

@@ -29,6 +29,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');                     // Nama kontak person / debitur
             $table->string('company_name')->nullable(); // Nama perusahaan/instansi
+            $table->string('spk_number')->nullable();   // Nomor SPK untuk bank
             $table->string('type', 20)->default('bank'); // bank / pt_cv / debitur
             $table->foreignId('parent_id')              // Self-referential: debitur->bank, pt_anak->pt_induk
                 ->nullable()

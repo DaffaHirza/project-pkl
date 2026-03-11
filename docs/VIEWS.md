@@ -47,38 +47,26 @@ views/
 - Kolom: Nama, Perusahaan, Jumlah Project
 
 **kanban/clients/create.blade.php & edit.blade.php**
-- Form: Nama, Nama Perusahaan
+- Form: Nama, Nama Perusahaan, Tipe (Bank/PT-CV/Debitur), Parent
 
 **kanban/clients/show.blade.php**
-- Info client
-- Daftar project milik client
-
-**kanban/projects/index.blade.php**
-- Tabel project dengan pagination
-- Filter by status, client
-- Kolom: Nama, Client, Status, Jumlah Asset
-
-**kanban/projects/create.blade.php & edit.blade.php**
-- Form: Client (dropdown), Nama Project
-
-**kanban/projects/show.blade.php**
-- Info project
-- Daftar asset per stage (mini kanban)
-- Progress keseluruhan
+- Info client (nama, tipe, perusahaan, parent)
+- Daftar debitur/PT anak (jika ada)
+- Daftar asset milik client
 
 **kanban/assets/index.blade.php**
 - Tabel asset dengan pagination
-- Filter by project, stage, priority
-- Kolom: Nama, Project, Type, Stage, Priority
+- Filter by client, stage, priority
+- Kolom: Nama, Client, Type, Stage, Priority
 
 **kanban/assets/board.blade.php** ⭐
 - Kanban board dengan 13 kolom
 - Drag & drop asset antar stage
-- Filter by project
+- Filter by client
 - Pakai SortableJS
 
 **kanban/assets/create.blade.php & edit.blade.php**
-- Form: Project, Nama, Tipe Asset, Lokasi, Priority
+- Form: Client (dropdown), Nama, Tipe Asset, Lokasi, Priority
 
 **kanban/assets/show.blade.php**
 - Info lengkap asset

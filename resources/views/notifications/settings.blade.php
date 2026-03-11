@@ -40,7 +40,7 @@
                     <label class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Tugas Baru</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Kirim email saat ditugaskan ke card/project baru</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Kirim email saat ditugaskan ke asset baru</p>
                         </div>
                         <input type="checkbox" name="email_new_assignment" value="1" checked
                                class="w-5 h-5 rounded border-gray-300 text-brand-500 focus:ring-brand-500">

@@ -3,39 +3,43 @@
 @section('title', $recapitulation->title)
 
 @section('content')
-<div>
+<div class="space-y-6">
     {{-- Header --}}
-    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         <div>
-            <a href="{{ route('kanban.recapitulations.index') }}" class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition mb-3">
+            <a href="{{ route('kanban.recapitulations.index') }}" 
+               class="inline-flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition mb-4 text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
                 Kembali ke Daftar
             </a>
-            <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $recapitulation->title }}</h1>
-                @if($recapitulation->status === 'published')
-                <span class="px-2.5 py-1 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">Dipublikasikan</span>
-                @else
-                <span class="px-2.5 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-full">Draft</span>
-                @endif
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <h1 class="text-xl font-semibold text-gray-800 dark:text-white">{{ $recapitulation->title }}</h1>
+                    @if($recapitulation->status === 'published')
+                    <span class="px-2 py-0.5 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded">Dipublikasikan</span>
+                    @else
+                    <span class="px-2 py-0.5 text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded">Draft</span>
+                    @endif
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    <span class="inline-flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {{ $recapitulation->period_label }}
+                    </span>
+                    <span class="mx-2">•</span>
+                    <span>Dibuat oleh {{ $recapitulation->creator->name ?? 'Unknown' }}</span>
+                </p>
             </div>
-            <p class="text-gray-600 dark:text-gray-400 mt-1">
-                <span class="inline-flex items-center gap-1.5">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    {{ $recapitulation->period_label }}
-                </span>
-                <span class="mx-2">•</span>
-                <span>Dibuat oleh {{ $recapitulation->creator->name ?? 'Unknown' }}</span>
-            </p>
         </div>
         
         {{-- Actions --}}
-        <div class="flex items-center gap-2">
-            <a href="{{ route('kanban.recapitulations.print', $recapitulation) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+        <div class="flex items-center gap-2 flex-wrap">
+            <a href="{{ route('kanban.recapitulations.print', $recapitulation) }}" target="_blank" 
+               class="inline-flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
@@ -45,7 +49,7 @@
             @if(!$recapitulation->isPublished())
             <form action="{{ route('kanban.recapitulations.regenerate', $recapitulation) }}" method="POST" class="inline">
                 @csrf
-                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition" onclick="return confirm('Regenerate akan menghapus semua item dan generate ulang dari aktivitas. Lanjutkan?')">
+                <button type="submit" class="inline-flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm" onclick="return confirm('Regenerate akan menghapus semua item dan generate ulang dari aktivitas. Lanjutkan?')">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
@@ -53,7 +57,8 @@
                 </button>
             </form>
             
-            <a href="{{ route('kanban.recapitulations.edit', $recapitulation) }}" class="inline-flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+            <a href="{{ route('kanban.recapitulations.edit', $recapitulation) }}" 
+               class="inline-flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
@@ -62,7 +67,7 @@
             
             <form action="{{ route('kanban.recapitulations.publish', $recapitulation) }}" method="POST" class="inline">
                 @csrf
-                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">
+                <button type="submit" class="inline-flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
@@ -72,7 +77,7 @@
             @else
             <form action="{{ route('kanban.recapitulations.unpublish', $recapitulation) }}" method="POST" class="inline">
                 @csrf
-                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition">
+                <button type="submit" class="inline-flex items-center gap-2 px-3 py-2 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -85,56 +90,96 @@
 
     {{-- Alert Messages --}}
     @if(session('success'))
-    <div class="mb-6 p-4 rounded-lg bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800">
-        <p class="text-green-700 dark:text-green-400">{{ session('success') }}</p>
+    <div class="p-4 rounded-lg bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800 flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+            <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+        <p class="text-sm text-green-700 dark:text-green-400">{{ session('success') }}</p>
     </div>
     @endif
 
     @if(session('error'))
-    <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800">
-        <p class="text-red-700 dark:text-red-400">{{ session('error') }}</p>
+    <div class="p-4 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800 flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+            <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </div>
+        <p class="text-sm text-red-700 dark:text-red-400">{{ session('error') }}</p>
     </div>
     @endif
 
     {{-- Summary Section --}}
     @if($recapitulation->summary)
-    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 mb-6">
-        <h2 class="font-semibold text-gray-900 dark:text-white mb-2">Ringkasan</h2>
-        <p class="text-gray-600 dark:text-gray-400 whitespace-pre-line">{{ $recapitulation->summary }}</p>
+    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <div class="flex items-center gap-2 mb-2">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+            </svg>
+            <h2 class="font-medium text-gray-900 dark:text-white">Ringkasan</h2>
+        </div>
+        <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line">{{ $recapitulation->summary }}</p>
     </div>
     @endif
 
     {{-- Statistics Cards --}}
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 text-center">
-            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $summary['total'] }}</p>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Total Asset</p>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 text-center">
+            <div class="w-8 h-8 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+            </div>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $summary['total'] }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Total Asset</p>
         </div>
-        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800 p-4 text-center">
-            <p class="text-3xl font-bold text-green-700 dark:text-green-400">{{ $summary['completed'] }}</p>
-            <p class="text-sm text-green-600 dark:text-green-500">Selesai</p>
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 text-center">
+            <div class="w-8 h-8 rounded bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-2">
+                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+            <p class="text-2xl font-semibold text-green-700 dark:text-green-400">{{ $summary['completed'] }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Selesai</p>
         </div>
-        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 p-4 text-center">
-            <p class="text-3xl font-bold text-blue-700 dark:text-blue-400">{{ $summary['in_progress'] }}</p>
-            <p class="text-sm text-blue-600 dark:text-blue-500">Dikerjakan</p>
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 text-center">
+            <div class="w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-2">
+                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <p class="text-2xl font-semibold text-blue-700 dark:text-blue-400">{{ $summary['in_progress'] }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Dikerjakan</p>
         </div>
-        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800 p-4 text-center">
-            <p class="text-3xl font-bold text-yellow-700 dark:text-yellow-400">{{ $summary['pending_review'] }}</p>
-            <p class="text-sm text-yellow-600 dark:text-yellow-500">Review</p>
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 text-center">
+            <div class="w-8 h-8 rounded bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-2">
+                <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+            </div>
+            <p class="text-2xl font-semibold text-amber-700 dark:text-amber-400">{{ $summary['pending_review'] }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Review</p>
         </div>
-        <div class="bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 p-4 text-center">
-            <p class="text-3xl font-bold text-red-700 dark:text-red-400">{{ $summary['blocked'] }}</p>
-            <p class="text-sm text-red-600 dark:text-red-500">Terhambat</p>
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 text-center">
+            <div class="w-8 h-8 rounded bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-2">
+                <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <p class="text-2xl font-semibold text-red-700 dark:text-red-400">{{ $summary['blocked'] }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Terhambat</p>
         </div>
     </div>
 
     {{-- Items List --}}
-    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
-        <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-            <h2 class="font-semibold text-gray-900 dark:text-white">Daftar Asset & Progress</h2>
+    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <h2 class="font-medium text-gray-900 dark:text-white">Daftar Asset & Progress</h2>
             @if(!$recapitulation->isPublished())
-            <button type="button" onclick="openAddAssetModal()" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-lg transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button type="button" onclick="openAddAssetModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 Tambah Asset
@@ -143,14 +188,14 @@
         </div>
 
         @if($recapitulation->items->isEmpty())
-        <div class="p-12 text-center">
-            <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        <div class="p-10 text-center">
+            <svg class="w-10 h-10 mx-auto text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <p class="text-gray-600 dark:text-gray-400">Belum ada asset dalam rekapitulasi ini</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada asset dalam rekapitulasi ini</p>
             @if(!$recapitulation->isPublished())
-            <button type="button" onclick="openAddAssetModal()" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg text-sm transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button type="button" onclick="openAddAssetModal()" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg text-xs transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 Tambah Asset
@@ -158,7 +203,7 @@
             @endif
         </div>
         @else
-        <div class="divide-y divide-gray-200 dark:divide-gray-800">
+        <div class="divide-y divide-gray-200 dark:divide-gray-700">
             @foreach($recapitulation->items as $item)
             <div class="p-5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition" id="item-{{ $item->id }}">
                 <div class="flex flex-col lg:flex-row gap-4">

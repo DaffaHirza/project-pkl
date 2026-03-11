@@ -53,8 +53,14 @@ class AssetController extends Controller
         $assets = $query->latest('assets_kanban.created_at')->paginate(15)->withQueryString();
         $stages = AssetKanban::STAGES;
         $priorities = AssetKanban::PRIORITIES;
+        
+        // Get stage counts (unfiltered) for stage overview
+        $stageCounts = AssetKanban::selectRaw('current_stage, COUNT(*) as count')
+            ->groupBy('current_stage')
+            ->pluck('count', 'current_stage')
+            ->toArray();
 
-        return view('kanban.assets.index', compact('assets', 'stages', 'priorities'));
+        return view('kanban.assets.index', compact('assets', 'stages', 'priorities', 'stageCounts'));
     }
 
     /**

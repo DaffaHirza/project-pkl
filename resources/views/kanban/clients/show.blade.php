@@ -27,7 +27,6 @@
                 </div>
             </div>
         </div>
-        @if(auth()->user()->hasAdminAccess())
         <div class="flex gap-2">
             <a href="{{ route('kanban.clients.edit', $client) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,14 +34,13 @@
                 </svg>
                 Edit
             </a>
-            <a href="{{ route('kanban.projects.create', ['client_id' => $client->id]) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition">
+            <a href="{{ route('kanban.assets.create', ['client_id' => $client->id]) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Proyek Baru
+                Asset Baru
             </a>
         </div>
-        @endif
     </div>
 
     {{-- Alert Messages --}}
@@ -58,10 +56,40 @@
             <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Informasi Klien</h2>
                 <dl class="space-y-4">
+                    <div>
+                        <dt class="text-xs text-gray-500 dark:text-gray-400 uppercase">Tipe</dt>
+                        <dd class="mt-1">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {{ $client->type === 'bank' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : '' }}
+                                {{ $client->type === 'pt_cv' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : '' }}
+                                {{ $client->type === 'debitur' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : '' }}
+                            ">
+                                {{ $client->type === 'bank' ? 'Bank' : ($client->type === 'pt_cv' ? 'PT/CV' : 'Debitur') }}
+                            </span>
+                        </dd>
+                    </div>
                     @if($client->company_name)
                     <div>
                         <dt class="text-xs text-gray-500 dark:text-gray-400 uppercase">Perusahaan</dt>
                         <dd class="mt-1 text-gray-900 dark:text-white">{{ $client->company_name }}</dd>
+                    </div>
+                    @endif
+                    @if($client->spk_number)
+                    <div>
+                        <dt class="text-xs text-gray-500 dark:text-gray-400 uppercase">No SPK</dt>
+                        <dd class="mt-1 text-gray-900 dark:text-white font-medium">{{ $client->spk_number }}</dd>
+                    </div>
+                    @endif
+                    @if($client->parent)
+                    <div>
+                        <dt class="text-xs text-gray-500 dark:text-gray-400 uppercase">
+                            {{ $client->type === 'debitur' ? 'Bank' : 'Perusahaan Induk' }}
+                        </dt>
+                        <dd class="mt-1">
+                            <a href="{{ route('kanban.clients.show', $client->parent) }}" class="text-brand-600 dark:text-brand-400 hover:underline">
+                                {{ $client->parent->display_name }}
+                            </a>
+                        </dd>
                     </div>
                     @endif
                     <div>
@@ -70,45 +98,69 @@
                     </div>
                 </dl>
             </div>
+
+            {{-- Children (Debitur/PT Anak) --}}
+            @if($client->children->count() > 0)
+            <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 mt-6">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        {{ $client->type === 'bank' ? 'Debitur' : 'Perusahaan Anak' }} ({{ $client->children->count() }})
+                    </h2>
+                </div>
+                <div class="divide-y divide-gray-200 dark:divide-gray-800 max-h-64 overflow-y-auto">
+                    @foreach($client->children as $child)
+                    <a href="{{ route('kanban.clients.show', $child) }}" class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">{{ $child->name }}</p>
+                                @if($child->company_name)
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $child->company_name }}</p>
+                                @endif
+                            </div>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ $child->assets_count ?? 0 }} asset</span>
+                        </div>
+                    </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
 
-        {{-- Projects --}}
+        {{-- Assets --}}
         <div class="lg:col-span-2">
             <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Proyek ({{ $client->projects->count() }})</h2>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Asset ({{ $client->assets->count() }})</h2>
                 </div>
                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
-                    @forelse($client->projects as $project)
-                    <a href="{{ route('kanban.projects.show', $project) }}" class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+                    @forelse($client->assets as $asset)
+                    <a href="{{ route('kanban.assets.show', $asset) }}" class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
                         <div class="flex items-center justify-between">
-                            <div>
-                                <p class="font-medium text-gray-900 dark:text-white">{{ $project->name }}</p>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-900 dark:text-white truncate">{{ $asset->name }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $asset->asset_type_label }} • {{ $asset->location ?: 'Lokasi belum diisi' }}</p>
                             </div>
-                            <div class="text-right">
+                            <div class="text-right ml-4">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    {{ $project->status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : '' }}
-                                    {{ $project->status === 'completed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : '' }}
-                                    {{ $project->status === 'on_hold' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' : '' }}
-                                    {{ $project->status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : '' }}
+                                    {{ $asset->priority === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : '' }}
+                                    {{ $asset->priority === 'warning' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' : '' }}
+                                    {{ $asset->priority === 'normal' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400' : '' }}
                                 ">
-                                    {{ ucfirst(str_replace('_', ' ', $project->status)) }}
+                                    Stage {{ $asset->current_stage }}
                                 </span>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $project->assets_count ?? $project->assets->count() }} asset</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $asset->stage_label }}</p>
                             </div>
                         </div>
                     </a>
                     @empty
                     <div class="p-8 text-center">
                         <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
-                        <p class="text-gray-500 dark:text-gray-400">Belum ada proyek untuk klien ini</p>
-                        @if(auth()->user()->hasAdminAccess())
-                        <a href="{{ route('kanban.projects.create', ['client_id' => $client->id]) }}" class="mt-2 inline-block text-brand-600 hover:text-brand-700 dark:text-brand-400 font-medium">
-                            Buat proyek pertama →
+                        <p class="text-gray-500 dark:text-gray-400">Belum ada asset untuk klien ini</p>
+                        <a href="{{ route('kanban.assets.create', ['client_id' => $client->id]) }}" class="mt-2 inline-block text-brand-600 hover:text-brand-700 dark:text-brand-400 font-medium">
+                            Buat asset pertama →
                         </a>
-                        @endif
                     </div>
                     @endforelse
                 </div>
