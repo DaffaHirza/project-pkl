@@ -57,6 +57,7 @@ views/
 **kanban/assets/index.blade.php**
 - Tabel asset dengan pagination
 - Filter by client, stage, priority
+- Stage overview pills dengan counter (dari `stageCounts` bukan data paginate)
 - Kolom: Nama, Client, Type, Stage, Priority
 
 **kanban/assets/board.blade.php** ⭐
@@ -69,9 +70,12 @@ views/
 - Form: Client (dropdown), Nama, Tipe Asset, Lokasi, Priority
 
 **kanban/assets/show.blade.php**
-- Info lengkap asset
+- Info lengkap asset (menggunakan `type_name` accessor untuk label tipe klien)
 - Tab dokumen - upload & daftar file
-- Tab catatan - timeline & form tambah
+- Tab catatan - timeline & form tambah dengan pilihan tipe:
+  - Catatan (default)
+  - Approval
+  - Penolakan/Terhambat (untuk menandai asset bermasalah)
 
 
 ## Rekapitulasi Pages
@@ -95,6 +99,7 @@ views/
 
 **kanban/recapitulations/edit.blade.php**
 - Edit info dasar rekapitulasi (judul, periode, ringkasan)
+- Form hapus terpisah dari form edit (menghindari nested form issue)
 
 **kanban/recapitulations/print.blade.php** ⭐
 - Tampilan cetak untuk rapat evaluasi

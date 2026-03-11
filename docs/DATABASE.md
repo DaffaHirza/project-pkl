@@ -175,8 +175,8 @@ Menyimpan item-item pekerjaan dalam rekapitulasi.
 - **not_started**: Belum dimulai
 - **in_progress**: Sedang dikerjakan
 - **completed**: Selesai
-- **blocked**: Terhambat
-- **pending_review**: Menunggu review
+- **blocked**: Terhambat (otomatis jika ada catatan tipe `rejection` di asset)
+- **pending_review**: Menunggu review (otomatis jika asset di stage 6 atau 10)
 
 
 ## Migration Files

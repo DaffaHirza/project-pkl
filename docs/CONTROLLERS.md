@@ -37,6 +37,7 @@ Validasi store/update:
 Route: `/kanban/assets`
 
 **index()** - Daftar asset dengan filter (client, stage, priority) & search
+  - Mengirim `stageCounts` ke view (jumlah asset per stage dari seluruh database)
 **board()** - Kanban board 13 stage
 **create()** - Form tambah asset
 **store()** - Simpan asset + kirim notifikasi

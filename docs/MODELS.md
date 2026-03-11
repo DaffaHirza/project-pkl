@@ -113,7 +113,10 @@ Model untuk catatan asset.
 **Fillable:** asset_id, user_id, stage, type, content
 
 **Type constants:**
-- note, stage_change, approval, rejection
+- `note` - Catatan biasa
+- `stage_change` - Perubahan stage (otomatis dari sistem)
+- `approval` - Approval/persetujuan
+- `rejection` - Penolakan/kendala (digunakan untuk mendeteksi status "Terhambat" di rekapitulasi)
 
 **Relasi:**
 - asset() - Asset terkait
@@ -204,7 +207,12 @@ Model untuk item pekerjaan dalam rekapitulasi.
 
 **Method:**
 - generateActivitiesFromNotes(periodStart, periodEnd) - Generate aktivitas dari catatan dalam periode
-- determineWorkStatus() - Tentukan status berdasarkan stage progress
+- determineWorkStatus() - Tentukan status otomatis berdasarkan:
+  - `completed` jika stage_end >= 13 (Arsip)
+  - `pending_review` jika stage_end adalah 6 (Review 1) atau 10 (Review 2)
+  - `blocked` jika asset memiliki catatan tipe `rejection` dalam 14 hari terakhir
+  - `in_progress` jika stage_end > stage_start
+  - `not_started` jika tidak ada perubahan stage
 
 **Accessor:**
 - work_status_label - Label status in Indonesian
