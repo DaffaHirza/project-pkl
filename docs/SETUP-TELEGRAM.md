@@ -6,9 +6,9 @@ Cara mengatur notifikasi Telegram.
 ## 1. Dapat Chat ID
 
 1. Buka Telegram
-2. Cari bot: **@appraisal_notif_bot** (atau sesuai .env)
+2. Klik link langsung: https://t.me/appraisal_notif_bot
 3. Klik **Start** atau ketik `/start`
-4. Bot akan kasih **Chat ID** kamu (angka seperti `827770943`)
+4. Bot akan kasih **Chat ID** kamu (angka seperti `1234567`)
 
 
 ## 2. Simpan Chat ID di Aplikasi
@@ -17,7 +17,6 @@ Cara mengatur notifikasi Telegram.
 2. Buka **Profile** (klik nama di pojok kanan atas)
 3. Masukkan Chat ID ke field **Telegram Chat ID**
 4. Klik **Save**
-
 
 ## 3. Test Notifikasi
 
