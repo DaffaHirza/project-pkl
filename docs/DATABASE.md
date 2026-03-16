@@ -53,7 +53,8 @@ Menyimpan data klien (Bank, PT/CV, atau Debitur).
 - **id** - Primary key
 - **name** - Nama kontak person / debitur
 - **company_name** - Nama perusahaan (nullable)
-- **type** - bank / pt_cv / debitur (default: pt_cv)
+- **spk_number** - Nomor SPK untuk bank/perusahaan (nullable)
+- **type** - bank / pt_cv / debitur (default: bank)
 - **parent_id** - FK ke clients_kanban (self-referential, nullable)
 - **timestamps**
 
@@ -65,6 +66,10 @@ Menyimpan data klien (Bank, PT/CV, atau Debitur).
 **Parent ID digunakan untuk:**
 - Debitur: parent_id = ID bank
 - PT Anak: parent_id = ID PT induk
+
+**Indexes:**
+- type
+- parent_id
 
 
 ## Tabel assets_kanban

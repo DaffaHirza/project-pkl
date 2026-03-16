@@ -86,18 +86,14 @@ class ClientKanban extends Model
     }
 
     /**
-     * Total assets including children's assets
+     * Total assets including children's assets (optimized single query)
      */
     public function getTotalAssetsCountAttribute(): int
     {
-        $directAssets = $this->assets()->count();
+        $clientIds = collect([$this->id])
+            ->merge($this->children()->pluck('id'));
         
-        // Also count assets from all children (debitur/anak)
-        $childrenAssets = AssetKanban::whereIn('client_id', 
-            $this->children()->pluck('id')
-        )->count();
-        
-        return $directAssets + $childrenAssets;
+        return AssetKanban::whereIn('client_id', $clientIds)->count();
     }
 
     public function getTypeNameAttribute(): string
@@ -105,48 +101,8 @@ class ClientKanban extends Model
         return self::TYPES[$this->type] ?? $this->type;
     }
 
-    public function getIsBankAttribute(): bool
-    {
-        return $this->type === 'bank';
-    }
-
-    public function getIsPtCvAttribute(): bool
-    {
-        return $this->type === 'pt_cv';
-    }
-
-    public function getIsDebiturAttribute(): bool
-    {
-        return $this->type === 'debitur';
-    }
-
-    public function getHasParentAttribute(): bool
-    {
-        return $this->parent_id !== null;
-    }
-
     public function getChildrenCountAttribute(): int
     {
         return $this->children()->count();
-    }
-
-    /**
-     * Mendapatkan bank pemilik debitur ini
-     */
-    public function getBankAttribute()
-    {
-        if ($this->type === 'debitur') {
-            return $this->parent;
-        }
-        return null;
-    }
-
-    /**
-     * Mendapatkan semua assets dari children (untuk bank/pt induk)
-     */
-    public function getAllChildrenAssetsAttribute()
-    {
-        $childIds = $this->children()->pluck('id');
-        return AssetKanban::whereIn('client_id', $childIds)->get();
     }
 }

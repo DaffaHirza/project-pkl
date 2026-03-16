@@ -67,40 +67,4 @@ class NoteController extends Controller
 
         return back()->with('success', 'Catatan berhasil dihapus.');
     }
-
-    // Get notes by stage
-    public function byStage(AssetKanban $asset, int $stage)
-    {
-        $notes = $asset->notes()
-            ->where('stage', $stage)
-            ->with('user')
-            ->latest()
-            ->get();
-
-        return response()->json($notes);
-    }
-
-    // Get all notes for an asset
-    public function index(AssetKanban $asset)
-    {
-        $notes = $asset->notes()
-            ->with('user')
-            ->latest()
-            ->get()
-            ->groupBy('stage');
-
-        return response()->json($notes);
-    }
-
-    // Get activity log (stage changes, approvals, rejections)
-    public function activityLog(AssetKanban $asset)
-    {
-        $activities = $asset->notes()
-            ->activityLog()
-            ->with('user')
-            ->latest()
-            ->get();
-
-        return response()->json($activities);
-    }
 }

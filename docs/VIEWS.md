@@ -7,18 +7,23 @@ Semua view ada di `resources/views/`
 
 ```
 views/
-├── layouts/           - Layout utama
-├── components/        - Blade components
-├── kanban/            - Halaman kanban
-│   ├── assets/        - CRUD asset + board
-│   ├── clients/       - CRUD client
-│   ├── projects/      - (legacy, deprecated)
-│   └── recapitulations/ - Rekapitulasi mingguan
-├── auth/              - Login, register, dll
-├── profile/           - Halaman profil
-├── notifications/     - Daftar notifikasi
-├── admin/             - Halaman admin
-└── assistant/         - Halaman assistant
+├── layouts/             - Layout utama
+├── components/          - Blade components
+├── partials/            - Header, sidebar, navigation
+├── kanban/              - Halaman kanban
+│   ├── assets/          - CRUD asset + board
+│   ├── clients/         - CRUD client (split by type)
+│   ├── recapitulations/ - Rekapitulasi mingguan
+│   ├── partials/        - Partial views untuk kanban
+│   ├── dashboard.blade.php
+│   └── activity-log.blade.php
+├── auth/                - Login, register, dll
+├── profile/             - Halaman profil
+├── notifications/       - Daftar & settings notifikasi
+├── admin/               - Halaman admin (reports)
+├── assistant/           - Halaman AI assistant
+├── dashboard.blade.php  - Dashboard utama
+└── welcome.blade.php    - Landing page
 ```
 
 
@@ -26,7 +31,8 @@ views/
 
 **layouts/app.blade.php**
 - Layout utama untuk halaman yang butuh login
-- Ada header, sidebar, content area, footer
+- Include: sidebar, navigation (header)
+- State Alpine: darkMode, sidebarToggle
 - Pakai Tailwind CSS + Alpine.js
 
 **layouts/guest.blade.php**
@@ -34,48 +40,107 @@ views/
 - Simple dengan logo di tengah
 
 
-## Kanban Pages
+## Partials
+
+**partials/sidebar.blade.php**
+- Sidebar navigasi dengan menu collapse
+- Active state indicator (biru)
+- Menu: Dashboard, Tracker (submenu), Notifikasi, Assistant
+
+**partials/navigation.blade.php**
+- Header/navbar
+- Hamburger toggle (mobile)
+- Notifikasi dropdown
+- Dark mode toggle
+- User dropdown (profile, logout)
+
+
+## Kanban Dashboard
 
 **kanban/dashboard.blade.php**
-- Statistik: total clients, projects aktif, assets
+- Statistik: total clients, assets, asset critical
 - Daftar asset critical
 - Aktivitas terbaru
 
-**kanban/clients/index.blade.php**
-- Tabel client dengan pagination
-- Search by nama/perusahaan
-- Kolom: Nama, Perusahaan, Jumlah Project
+**kanban/activity-log.blade.php**
+- Log aktivitas semua asset
+- Filter by date, type
+- Timeline view
 
-**kanban/clients/create.blade.php & edit.blade.php**
-- Form: Nama, Nama Perusahaan, Tipe (Bank/PT-CV/Debitur), Parent
+
+## Kanban Clients
+
+**kanban/clients/index.blade.php**
+- Type selector dengan statistik:
+  - Bank, PT/CV Induk, Debitur, PT/CV Anak
+- Cards dengan jumlah masing-masing tipe
+
+**kanban/clients/perusahaan.blade.php** ⭐
+- Daftar Bank & PT/CV Induk
+- Search, filter by type
+- Kolom: Nama, No SPK, Tipe, Jumlah Anak, Jumlah Asset
+
+**kanban/clients/debitur.blade.php** ⭐
+- Daftar Debitur & PT/CV Anak
+- Search, filter by parent
+- Kolom: Nama, Induk (Bank/PT), Jumlah Asset
+
+**kanban/clients/create.blade.php**
+- Type selector untuk form create
+- Pilihan: Bank, Perusahaan Induk, Klien Tunggal
+
+**kanban/clients/create-bank.blade.php** ⭐
+- Form bank dengan multiple debitur sekaligus
+- Dynamic form: tambah/hapus debitur
+- Fields: Nama Bank, No SPK, Daftar Debitur
+
+**kanban/clients/create-perusahaan-induk.blade.php** ⭐
+- Form PT/CV Induk dengan optional PT anak
+- Dynamic form: tambah/hapus PT anak
+- Fields: Nama Perusahaan, No SPK, Daftar PT Anak
+
+**kanban/clients/create-klien.blade.php**
+- Form tunggal untuk Debitur atau PT/CV Anak
+- Dropdown: pilih induk (Bank/PT)
+- Fields: Nama, Tipe, Parent
 
 **kanban/clients/show.blade.php**
-- Info client (nama, tipe, perusahaan, parent)
-- Daftar debitur/PT anak (jika ada)
+- Info client (nama, tipe, perusahaan, parent, SPK)
+- Daftar children (debitur/PT anak) jika ada
 - Daftar asset milik client
+
+**kanban/clients/edit.blade.php**
+- Form edit client
+
+
+## Kanban Assets
 
 **kanban/assets/index.blade.php**
 - Tabel asset dengan pagination
 - Filter by client, stage, priority
-- Stage overview pills dengan counter (dari `stageCounts` bukan data paginate)
+- Stage overview pills dengan counter (dari `stageCounts`)
 - Kolom: Nama, Client, Type, Stage, Priority
 
 **kanban/assets/board.blade.php** ⭐
-- Kanban board dengan 13 kolom
-- Drag & drop asset antar stage
+- Kanban board dengan 13 kolom stage
+- Drag & drop asset antar stage (SortableJS)
 - Filter by client
-- Pakai SortableJS
+- Real-time position update
 
-**kanban/assets/create.blade.php & edit.blade.php**
-- Form: Client (dropdown), Nama, Tipe Asset, Lokasi, Priority
+**kanban/assets/create.blade.php**
+- Form: Client (searchable dropdown), Nama, Tipe Asset, Lokasi, Priority
 
-**kanban/assets/show.blade.php**
-- Info lengkap asset (menggunakan `type_name` accessor untuk label tipe klien)
-- Tab dokumen - upload & daftar file
+**kanban/assets/edit.blade.php**
+- Form edit asset
+
+**kanban/assets/show.blade.php** ⭐
+- Info lengkap asset
+- Breadcrumb: Bank/PT → Debitur/Anak → Asset
+- Tab dokumen - upload & daftar file dengan stage filter
 - Tab catatan - timeline & form tambah dengan pilihan tipe:
   - Catatan (default)
   - Approval
-  - Penolakan/Terhambat (untuk menandai asset bermasalah)
+  - Penolakan/Terhambat
 
 
 ## Rekapitulasi Pages
@@ -99,7 +164,7 @@ views/
 
 **kanban/recapitulations/edit.blade.php**
 - Edit info dasar rekapitulasi (judul, periode, ringkasan)
-- Form hapus terpisah dari form edit (menghindari nested form issue)
+- Form hapus terpisah dari form edit
 
 **kanban/recapitulations/print.blade.php** ⭐
 - Tampilan cetak untuk rapat evaluasi
@@ -114,6 +179,8 @@ views/
 - auth/register.blade.php - Form register
 - auth/forgot-password.blade.php - Form lupa password
 - auth/reset-password.blade.php - Form reset password
+- auth/verify-email.blade.php - Verifikasi email
+- auth/confirm-password.blade.php - Konfirmasi password
 
 
 ## Profile
@@ -128,25 +195,42 @@ views/
 ## Notifications
 
 **notifications/index.blade.php**
-- Daftar semua notifikasi
-- Filter read/unread
-- Tombol mark as read
+- Daftar semua notifikasi dengan pagination
+- Filter: read/unread, type
+- Aksi: mark read/unread, delete
+- Bulk actions: mark all read, delete all read, delete all
+
+**notifications/settings.blade.php**
+- Pengaturan preferensi notifikasi
+- Toggle per tipe notifikasi
+
+
+## Admin
+
+**admin/reports.blade.php**
+- Halaman laporan (untuk admin)
+
+
+## Assistant
+
+**assistant/index.blade.php**
+- Halaman AI Assistant
 
 
 ## Components
 
 Blade components di `views/components/`:
-- Layout components
-- Form inputs
-- Buttons
-- Modals
-- Cards
-- dll
+- confirm-modal.blade.php - Modal konfirmasi
+- dropdown.blade.php - Dropdown menu
+- file-uploader.blade.php - Upload file dengan progress
+- dropzone.blade.php - Drag & drop upload area
+- Form inputs, buttons, cards, dll
 
 
 ## Dark Mode
 
 Semua halaman support dark mode:
-- Toggle di header/navbar
+- Toggle di navigation (header)
 - Pakai Tailwind `dark:` classes
-- Disimpan di localStorage
+- Persisted via Alpine.js `$persist`
+- Sync dengan `<html>` class

@@ -133,28 +133,4 @@ class DocumentController extends Controller
 
         return back()->with('success', 'File berhasil dihapus.');
     }
-
-    // Get documents by stage
-    public function byStage(AssetKanban $asset, int $stage)
-    {
-        $documents = $asset->documents()
-            ->where('stage', $stage)
-            ->with('uploader')
-            ->latest()
-            ->get();
-
-        return response()->json($documents);
-    }
-
-    // Get all documents for an asset
-    public function index(AssetKanban $asset)
-    {
-        $documents = $asset->documents()
-            ->with('uploader')
-            ->latest()
-            ->get()
-            ->groupBy('stage');
-
-        return response()->json($documents);
-    }
 }

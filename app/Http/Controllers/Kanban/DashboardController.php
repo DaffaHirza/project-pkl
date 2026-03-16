@@ -74,53 +74,6 @@ class DashboardController extends Controller
         ));
     }
 
-    // API: Get dashboard data (optimized single queries)
-    public function data()
-    {
-        // Single query for client stats
-        $clientStats = ClientKanban::toBase()
-            ->selectRaw("COUNT(*) as total")
-            ->selectRaw("SUM(CASE WHEN type = 'bank' THEN 1 ELSE 0 END) as banks")
-            ->selectRaw("SUM(CASE WHEN type = 'pt_cv' THEN 1 ELSE 0 END) as pt_cvs")
-            ->selectRaw("SUM(CASE WHEN type = 'debitur' THEN 1 ELSE 0 END) as debiturs")
-            ->first();
-
-        // Single query for asset stats
-        $assetStats = AssetKanban::toBase()
-            ->selectRaw("COUNT(*) as total")
-            ->selectRaw("SUM(CASE WHEN current_stage = 13 THEN 1 ELSE 0 END) as completed")
-            ->first();
-
-        $stats = [
-            'clients' => [
-                'total' => (int) $clientStats->total,
-                'banks' => (int) $clientStats->banks,
-                'pt_cvs' => (int) $clientStats->pt_cvs,
-                'debiturs' => (int) $clientStats->debiturs,
-            ],
-            'assets' => [
-                'total' => (int) $assetStats->total,
-                'completed' => (int) $assetStats->completed,
-                'in_progress' => (int) $assetStats->total - (int) $assetStats->completed,
-            ],
-        ];
-
-        // Single query for all stage counts
-        $stageCounts = AssetKanban::toBase()
-            ->select('current_stage', DB::raw('COUNT(*) as count'))
-            ->groupBy('current_stage')
-            ->pluck('count', 'current_stage');
-
-        $assetsByStage = collect(AssetKanban::STAGES)->mapWithKeys(fn($label, $num) => [
-            $num => ['label' => $label, 'count' => $stageCounts->get($num, 0)]
-        ]);
-
-        return response()->json([
-            'stats' => $stats,
-            'assets_by_stage' => $assetsByStage,
-        ]);
-    }
-
     // Activity Log page - all activities across all assets
     public function activityLog()
     {

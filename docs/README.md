@@ -70,17 +70,22 @@ Buka http://localhost:8000
 
 ## Fitur Utama
 
-- **Kanban Board** - 13 stage penilaian, drag & drop
-- **Notifikasi** - In-app + Telegram
-- **Manajemen** - Client, Project, Asset, Dokumen, Catatan
+- **Kanban Board** - 13 stage penilaian, drag & drop dengan SortableJS
+- **Manajemen Client** - Bank, PT/CV, Debitur dengan struktur hierarki
+- **Manajemen Asset** - CRUD asset dengan dokumen & catatan per stage
+- **Rekapitulasi** - Laporan progress mingguan untuk evaluasi meeting
+- **Notifikasi** - In-app + Telegram (real-time via queue)
+- **Dark Mode** - Toggle tema gelap/terang
 
 
 ## Tech Stack
 
-- Laravel 11 (Backend)
-- Blade + Tailwind + Alpine.js (Frontend)
-- PostgreSQL (Database)
-- Telegram Bot API (Notifikasi)
+- **Backend:** Laravel 11 (PHP 8.2+)
+- **Frontend:** Blade + Tailwind CSS + Alpine.js
+- **Database:** PostgreSQL
+- **Queue:** Laravel Queue (database driver)
+- **External:** Telegram Bot API (notifikasi)
+- **Build:** Vite
 
 
 ## Dokumentasi Lainnya

@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AssistantController;
-use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Kanban\DashboardController;
 use App\Http\Controllers\Kanban\ClientController;
@@ -27,7 +26,6 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/assistant', [AssistantController::class, 'index'])->name('assistant.index');
-    Route::get('/tracking', [TrackingController::class, 'index'])->name('tracking.index');
 
     // ============================================
     // NOTIFICATIONS
@@ -55,7 +53,6 @@ Route::middleware('auth')->group(function () {
         // Dashboard - All authenticated users
         Route::controller(DashboardController::class)->group(function () {
             Route::get('/', 'index')->name('dashboard');
-            Route::get('/dashboard/data', 'data')->name('dashboard.data');
             Route::get('/activity-log', 'activityLog')->name('activity-log');
         });
 
@@ -99,7 +96,6 @@ Route::middleware('auth')->group(function () {
             // Create/Update/Operations - All users
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
-            Route::post('/bulk', 'bulkStore')->name('bulk-store');
             Route::get('/{asset}/edit', 'edit')->name('edit')->whereNumber('asset');
             Route::put('/{asset}', 'update')->name('update')->whereNumber('asset');
             Route::post('/{asset}/move-stage', 'moveStage')->name('move-stage')->whereNumber('asset');
@@ -117,8 +113,6 @@ Route::middleware('auth')->group(function () {
         // ----------------------------------------
         Route::controller(DocumentController::class)->group(function () {
             Route::prefix('assets/{asset}')->name('documents.')->whereNumber('asset')->group(function () {
-                Route::get('/documents', 'index')->name('index');
-                Route::get('/documents/stage/{stage}', 'byStage')->name('by-stage')->whereNumber('stage');
                 Route::post('/documents', 'store')->name('store');
             });
             Route::get('/documents/{document}/download', 'download')->name('documents.download')->whereNumber('document');
@@ -130,9 +124,6 @@ Route::middleware('auth')->group(function () {
         // ----------------------------------------
         Route::controller(NoteController::class)->group(function () {
             Route::prefix('assets/{asset}')->name('notes.')->whereNumber('asset')->group(function () {
-                Route::get('/notes', 'index')->name('index');
-                Route::get('/notes/stage/{stage}', 'byStage')->name('by-stage')->whereNumber('stage');
-                Route::get('/notes/activity-log', 'activityLog')->name('activity-log');
                 Route::post('/notes', 'store')->name('store');
             });
             Route::delete('/notes/{note}', 'destroy')->name('notes.destroy')->whereNumber('note');
@@ -171,12 +162,6 @@ Route::middleware('auth')->group(function () {
     // ADMIN ONLY ROUTES
     // ============================================
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
-        // User management - Superuser only
-        Route::middleware('role:superuser')->group(function () {
-            // Future: user management routes
-        });
-        
-        // Reports & Stats - Admin+
         Route::get('/reports', fn() => view('admin.reports'))->name('reports');
     });
 });

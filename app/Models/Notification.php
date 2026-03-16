@@ -40,44 +40,20 @@ class Notification extends Model
     ];
 
     /**
-     * Notification types
+     * Notification types - hanya yang digunakan dalam sistem
      */
     public const TYPES = [
-        // Card/Legacy types
-        'card_assigned' => 'Ditugaskan ke Card',
-        'card_due_soon' => 'Deadline Mendekat',
-        'card_overdue' => 'Card Overdue',
-        'card_comment' => 'Komentar Baru',
-        'card_attachment' => 'Attachment Baru',
-        'card_moved' => 'Card Dipindahkan',
-        
-        // Kanban Asset types
+        // Asset types
         'asset_stage_changed' => 'Stage Asset Berubah',
         'asset_created' => 'Asset Baru Dibuat',
         'asset_document_uploaded' => 'Dokumen Asset Diupload',
         'asset_note_added' => 'Catatan Asset Ditambahkan',
         'asset_priority_critical' => 'Asset Priority Critical',
         
-        // Project types
-        'project_created' => 'Project Baru Dibuat',
-        'project_stage_changed' => 'Stage Project Berubah',
-        'project_assigned' => 'Ditugaskan ke Project',
-        'project_completed' => 'Project Selesai',
-        
         // Client types
         'client_created' => 'Client Baru Ditambahkan',
         
-        // Other types
-        'inspection_scheduled' => 'Jadwal Inspeksi',
-        'inspection_reminder' => 'Pengingat Inspeksi',
-        'approval_required' => 'Perlu Approval',
-        'approval_completed' => 'Approval Selesai',
-        'invoice_created' => 'Invoice Dibuat',
-        'invoice_paid' => 'Invoice Dibayar',
-        'invoice_overdue' => 'Invoice Overdue',
-        'report_uploaded' => 'Laporan Diupload',
-        'report_revision' => 'Permintaan Revisi',
-        'obstacle_reported' => 'Halangan Dilaporkan',
+        // System
         'system' => 'Sistem',
     ];
 
@@ -145,24 +121,12 @@ class Notification extends Model
     public function getIconAttribute(): string
     {
         $icons = [
-            'card_assigned' => 'user-plus',
-            'card_due_soon' => 'clock',
-            'card_overdue' => 'alert-triangle',
-            'card_comment' => 'message-circle',
-            'card_attachment' => 'paperclip',
-            'card_moved' => 'move',
-            'project_stage_changed' => 'git-branch',
-            'project_assigned' => 'briefcase',
-            'inspection_scheduled' => 'calendar',
-            'inspection_reminder' => 'bell',
-            'approval_required' => 'check-circle',
-            'approval_completed' => 'check-square',
-            'invoice_created' => 'file-text',
-            'invoice_paid' => 'dollar-sign',
-            'invoice_overdue' => 'alert-circle',
-            'report_uploaded' => 'upload',
-            'report_revision' => 'edit',
-            'obstacle_reported' => 'alert-octagon',
+            'asset_stage_changed' => 'git-branch',
+            'asset_created' => 'plus-circle',
+            'asset_document_uploaded' => 'upload',
+            'asset_note_added' => 'message-circle',
+            'asset_priority_critical' => 'alert-triangle',
+            'client_created' => 'users',
             'system' => 'info',
         ];
 
@@ -175,24 +139,12 @@ class Notification extends Model
     public function getColorAttribute(): string
     {
         $colors = [
-            'card_assigned' => 'blue',
-            'card_due_soon' => 'yellow',
-            'card_overdue' => 'red',
-            'card_comment' => 'gray',
-            'card_attachment' => 'gray',
-            'card_moved' => 'blue',
-            'project_stage_changed' => 'purple',
-            'project_assigned' => 'blue',
-            'inspection_scheduled' => 'green',
-            'inspection_reminder' => 'yellow',
-            'approval_required' => 'orange',
-            'approval_completed' => 'green',
-            'invoice_created' => 'blue',
-            'invoice_paid' => 'green',
-            'invoice_overdue' => 'red',
-            'report_uploaded' => 'blue',
-            'report_revision' => 'yellow',
-            'obstacle_reported' => 'red',
+            'asset_stage_changed' => 'purple',
+            'asset_created' => 'green',
+            'asset_document_uploaded' => 'blue',
+            'asset_note_added' => 'gray',
+            'asset_priority_critical' => 'red',
+            'client_created' => 'blue',
             'system' => 'gray',
         ];
 

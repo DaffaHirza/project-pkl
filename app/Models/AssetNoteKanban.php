@@ -65,30 +65,6 @@ class AssetNoteKanban extends Model
     }
 
     // ==========================================
-    // METHODS
-    // ==========================================
-
-    public function isStageChange(): bool
-    {
-        return $this->type === 'stage_change';
-    }
-
-    public function isApproval(): bool
-    {
-        return $this->type === 'approval';
-    }
-
-    public function isRejection(): bool
-    {
-        return $this->type === 'rejection';
-    }
-
-    public function isNote(): bool
-    {
-        return $this->type === 'note';
-    }
-
-    // ==========================================
     // SCOPES
     // ==========================================
 

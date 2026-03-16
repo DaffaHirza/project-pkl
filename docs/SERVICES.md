@@ -27,8 +27,8 @@ Service untuk kirim notifikasi. Kirim ke:
 - Dipanggil saat buat asset baru
 - Kirim ke database saja
 
-**notifyProjectCreated(project, createdBy)**
-- Dipanggil saat buat project baru
+**notifyClientCreated(client, createdBy)**
+- Dipanggil saat buat client baru
 - Kirim ke database saja
 
 **notifyPriorityCritical(asset, changedBy)**

@@ -19,9 +19,9 @@ return new class extends Migration
      * - PT Anak: parent_id = ID PT induk
      * 
      * Alur:
-     * - Bank → Debitur (child) → Projects → Assets
-     * - PT/CV → Projects → Assets
-     * - PT/CV → PT Anak (child) → Projects → Assets
+     * - Bank → Debitur (child) → Assets
+     * - PT/CV → Assets
+     * - PT/CV Besar → PT Anak (child) → Assets
      */
     public function up(): void
     {

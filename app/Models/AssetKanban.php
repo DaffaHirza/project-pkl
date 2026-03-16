@@ -169,24 +169,6 @@ class AssetKanban extends Model
         return $this->current_stage === 13;
     }
 
-    public function getDocumentsByStage(?int $stage = null)
-    {
-        $query = $this->documents();
-        if ($stage) {
-            $query->where('stage', $stage);
-        }
-        return $query->latest()->get();
-    }
-
-    public function getNotesByStage(?int $stage = null)
-    {
-        $query = $this->notes();
-        if ($stage) {
-            $query->where('stage', $stage);
-        }
-        return $query->latest()->get();
-    }
-
     // ==========================================
     // SCOPES
     // ==========================================
@@ -215,11 +197,6 @@ class AssetKanban extends Model
     {
         return $query->whereIn('priority', ['warning', 'critical'])
             ->where('current_stage', '<', 13);
-    }
-
-    public function scopeForKanban($query)
-    {
-        return $query->select('id', 'client_id', 'name', 'asset_code', 'current_stage', 'priority', 'position');
     }
 
     public function scopeOrdered($query)
