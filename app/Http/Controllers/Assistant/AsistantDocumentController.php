@@ -7,6 +7,8 @@ use App\Models\AssistantDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\AIServices;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AsistantDocumentController extends Controller
 {
@@ -46,7 +48,7 @@ class AsistantDocumentController extends Controller
             $judulOtomatis = pathinfo($fileUtama->getClientOriginalName(), PATHINFO_FILENAME);
 
             $document = AssistantDocument::create([
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'judul'   => $judulOtomatis,
                 'status'  => 'draft'
 
@@ -80,7 +82,7 @@ class AsistantDocumentController extends Controller
                     ->with('error', 'Terjadi kesalahan: Aksi tidak dikenali.');
             }
         } catch (\Exception $e) {
-            \Log::error('Error Store Document: ' . $e->getMessage());
+            Log::error('Error Store Document: ' . $e->getMessage());
 
             // Jika document sudah terbuat tapi AI gagal, kita tetap redirect ke hasil (meski error)
             if (isset($document) && $document->id) {

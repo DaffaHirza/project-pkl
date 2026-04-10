@@ -115,17 +115,14 @@ views/
 
 ## Kanban Assets
 
-**kanban/assets/index.blade.php**
-- Tabel asset dengan pagination
-- Filter by client, stage, priority
-- Stage overview pills dengan counter (dari `stageCounts`)
-- Kolom: Nama, Client, Type, Stage, Priority
-
-**kanban/assets/board.blade.php** ⭐
+**kanban/assets/index.blade.php** ⭐
 - Kanban board dengan 13 kolom stage
 - Drag & drop asset antar stage (SortableJS)
 - Filter by client
 - Real-time position update
+
+**kanban/assets/board.blade.php**
+- Sudah dihapus, board sekarang memakai `kanban/assets/index.blade.php`
 
 **kanban/assets/create.blade.php**
 - Form: Client (searchable dropdown), Nama, Tipe Asset, Lokasi, Priority

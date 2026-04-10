@@ -1,6 +1,8 @@
-<aside :class="sidebarToggle ? 'translate-x-0' : '-translate-x-full'"
-    class="sidebar fixed left-0 top-0 z-9999 flex h-screen w-[290px] flex-col overflow-y-hidden border-r border-gray-200 bg-white duration-300 ease-linear dark:border-gray-800 dark:bg-black lg:static lg:translate-x-0"
-    @click.outside="sidebarToggle = false">
+<aside id="sidebar"
+    :class="sidebarToggle ? 'translate-x-0 lg:border-r' : '-translate-x-full lg:translate-x-0 lg:border-r-0'"
+    :style="window.innerWidth >= 1024 ? (sidebarToggle ? 'width: 290px;' : 'width: 0px;') : ''"
+    class="sidebar fixed left-0 top-0 z-9999 flex h-screen w-[290px] flex-col overflow-y-hidden border-r border-gray-200 bg-white duration-300 ease-linear dark:border-gray-800 dark:bg-black lg:static"
+    @click.outside="if (window.innerWidth < 1024 && !$event.target.closest('[aria-controls=\'sidebar\']')) sidebarToggle = false">
 
     <!-- Sidebar Header -->
     <div class="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
@@ -33,7 +35,7 @@
             $currentRoute = Route::currentRouteName();
             $activeMenu = match(true) {
                 str_starts_with($currentRoute, 'kanban.dashboard') => 'Kanban.Dashboard',
-                str_starts_with($currentRoute, 'kanban.assets.board') => 'Kanban.Board',
+                str_starts_with($currentRoute, 'kanban.assets.index') => 'Kanban.Board',
                 str_starts_with($currentRoute, 'kanban.assets') => 'Kanban.Board',
                 str_starts_with($currentRoute, 'kanban.clients') => 'Kanban.Clients',
                 str_starts_with($currentRoute, 'kanban.activity-log') => 'Kanban.ActivityLog',
@@ -106,7 +108,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('kanban.assets.board') }}" @click="selected = 'Kanban.Board'"
+                                <a href="{{ route('kanban.assets.index') }}" @click="selected = 'Kanban.Board'"
                                     class="group flex items-center gap-2.5 rounded-lg px-4 py-2 font-medium text-sm duration-300 ease-in-out"
                                     :class="selected === 'Kanban.Board' ?
                                         'text-brand-500 dark:text-brand-400' :

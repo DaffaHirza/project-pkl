@@ -44,7 +44,7 @@
             </svg>
         </button>
 
-        <div class="hidden md:flex items-center gap-2">
+        {{-- <div class="hidden md:flex items-center gap-2">
             <a href="{{ route('kanban.assets.create') }}"
                class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-dark dark:text-gray-200 dark:hover:bg-white/5">
                 <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -52,7 +52,7 @@
                 </svg>
                 Asset Baru
             </a>
-        </div>
+        </div> --}}
 
         <div class="flex items-center gap-3 2xsm:gap-7">
             <!-- Notifications Dropdown -->

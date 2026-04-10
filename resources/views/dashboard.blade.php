@@ -16,7 +16,7 @@
                     </svg>
                     Tracker Dashboard
                 </a>
-                <a href="{{ route('kanban.assets.board') }}" class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-50 transition">
+                <a href="{{ route('kanban.assets.index') }}" class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-50 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                     </svg>
@@ -105,7 +105,7 @@
                     <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">Dashboard</span>
                 </a>
 
-                <a href="{{ route('kanban.assets.board') }}" class="group flex flex-col items-center p-6 rounded-2xl border border-gray-200 bg-white hover:border-blue-300 hover:shadow-lg transition dark:border-gray-800 dark:bg-gray-900 dark:hover:border-blue-700">
+                <a href="{{ route('kanban.assets.index') }}" class="group flex flex-col items-center p-6 rounded-2xl border border-gray-200 bg-white hover:border-blue-300 hover:shadow-lg transition dark:border-gray-800 dark:bg-gray-900 dark:hover:border-blue-700">
                     <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition shadow-lg shadow-blue-500/25">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />

@@ -17,7 +17,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body x-data="{ page: 'ecommerce', 'loaded': true, 'darkMode': $persist(false), 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }" x-init="$watch('darkMode', value => document.documentElement.classList.toggle('dark', value))" :class="{ 'dark': darkMode === true }"
+<body x-data="{ page: 'ecommerce', 'loaded': true, 'darkMode': $persist(false), 'stickyMenu': false, 'sidebarToggle': window.innerWidth >= 1024, 'scrollTop': false }" x-init="$watch('darkMode', value => document.documentElement.classList.toggle('dark', value))" :class="{ 'dark': darkMode === true }"
     class="font-sans antialiased bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
     <div class="flex h-screen overflow-hidden">
 

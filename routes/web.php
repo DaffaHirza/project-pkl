@@ -39,8 +39,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{assistantDocument}', 'destroy')->name('destroy')->whereNumber('assistantDocument');
     });
 
-    Route::get('/tracking', [TrackingController::class, 'index'])->name('tracking.index');
-
     // ============================================
     // NOTIFICATIONS
     // ============================================
@@ -134,7 +132,6 @@ Route::middleware('auth')->group(function () {
         Route::controller(AssetController::class)->prefix('assets')->name('assets.')->group(function () {
             // Read - All users
             Route::get('/', 'index')->name('index');
-            Route::get('/board', 'board')->name('board'); // Kanban board view
             Route::get('/{asset}', 'show')->name('show')->whereNumber('asset');
 
             // Create/Update/Operations - All users

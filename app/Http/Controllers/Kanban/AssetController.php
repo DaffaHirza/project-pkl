@@ -13,64 +13,12 @@ use Illuminate\Support\Facades\DB;
 class AssetController extends Controller
 {
     /**
-     * Display paginated assets with filters
+     * Display kanban board with drag-and-drop
      */
     public function index(Request $request)
     {
         $query = AssetKanban::query()
-            ->select('assets_kanban.id', 'assets_kanban.client_id', 
-                     'assets_kanban.name',
-                     'assets_kanban.asset_type', 'assets_kanban.current_stage',
-                     'assets_kanban.priority', 'assets_kanban.created_at')
-            ->with(['client:id,name,company_name']);
-
-        // Filter by client
-        if ($request->filled('client_id')) {
-            $query->where('client_id', (int) $request->client_id);
-        }
-
-        // Filter by stage
-        if ($request->filled('stage')) {
-            $stage = (int) $request->stage;
-            if ($stage >= 1 && $stage <= 13) {
-                $query->where('current_stage', $stage);
-            }
-        }
-
-        // Filter by priority
-        if ($request->filled('priority') && in_array($request->priority, ['normal', 'warning', 'critical'])) {
-            $query->where('priority', $request->priority);
-        }
-
-        // Search
-        if ($request->filled('search')) {
-            $search = trim($request->search);
-            $query->where(function ($q) use ($search) {
-                $q->where('assets_kanban.name', 'like', "%{$search}%");
-            });
-        }
-
-        $assets = $query->latest('assets_kanban.created_at')->paginate(15)->withQueryString();
-        $stages = AssetKanban::STAGES;
-        $priorities = AssetKanban::PRIORITIES;
-        
-        // Get stage counts (unfiltered) for stage overview
-        $stageCounts = AssetKanban::selectRaw('current_stage, COUNT(*) as count')
-            ->groupBy('current_stage')
-            ->pluck('count', 'current_stage')
-            ->toArray();
-
-        return view('kanban.assets.index', compact('assets', 'stages', 'priorities', 'stageCounts'));
-    }
-
-    /**
-     * Kanban board view with drag-and-drop
-     */
-    public function board(Request $request)
-    {
-        $query = AssetKanban::query()
-            ->select('id', 'client_id', 'name', 'asset_type', 
-                     'current_stage', 'priority', 'position', 'updated_at')
+            ->select('id', 'client_id', 'name', 'asset_type', 'current_stage', 'priority', 'position', 'updated_at')
             ->with(['client:id,name,company_name']);
 
         // Filter by client
@@ -89,7 +37,7 @@ class AssetController extends Controller
         $stages = AssetKanban::STAGES;
         $clients = ClientKanban::select('id', 'name', 'company_name')->orderBy('name')->get();
 
-        return view('kanban.assets.board', compact('assetsByStage', 'stages', 'clients'));
+        return view('kanban.assets.index', compact('assetsByStage', 'stages', 'clients'));
     }
 
     /**
