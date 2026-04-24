@@ -1,4 +1,4 @@
-<x-common.component-card title="Textarea input fields">
+<x-card title="Textarea input fields">
     <!-- Elements -->
     <div>
         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -28,4 +28,4 @@
             Please enter a message in the textarea.
         </p>
     </div>
-</x-common.component-card>
+</x-card>

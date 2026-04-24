@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Auth;
 
 
 
@@ -19,6 +21,17 @@ class AssistantDocument extends Model
         'status',
     ];
     protected $guarded = ['id'];
+
+    public function scopeOwnedBy(Builder $query, ?int $userId = null): Builder
+    {
+        $ownerId = $userId ?? Auth::id();
+
+        if ($ownerId === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where('user_id', $ownerId);
+    }
 
     public function user()
     {

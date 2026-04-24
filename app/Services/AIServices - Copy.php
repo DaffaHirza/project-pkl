@@ -156,10 +156,7 @@ class AIServices
                 : $this->sectionAnalyzer->buildSectionPrompt($sectionName, $sectionSnippet, $relevantDocs, $instruction, $availableDocs);
 
             $hasilValidasi = $this->aiClient->analyze($prompt);
-            $parsedResult = $this->sectionAnalyzer->parseAiResponse($hasilValidasi);
-            $status = ($parsedResult['status'] ?? 'TIDAK VALID') === 'VALID'
-                ? 'ditemukan'
-                : 'tidak_ditemukan';
+            $status = $this->sectionAnalyzer->parseValidationStatus($hasilValidasi);
 
             if ($status === 'ditemukan') {
                 $totalValid++;
@@ -169,7 +166,6 @@ class AIServices
                 'mode' => $mode,
                 'status' => $status,
                 'hasil' => $hasilValidasi,
-                'parsed_ai' => $parsedResult,
                 'checked_against' => $availableDocs,
                 'snippet_found' => !empty($sectionSnippet['snippet']),
                 'laporan_excerpt' => $laporanEvidence,
@@ -199,7 +195,7 @@ class AIServices
             foreach ($hasilPerSection as $sectionName => $result) {
                 if (in_array($kategori, $result['checked_against'] ?? [], true)) {
                     $sectionLabel = ucwords(str_replace('_', ' ', (string) $sectionName));
-                    $ringkas = trim((string) ($result['parsed_ai']['catatan'] ?? ($result['hasil'] ?? '-')));
+                    $ringkas = trim((string) ($result['hasil'] ?? '-'));
                     $ringkas = mb_substr((string) preg_replace('/\s+/', ' ', $ringkas), 0, 280);
                     $laporanBanding = $this->sectionAnalyzer->shortText($result['laporan_excerpt'] ?? '-', 220);
                     $dokumenBanding = $this->sectionAnalyzer->shortText($result['doc_excerpts'][$kategori] ?? '-', 220);

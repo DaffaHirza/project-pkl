@@ -1,4 +1,4 @@
-<x-common.component-card title="Checkboxes">
+<x-card title="Checkboxes">
     <div class="flex flex-wrap items-center gap-8">
         <div x-data="{ checkboxToggle: false }">
             <label for="checkboxLabelOne"
@@ -66,4 +66,4 @@
             </label>
         </div>
     </div>
-</x-common.component-card>
+</x-card>

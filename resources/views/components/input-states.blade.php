@@ -1,7 +1,4 @@
-<x-common.component-card 
-  title="Input States"
-  desc="Validation styles for error, success and disabled states on form controls."
->
+<x-card title="Input States" desc="Validation styles for error, success and disabled states on form controls.">
     <div class="space-y-5 sm:space-y-6">
         <!-- Elements -->
         <div>
@@ -58,4 +55,4 @@
                 class="shadow-theme-xs focus:border-brand-300 focus:shadow-focus-ring dark:focus:border-brand-300 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-hidden disabled:border-gray-100 disabled:placeholder:text-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-gray-400 dark:disabled:border-gray-800 dark:disabled:placeholder:text-white/15" />
         </div>
     </div>
-</x-common.component-card>
+</x-card>

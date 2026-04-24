@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\AssetDocumentKanban;
+use App\Models\AssistantDocument;
 use App\Models\Notification;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -30,7 +32,12 @@ class AppServiceProvider extends ServiceProvider
 
         // Explicit model binding for kanban documents
         Route::model('document', AssetDocumentKanban::class);
-        
+
+        // Restrict assistant document binding to authenticated owner only.
+        Route::bind('assistantDocument', function ($value) {
+            return AssistantDocument::ownedBy(Auth::id())->findOrFail($value);
+        });
+
         // Explicit model binding for notifications (uses UUID)
         Route::model('notification', Notification::class);
     }

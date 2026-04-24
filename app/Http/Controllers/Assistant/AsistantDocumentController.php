@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Assistant;
 use App\Http\Controllers\Controller;
 use App\Models\AssistantDocument;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Services\AIServices;
 
 class AsistantDocumentController extends Controller
@@ -15,7 +17,9 @@ class AsistantDocumentController extends Controller
      */
     public function index()
     {
-        $documents = AssistantDocument::all();
+        $documents = AssistantDocument::ownedBy(Auth::id())
+            ->get();
+
         return view('assistant.index', compact('documents'));
     }
 
@@ -46,7 +50,7 @@ class AsistantDocumentController extends Controller
             $judulOtomatis = pathinfo($fileUtama->getClientOriginalName(), PATHINFO_FILENAME);
 
             $document = AssistantDocument::create([
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'judul'   => $judulOtomatis,
                 'status'  => 'draft'
 
@@ -69,18 +73,18 @@ class AsistantDocumentController extends Controller
                 $aiservices->prosesDokumen($document);
                 $document->refresh();
                 $document->load('documentItems');
-                return redirect()->route('assistantai.pages.create')
+                return redirect()->route('assistant.create')
                     ->with('hasil_ai', $document)
                     ->with('success', 'Analisis Selesai!');
             } elseif ($action === 'savedraft') {
-                return redirect()->route('assistantai.pages.index')
+                return redirect()->route('assistant.index')
                     ->with('success', 'Dokumen berhasil disimpan sebagai Draft.');
             } else {
-                return redirect()->route('assistantai.pages.index')
+                return redirect()->route('assistant.index')
                     ->with('error', 'Terjadi kesalahan: Aksi tidak dikenali.');
             }
         } catch (\Exception $e) {
-            \Log::error('Error Store Document: ' . $e->getMessage());
+            Log::error('Error Store Document: ' . $e->getMessage());
 
             // Jika document sudah terbuat tapi AI gagal, kita tetap redirect ke hasil (meski error)
             if (isset($document) && $document->id) {
@@ -98,7 +102,9 @@ class AsistantDocumentController extends Controller
      */
     public function show(AssistantDocument $assistantDocument)
     {
-        //
+        $this->abortIfNotOwner($assistantDocument);
+
+        return response()->json($assistantDocument->load('documentItems'));
     }
 
     /**
@@ -106,8 +112,11 @@ class AsistantDocumentController extends Controller
      */
     public function edit(AssistantDocument $assistantDocument)
     {
-        $document = AssistantDocument::with('documentItems')->findOrFail($assistantDocument->id);
+        $this->abortIfNotOwner($assistantDocument);
+
+        $document = $assistantDocument->load('documentItems');
         session()->now('hasil_ai', $document);
+
         return view('assistant.create', compact('document'));
     }
 
@@ -116,7 +125,9 @@ class AsistantDocumentController extends Controller
      */
     public function update(Request $request, AssistantDocument $assistantDocument)
     {
-        //
+        $this->abortIfNotOwner($assistantDocument);
+
+        abort(501, 'Update belum diimplementasikan.');
     }
 
     /**
@@ -124,6 +135,15 @@ class AsistantDocumentController extends Controller
      */
     public function destroy(AssistantDocument $assistantDocument)
     {
-        //
+        $this->abortIfNotOwner($assistantDocument);
+
+        abort(501, 'Delete belum diimplementasikan.');
+    }
+
+    private function abortIfNotOwner(AssistantDocument $assistantDocument): void
+    {
+        if ($assistantDocument->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized');
+        }
     }
 }

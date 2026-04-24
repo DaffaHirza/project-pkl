@@ -10,6 +10,7 @@ use App\Http\Controllers\Kanban\ProjectController;
 use App\Http\Controllers\Kanban\AssetController;
 use App\Http\Controllers\Kanban\DocumentController;
 use App\Http\Controllers\Kanban\NoteController;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => view('welcome'));
@@ -19,6 +20,53 @@ Route::get('/dashboard', fn() => view('dashboard'))
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/debug/gemini-models', function () {
+        if (!config('app.debug')) {
+            abort(403, 'Debug route is disabled.');
+        }
+
+        $apiKey = (string) config('gemini.api_key', env('GEMINI_API_KEY', ''));
+        if (trim($apiKey) === '') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'GEMINI_API_KEY belum di-set.',
+            ], 500);
+        }
+
+        $baseUrl = rtrim((string) config('gemini.base_url', 'https://generativelanguage.googleapis.com/v1beta'), '/');
+        if ($baseUrl === '' || !preg_match('/^https?:\/\//i', $baseUrl)) {
+            $baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
+        }
+
+        $url = $baseUrl . '/models';
+        $response = Http::timeout((int) config('gemini.request_timeout', 30))
+            ->withQueryParameters(['key' => $apiKey])
+            ->get($url);
+
+        if ($response->failed()) {
+            return response()->json([
+                'ok' => false,
+                'status' => $response->status(),
+                'url' => $url,
+                'error' => $response->json() ?? $response->body(),
+            ], $response->status());
+        }
+
+        $models = $response->json('models', []);
+        $generateContentModels = array_values(array_filter($models, function ($model) {
+            $methods = $model['supportedGenerationMethods'] ?? [];
+            return in_array('generateContent', $methods, true);
+        }));
+
+        return response()->json([
+            'ok' => true,
+            'url' => $url,
+            'total_models' => count($models),
+            'generate_content_models' => array_map(fn($m) => $m['name'] ?? '-', $generateContentModels),
+            'models_raw' => $models,
+        ]);
+    })->name('debug.gemini-models');
+
     // Profile
     Route::controller(ProfileController::class)->prefix('profile')->name('profile.')->group(function () {
         Route::get('/', 'edit')->name('edit');

@@ -1,4 +1,4 @@
-<x-common.component-card title="Default Inputs">
+<x-card title="Default Inputs">
     <!-- Elements -->
     <div>
         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -81,12 +81,8 @@
             Date Picker Input
         </label>
 
-        <x-form.date-picker 
-            id="date_pick" 
-            name="date_pick"
-            placeholder="Date Picker" 
-            defaultDate="{{ now()->format('Y-m-d') }}" 
-        />
+        <x-form.date-picker id="date_pick" name="date_pick" placeholder="Date Picker"
+            defaultDate="{{ now()->format('Y-m-d') }}" />
     </div>
 
     <!-- Elements -->
@@ -130,4 +126,4 @@
             </span>
         </div>
     </div>
-</x-common.component-card>
+</x-card>
