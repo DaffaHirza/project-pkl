@@ -58,7 +58,7 @@
                     <strong>Cara mendapatkan Chat ID:</strong>
                 </p>
                 <ol class="text-sm text-blue-600 dark:text-blue-400 mt-1 list-decimal list-inside space-y-1">
-                    <li>Buka Telegram dan cari bot <a href="https://t.me/kjpp_mushofah_bot" target="_blank" class="underline font-medium">@kjpp_mushofah_bot</a></li>
+                    <li>Buka Telegram dan cari bot <a href="https://t.me/appraisal_notif_bot" target="_blank" class="underline font-medium">@appraisal_notif_bot</a></li>
                     <li>Klik <strong>Start</strong> atau ketik <code class="bg-blue-100 dark:bg-blue-800 px-1 rounded">/start</code></li>
                     <li>Copy Chat ID yang diberikan bot dan paste di sini</li>
                 </ol>

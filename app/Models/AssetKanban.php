@@ -5,21 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\ProjectKanban;
+use App\Models\ClientKanban;
 use App\Models\AssetDocumentKanban;
 use App\Models\AssetNoteKanban;
 
-class ProjectAssetKanban extends Model
+class AssetKanban extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'project_assets_kanban';
+    protected $table = 'assets_kanban';
 
     protected $fillable = [
-        'project_id',
-        'asset_code',
+        'client_id',
         'name',
-        'description',
         'asset_type',
         'location',
         'current_stage',
@@ -70,29 +68,15 @@ class ProjectAssetKanban extends Model
     ];
 
     // ==========================================
-    // BOOT
-    // ==========================================
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($asset) {
-            if (empty($asset->asset_code)) {
-                $year = date('Y');
-                $count = self::whereYear('created_at', $year)->withTrashed()->count();
-                $asset->asset_code = sprintf('AST-%s-%04d', $year, $count + 1);
-            }
-        });
-    }
-
-    // ==========================================
     // RELATIONSHIPS
     // ==========================================
 
-    public function project()
+    /**
+     * Client pemilik asset (debitur, pt_cv, atau pt_anak)
+     */
+    public function client()
     {
-        return $this->belongsTo(ProjectKanban::class, 'project_id');
+        return $this->belongsTo(ClientKanban::class, 'client_id');
     }
 
     public function documents()
@@ -127,6 +111,17 @@ class ProjectAssetKanban extends Model
     public function getProgressAttribute(): int
     {
         return (int) round(($this->current_stage / 13) * 100);
+    }
+
+    /**
+     * Mendapatkan bank jika asset ini milik debitur
+     */
+    public function getBankAttribute()
+    {
+        if ($this->client?->type === 'debitur') {
+            return $this->client->parent;
+        }
+        return null;
     }
 
     // ==========================================
@@ -174,24 +169,6 @@ class ProjectAssetKanban extends Model
         return $this->current_stage === 13;
     }
 
-    public function getDocumentsByStage(?int $stage = null)
-    {
-        $query = $this->documents();
-        if ($stage) {
-            $query->where('stage', $stage);
-        }
-        return $query->latest()->get();
-    }
-
-    public function getNotesByStage(?int $stage = null)
-    {
-        $query = $this->notes();
-        if ($stage) {
-            $query->where('stage', $stage);
-        }
-        return $query->latest()->get();
-    }
-
     // ==========================================
     // SCOPES
     // ==========================================
@@ -220,11 +197,6 @@ class ProjectAssetKanban extends Model
     {
         return $query->whereIn('priority', ['warning', 'critical'])
             ->where('current_stage', '<', 13);
-    }
-
-    public function scopeForKanban($query)
-    {
-        return $query->select('id', 'project_id', 'name', 'asset_code', 'current_stage', 'priority', 'position');
     }
 
     public function scopeOrdered($query)

@@ -1,9 +1,8 @@
-<header x-data="{ menuToggle: false }"
-    class="sticky top-0 z-999 flex w-full bg-white drop-shadow-sm dark:bg-gray-dark dark:drop-shadow-none">
+<header class="sticky top-0 z-999 flex w-full bg-white drop-shadow-sm dark:bg-gray-dark dark:drop-shadow-none">
     <div class="flex flex-grow items-center justify-between px-4 py-4 shadow-sm md:px-6 2xl:px-11">
         <div class="flex items-center gap-2 sm:gap-4 lg:hidden">
             <!-- Hamburger Toggle Button -->
-            <button aria-controls="sidebar" @click.stop="sidebarToggle = !sidebarToggle"
+            <button type="button" aria-controls="sidebar" aria-label="Toggle sidebar" @click.stop="sidebarToggle = !sidebarToggle"
                 class="z-99999 block rounded-lg border border-gray-200 bg-white p-1.5 shadow-sm dark:border-gray-800 dark:bg-gray-dark lg:hidden">
                 <span class="relative block h-5.5 w-5.5 cursor-pointer">
                     <span class="block absolute right-0 h-full w-full">
@@ -36,8 +35,7 @@
         </div>
 
         <!-- Sidebar Toggle for Desktop -->
-        <!-- Sidebar Toggle for Desktop -->
-        <button @click.stop="sidebarToggle = !sidebarToggle"
+        <button type="button" aria-controls="sidebar" aria-label="Toggle sidebar" @click.stop="sidebarToggle = !sidebarToggle"
             class="hidden lg:flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/5">
             <svg class="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
@@ -46,9 +44,15 @@
             </svg>
         </button>
 
-        <div class="hidden sm:block">
-            <!-- Search or other elements can go here -->
-        </div>
+        {{-- <div class="hidden md:flex items-center gap-2">
+            <a href="{{ route('kanban.assets.create') }}"
+               class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-dark dark:text-gray-200 dark:hover:bg-white/5">
+                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Asset Baru
+            </a>
+        </div> --}}
 
         <div class="flex items-center gap-3 2xsm:gap-7">
             <!-- Notifications Dropdown -->
@@ -74,7 +78,7 @@
             }" 
             x-init="fetchNotifications()"
             class="relative">
-                <button @click="open = !open; if(open) fetchNotifications()" 
+                <button type="button" aria-label="Buka notifikasi" @click="open = !open; if(open) fetchNotifications()" 
                     class="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/5">
                     <svg class="fill-gray-500 dark:fill-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 6.44V9.77M20.59 12.5C20.5 13.14 19.98 13.65 19.34 13.65C19.23 13.65 19.13 13.64 19.03 13.61L17.45 13.12C17.34 13.77 16.77 14.25 16.1 14.25H7.9C7.23 14.25 6.66 13.77 6.55 13.12L4.97 13.61C4.87 13.64 4.77 13.65 4.66 13.65C4.02 13.65 3.5 13.14 3.41 12.5C3.24 11.18 4.36 10.25 5.69 10.25H18.31C19.64 10.25 20.76 11.18 20.59 12.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -87,7 +91,7 @@
                 </button>
 
                 <!-- Notifications Panel -->
-                <div x-show="open" @click.outside="open = false" x-transition
+                 <div x-show="open" x-cloak @keydown.escape.window="open = false" @click.outside="open = false" x-transition
                      class="absolute right-0 mt-4 w-80 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900">
                     <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 p-4">
                         <h3 class="font-semibold text-gray-900 dark:text-white">Notifikasi</h3>
@@ -102,7 +106,7 @@
                             </div>
                         </template>
                         <template x-for="notif in notifications" :key="notif.id">
-                            <a :href="notif.action_url ? '/notifications/' + notif.id + '/view' : '#'" 
+                                     <a :href="notif.action_url ? '/notifications/' + notif.id + '/view' : '{{ route('notifications.index') }}'" 
                                class="block p-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                                :class="{ 'bg-blue-50 dark:bg-blue-900/10': !notif.is_read }">
                                 <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="notif.title"></p>
@@ -116,7 +120,7 @@
             @endauth
 
             <!-- Dark Mode Toggle -->
-            <button @click="darkMode = !darkMode"
+            <button type="button" :aria-label="darkMode ? 'Aktifkan light mode' : 'Aktifkan dark mode'" @click="darkMode = !darkMode"
                 class="flex h-8.5 w-8.5 items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/5">
                 <svg x-show="!darkMode" class="fill-gray-700" width="16" height="16" viewBox="0 0 16 16"
                     fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -159,11 +163,11 @@
             <!-- User Dropdown -->
             @auth
                 <div x-data="{ dropdownOpen: false }" class="relative">
-                    <button @click="dropdownOpen = !dropdownOpen" class="flex items-center gap-3">
+                    <button type="button" @click="dropdownOpen = !dropdownOpen" :aria-expanded="dropdownOpen" aria-label="Buka menu pengguna" class="flex items-center gap-3">
                         <span class="hidden text-right lg:block">
                             <span
                                 class="block text-sm font-medium text-gray-700 dark:text-white">{{ Auth::user()->name }}</span>
-                            <span class="block text-xs text-gray-500 dark:text-gray-400">Admin</span>
+                            <span class="block text-xs text-gray-500 dark:text-gray-400">{{ Auth::user()->role_name ?? ucfirst(Auth::user()->role ?? 'User') }}</span>
                         </span>
 
                         <span
@@ -181,7 +185,7 @@
                     </button>
 
                     <!-- Dropdown Menu -->
-                    <div x-show="dropdownOpen" @click.outside="dropdownOpen = false" x-transition
+                    <div x-show="dropdownOpen" x-cloak @keydown.escape.window="dropdownOpen = false" @click.outside="dropdownOpen = false" x-transition
                         class="absolute right-0 mt-4 flex w-62.5 flex-col rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-dark">
                         <ul class="flex flex-col gap-5 border-b border-gray-200 px-6 py-7.5 dark:border-gray-800">
                             <li>

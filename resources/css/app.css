@@ -34,6 +34,10 @@
 }
 
 @layer utilities {
+    [x-cloak] {
+        display: none !important;
+    }
+
     /* For Remove Date Icon */
     input[type="date"]::-webkit-inner-spin-button,
     input[type="time"]::-webkit-inner-spin-button,

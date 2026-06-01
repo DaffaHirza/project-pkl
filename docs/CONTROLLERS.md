@@ -1,440 +1,231 @@
-# Dokumentasi Controllers
+# Controllers
 
-Lokasi: app/Http/Controllers/
+Semua controller ada di `app/Http/Controllers/`
 
----
 
-## 1. Controller.php
+## DashboardController
 
-Base controller. Tidak ada logic khusus.
+Lokasi: `app/Http/Controllers/Kanban/DashboardController.php`
 
----
+Route: `/kanban`
 
-## 2. Kanban/DashboardController.php
-
-### Deskripsi
-Controller untuk halaman dashboard utama kanban.
+**index()** - Tampilkan dashboard dengan statistik:
+- Total clients, assets
+- Asset critical
+- Aktivitas terbaru
 
-### Method
-
-#### index()
-- Route: GET /kanban/dashboard
-- Fungsi: Menampilkan dashboard dengan statistik
-- Data yang dikembalikan:
-  - stats (total clients, projects, assets, dll)
-  - criticalAssets (asset dengan priority critical)
-  - recentActivities (aktivitas terbaru)
-- View: kanban.dashboard
-
-#### data()
-- Route: GET /kanban/dashboard/data (API)
-- Fungsi: Mengambil data dashboard dalam format JSON
-- Response: JSON dengan stats dan data terbaru
-
----
-
-## 3. Kanban/ClientController.php
-
-### Deskripsi
-Controller untuk CRUD data client/klien.
-
-### Method
-
-#### index(Request $request)
-- Route: GET /kanban/clients
-- Fungsi: Daftar semua client dengan pagination
-- Filter: search (nama, perusahaan, email)
-- View: kanban.clients.index
+**activityLog()** - GET `/kanban/activity-log` - Log aktivitas semua asset
 
-#### create()
-- Route: GET /kanban/clients/create
-- Fungsi: Form tambah client baru
-- View: kanban.clients.create
 
-#### store(Request $request)
-- Route: POST /kanban/clients
-- Fungsi: Simpan client baru ke database
-- Validasi:
-  - name: required, string, max:255, min:2
-  - company_name: nullable, string, max:255
-  - email: nullable, email, unique
-  - phone: nullable, string, max:50
-  - address: nullable, string, max:1000
-- Redirect: kanban.clients.show
-
-#### show(ClientKanban $client)
-- Route: GET /kanban/clients/{client}
-- Fungsi: Detail client dengan daftar project
-- View: kanban.clients.show
-
-#### edit(ClientKanban $client)
-- Route: GET /kanban/clients/{client}/edit
-- Fungsi: Form edit client
-- View: kanban.clients.edit
-
-#### update(Request $request, ClientKanban $client)
-- Route: PUT /kanban/clients/{client}
-- Fungsi: Update data client
-- Redirect: kanban.clients.show
-
-#### destroy(ClientKanban $client)
-- Route: DELETE /kanban/clients/{client}
-- Fungsi: Hapus client (hanya jika tidak punya project)
-- Redirect: kanban.clients.index
-
----
-
-## 4. Kanban/ProjectController.php
-
-### Deskripsi
-Controller untuk CRUD data project.
-
-### Method
-
-#### index(Request $request)
-- Route: GET /kanban/projects
-- Fungsi: Daftar semua project dengan pagination
-- Filter: status, client_id, search
-- View: kanban.projects.index
-
-#### create(Request $request)
-- Route: GET /kanban/projects/create
-- Fungsi: Form tambah project baru
-- Query: client_id (opsional, pre-select client)
-- View: kanban.projects.create
-
-#### store(Request $request)
-- Route: POST /kanban/projects
-- Fungsi: Simpan project baru
-- Validasi:
-  - client_id: required, exists
-  - name: required, string, max:255, min:3
-  - description: nullable, string, max:2000
-  - due_date: nullable, date, after_or_equal:today
-- Notifikasi: Kirim notifikasi ke semua user
-- Redirect: kanban.projects.show
-
-#### show(ProjectKanban $project)
-- Route: GET /kanban/projects/{project}
-- Fungsi: Detail project dengan daftar asset per stage
-- View: kanban.projects.show
-
-#### edit(ProjectKanban $project)
-- Route: GET /kanban/projects/{project}/edit
-- Fungsi: Form edit project
-- View: kanban.projects.edit
-
-#### update(Request $request, ProjectKanban $project)
-- Route: PUT /kanban/projects/{project}
-- Fungsi: Update data project
-- Redirect: kanban.projects.show
-
-#### destroy(ProjectKanban $project)
-- Route: DELETE /kanban/projects/{project}
-- Fungsi: Soft delete project
-- Redirect: kanban.projects.index
-
----
-
-## 5. Kanban/AssetController.php
-
-### Deskripsi
-Controller untuk CRUD asset dan kanban board.
-
-### Method
-
-#### index(Request $request)
-- Route: GET /kanban/assets
-- Fungsi: Daftar semua asset dengan pagination
-- Filter: project_id, stage, priority, search
-- View: kanban.assets.index
-
-#### board(Request $request)
-- Route: GET /kanban/assets/board
-- Fungsi: Tampilan kanban board dengan 13 stage
-- Filter: project_id
-- View: kanban.assets.board
-
-#### create(Request $request)
-- Route: GET /kanban/assets/create
-- Fungsi: Form tambah asset baru
-- Query: project_id (opsional)
-- View: kanban.assets.create
-
-#### store(Request $request)
-- Route: POST /kanban/assets
-- Fungsi: Simpan asset baru
-- Validasi:
-  - project_id: required, exists
-  - name: required, string, max:255, min:3
-  - description: nullable, string, max:2000
-  - asset_type: required, in:tanah,bangunan,...
-  - location: nullable, string, max:500
-  - priority: required, in:normal,warning,critical
-- Notifikasi: Kirim notifikasi asset baru
-- Redirect: kanban.assets.show
-
-#### show(ProjectAssetKanban $asset)
-- Route: GET /kanban/assets/{asset}
-- Fungsi: Detail asset dengan dokumen dan catatan
-- View: kanban.assets.show
-
-#### edit(ProjectAssetKanban $asset)
-- Route: GET /kanban/assets/{asset}/edit
-- Fungsi: Form edit asset
-- View: kanban.assets.edit
-
-#### update(Request $request, ProjectAssetKanban $asset)
-- Route: PUT /kanban/assets/{asset}
-- Fungsi: Update data asset
-- Redirect: kanban.assets.show
-
-#### destroy(ProjectAssetKanban $asset)
-- Route: DELETE /kanban/assets/{asset}
-- Fungsi: Soft delete asset
-- Redirect: kanban.assets.index
-
-#### moveStage(Request $request, ProjectAssetKanban $asset)
-- Route: POST /kanban/assets/{asset}/move
-- Fungsi: Pindahkan asset ke stage lain (drag & drop)
-- Parameter:
-  - stage: integer (1-13)
-  - position: integer (opsional)
-  - note: string (opsional)
-- Notifikasi: Kirim notifikasi perubahan stage + Telegram
-- Response: JSON
-
----
-
-## 6. Kanban/DocumentController.php
-
-### Deskripsi
-Controller untuk upload dan manajemen dokumen asset.
-
-### Method
-
-#### store(Request $request, ProjectAssetKanban $asset)
-- Route: POST /kanban/assets/{asset}/documents
-- Fungsi: Upload dokumen ke asset
-- Validasi:
-  - files: required, array
-  - files.*: file, max:20480 (20MB)
-  - stage: nullable, integer, 1-13
-  - description: nullable, string, max:500
-- Path: storage/assets/{asset_id}/stage-{stage}/
-- Notifikasi: Kirim notifikasi dokumen diupload
-- Response: JSON atau redirect
-
-#### download(AssetDocumentKanban $document)
-- Route: GET /kanban/documents/{document}/download
-- Fungsi: Download dokumen
-- Response: File download
-
-#### destroy(AssetDocumentKanban $document)
-- Route: DELETE /kanban/documents/{document}
-- Fungsi: Hapus dokumen (file + record)
-- Response: JSON atau redirect
-
----
-
-## 7. Kanban/NoteController.php
-
-### Deskripsi
-Controller untuk catatan/komentar asset.
-
-### Method
-
-#### store(Request $request, ProjectAssetKanban $asset)
-- Route: POST /kanban/assets/{asset}/notes
-- Fungsi: Tambah catatan baru
-- Validasi:
-  - content: required, string, min:3, max:2000
-  - stage: nullable, integer, 1-13
-  - type: nullable, in:note,approval,rejection
-- Notifikasi: Kirim notifikasi catatan baru + Telegram
-- Response: JSON atau redirect
-
-#### destroy(AssetNoteKanban $note)
-- Route: DELETE /kanban/notes/{note}
-- Fungsi: Hapus catatan (hanya catatan sendiri)
-- Response: JSON atau redirect
-
-#### byStage(ProjectAssetKanban $asset, int $stage)
-- Route: GET /kanban/assets/{asset}/notes/stage/{stage}
-- Fungsi: Ambil catatan per stage
-- Response: JSON
-
----
-
-## 8. ProfileController.php
-
-### Deskripsi
-Controller untuk manajemen profil user.
-
-### Method
-
-#### edit(Request $request)
-- Route: GET /profile
-- Fungsi: Form edit profil
-- View: profile.edit
-
-#### update(ProfileUpdateRequest $request)
-- Route: PATCH /profile
-- Fungsi: Update data profil
-- Data yang diupdate:
-  - name
-  - email
-  - telegram_chat_id
-- Redirect: profile.edit
-
-#### destroy(Request $request)
-- Route: DELETE /profile
-- Fungsi: Hapus akun sendiri
-- Validasi: password required
-- Redirect: / (home)
-
----
-
-## 9. NotificationController.php
-
-### Deskripsi
-Controller untuk manajemen notifikasi in-app.
-
-### Method
-
-#### index(Request $request)
-- Route: GET /notifications
-- Fungsi: Daftar semua notifikasi user
-- Filter: status (read/unread), type
-- View: notifications.index
-
-#### recent(Request $request)
-- Route: GET /notifications/recent (API)
-- Fungsi: Ambil 10 notifikasi terbaru
-- Response: JSON
-
-#### markAsRead(Notification $notification)
-- Route: POST /notifications/{notification}/read
-- Fungsi: Tandai notifikasi sudah dibaca
-- Response: JSON
-
-#### markAllAsRead(Request $request)
-- Route: POST /notifications/read-all
-- Fungsi: Tandai semua notifikasi sudah dibaca
-- Response: JSON
-
-#### destroy(Notification $notification)
-- Route: DELETE /notifications/{notification}
-- Fungsi: Hapus notifikasi
-- Response: JSON atau redirect
-
-#### unreadCount(Request $request)
-- Route: GET /notifications/unread-count (API)
-- Fungsi: Hitung jumlah notifikasi belum dibaca
-- Response: JSON dengan count
-
----
-
-## 10. TelegramWebhookController.php
-
-### Deskripsi
-Controller untuk menangani webhook Telegram bot.
-
-### Method
-
-#### handle(Request $request)
-- Route: POST /api/telegram/webhook
-- Fungsi: Handle pesan masuk dari Telegram
-- Command yang didukung:
-  - /start - Selamat datang + Chat ID
-  - /help - Bantuan penggunaan
-  - /id - Tampilkan Chat ID
-- Response: JSON {ok: true}
-
-#### setWebhook(Request $request)
-- Route: POST /api/telegram/set-webhook (Admin only)
-- Fungsi: Set webhook URL ke Telegram
-- Parameter: url (string)
-- Response: JSON
-
-#### getWebhookInfo()
-- Route: GET /api/telegram/webhook-info (Admin only)
-- Fungsi: Cek status webhook
-- Response: JSON
-
-#### deleteWebhook()
-- Route: POST /api/telegram/delete-webhook (Admin only)
-- Fungsi: Hapus webhook
-- Response: JSON
-
----
-
-## 11. Auth Controllers (Laravel Breeze)
-
-Lokasi: app/Http/Controllers/Auth/
-
-### AuthenticatedSessionController.php
-- create() - Form login
-- store() - Proses login
-- destroy() - Logout
-
-### RegisteredUserController.php
-- create() - Form register
-- store() - Proses register
-
-### PasswordResetLinkController.php
-- create() - Form lupa password
-- store() - Kirim email reset
-
-### NewPasswordController.php
-- create() - Form reset password
-- store() - Simpan password baru
-
-### PasswordController.php
-- update() - Update password di profil
-
-### ConfirmablePasswordController.php
-- show() - Form konfirmasi password
-- store() - Proses konfirmasi
-
-### EmailVerificationPromptController.php
-- __invoke() - Halaman verifikasi email
-
-### EmailVerificationNotificationController.php
-- store() - Kirim ulang email verifikasi
-
-### VerifyEmailController.php
-- __invoke() - Proses verifikasi email
-
----
-
-## Ringkasan Route Utama
-
-### Publik
-- GET / - Landing page
-- GET /login - Form login
-- POST /login - Proses login
-- GET /forgot-password - Form lupa password
-- POST /forgot-password - Kirim email reset
-
-### Authenticated (Perlu Login)
-- GET /dashboard - Redirect ke kanban dashboard
-- GET /profile - Edit profil
-- PATCH /profile - Update profil
-- GET /notifications - Daftar notifikasi
-
-### Kanban Routes
-- GET /kanban/dashboard - Dashboard
-- Resource: /kanban/clients - CRUD Client
-- Resource: /kanban/projects - CRUD Project
-- Resource: /kanban/assets - CRUD Asset
-- GET /kanban/assets/board - Kanban Board
-- POST /kanban/assets/{asset}/move - Pindah stage
-- POST /kanban/assets/{asset}/documents - Upload dokumen
-- POST /kanban/assets/{asset}/notes - Tambah catatan
-
-### API Routes
-- POST /api/telegram/webhook - Telegram webhook
-- GET /api/telegram/webhook-info - Info webhook (admin)
-- POST /api/telegram/set-webhook - Set webhook (admin)
-- POST /api/telegram/delete-webhook - Hapus webhook (admin)
+## ClientController
+
+Lokasi: `app/Http/Controllers/Kanban/ClientController.php`
+
+Route: `/kanban/clients`
+
+**Daftar Klien (Split by Type):**
+- **index()** - GET `/kanban/clients` - Type selector dengan statistik
+- **indexPerusahaan()** - GET `/kanban/clients/perusahaan` - Daftar Bank & PT/CV Induk
+- **indexDebitur()** - GET `/kanban/clients/debitur` - Daftar Debitur & PT/CV Anak
+- **search()** - GET `/kanban/clients/search` - Search API (JSON)
+
+**Form Create (Split by Type):**
+- **create()** - GET `/kanban/clients/create` - Type selector
+- **createBank()** - GET `/kanban/clients/create/bank` - Form bank + multi debitur
+- **createPerusahaanInduk()** - GET `/kanban/clients/create/perusahaan-induk` - Form PT/CV + multi anak
+- **createKlien()** - GET `/kanban/clients/create/klien` - Form debitur/PT anak tunggal
+
+**Store (Split by Type):**
+- **storeBank()** - POST `/kanban/clients/bank` - Simpan bank + debitur sekaligus
+- **storePerusahaanInduk()** - POST `/kanban/clients/perusahaan-induk` - Simpan PT/CV + anak
+- **storeKlien()** - POST `/kanban/clients/klien` - Simpan debitur/PT anak tunggal
+
+**CRUD Standard:**
+- **show()** - GET `/kanban/clients/{id}` - Detail client + daftar asset
+- **edit()** - GET `/kanban/clients/{id}/edit` - Form edit
+- **update()** - PUT `/kanban/clients/{id}` - Update client
+- **destroy()** - DELETE `/kanban/clients/{id}` - Hapus (jika tidak punya asset)
+
+Validasi storeBank:
+- company_name: required, min:2, max:255
+- spk_number: nullable, max:100
+- debiturs: required, array, min:1
+- debiturs.*.name: required, min:2, max:255
+
+Validasi storePerusahaanInduk:
+- company_name: required, min:2, max:255
+- spk_number: nullable, max:100
+- children: nullable, array
+- children.*.company_name: required_with, min:2, max:255
+
+Validasi storeKlien:
+- name: required, min:2, max:255
+- company_name: nullable, max:255
+- client_type: required, in:debitur,pt_cv_anak
+- parent_id: required, exists
+
+
+## AssetController
+
+Lokasi: `app/Http/Controllers/Kanban/AssetController.php`
+
+Route: `/kanban/assets`
+
+**index()** - Daftar asset dengan filter (client, stage, priority) & search
+  - Mengirim `stageCounts` ke view (jumlah asset per stage dari seluruh database)
+**board()** - Kanban board 13 stage dengan drag & drop
+**create()** - Form tambah asset
+**store()** - Simpan asset + kirim notifikasi
+**show()** - Detail asset dengan dokumen & catatan
+**edit()** - Form edit asset
+**update()** - Update asset
+**destroy()** - Soft delete asset (admin only)
+**moveStage()** - Pindah stage (untuk drag & drop) + kirim notifikasi Telegram
+**updatePosition()** - Update posisi dalam stage (untuk sorting)
+**updatePriority()** - Update priority asset
+
+Validasi store/update:
+- client_id: required, exists
+- name: required, min:3, max:255
+- asset_type: required, in:[types]
+- location: nullable, max:500
+- priority: required, in:normal,warning,critical
+
+
+## DocumentController
+
+Lokasi: `app/Http/Controllers/Kanban/DocumentController.php`
+
+Route: `/kanban/assets/{asset}/documents`
+
+**store()** - POST - Upload dokumen ke asset
+**download()** - GET `/kanban/documents/{id}/download` - Download file
+**destroy()** - DELETE `/kanban/documents/{id}` - Hapus dokumen
+
+Validasi upload:
+- files: required, array
+- files.*: file, max:102400 (100MB)
+
+
+## NoteController
+
+Lokasi: `app/Http/Controllers/Kanban/NoteController.php`
+
+Route: `/kanban/assets/{asset}/notes`
+
+**store()** - POST - Tambah catatan + kirim notifikasi Telegram
+**destroy()** - DELETE `/kanban/notes/{id}` - Hapus catatan (hanya milik sendiri)
+
+Validasi:
+- content: required, min:3, max:2000
+- type: nullable, in:note,approval,rejection
+
+
+## NotificationController
+
+Lokasi: `app/Http/Controllers/NotificationController.php`
+
+Route: `/notifications`
+
+**Daftar & View:**
+- **index()** - GET `/notifications` - Daftar semua notifikasi dengan filter & pagination
+- **recent()** - GET `/notifications/recent` - 10 notifikasi terbaru (JSON untuk dropdown)
+- **unreadCount()** - GET `/notifications/unread-count` - Jumlah belum dibaca (JSON)
+- **view()** - GET `/notifications/{id}/view` - Buka notifikasi & mark as read + redirect
+
+**Mark Read/Unread:**
+- **markAsRead()** - POST `/notifications/{id}/mark-read` - Tandai sudah dibaca
+- **markAsUnread()** - POST `/notifications/{id}/mark-unread` - Tandai belum dibaca
+- **markAllAsRead()** - POST `/notifications/mark-all-read` - Tandai semua sudah dibaca
+
+**Delete:**
+- **destroy()** - DELETE `/notifications/{id}` - Hapus satu notifikasi
+- **destroyAllRead()** - DELETE `/notifications/bulk/read` - Hapus semua yang sudah dibaca
+- **destroyAll()** - DELETE `/notifications/bulk/all` - Hapus semua notifikasi
+
+**Settings:**
+- **settings()** - GET `/notifications/settings` - Halaman pengaturan notifikasi
+- **updateSettings()** - POST `/notifications/settings` - Simpan pengaturan
+
+
+## TelegramWebhookController
+
+Lokasi: `app/Http/Controllers/TelegramWebhookController.php`
+
+Route: `/api/telegram/webhook`
+
+**handle()** - POST - Handle pesan dari Telegram
+**setWebhook()** - Set webhook URL (admin only)
+**getWebhookInfo()** - Cek status webhook (admin only)
+**deleteWebhook()** - Hapus webhook (admin only)
+
+Bot commands:
+- /start - Selamat datang + Chat ID
+- /id - Tampilkan Chat ID
+- /help - Bantuan
+
+
+## ProfileController
+
+Lokasi: `app/Http/Controllers/ProfileController.php`
+
+Route: `/profile`
+
+**edit()** - GET - Form edit profil
+**update()** - PATCH - Update profil (name, email, telegram_chat_id)
+**destroy()** - DELETE - Hapus akun
+
+
+## RecapitulationController
+
+Lokasi: `app/Http/Controllers/Kanban/RecapitulationController.php`
+
+Route: `/kanban/recapitulations`
+
+**CRUD:**
+- **index()** - GET - Daftar rekapitulasi dengan filter status & pagination
+- **create()** - GET - Form buat rekapitulasi dengan saran periode
+- **store()** - POST - Simpan rekapitulasi baru + auto-generate items
+- **show()** - GET `/{id}` - Detail rekapitulasi dengan statistik & items
+- **edit()** - GET `/{id}/edit` - Form edit rekapitulasi
+- **update()** - PUT `/{id}` - Update info rekapitulasi
+- **destroy()** - DELETE `/{id}` - Hapus rekapitulasi + items
+
+**Actions:**
+- **publish()** - POST `/{id}/publish` - Publikasikan rekapitulasi
+- **unpublish()** - POST `/{id}/unpublish` - Kembalikan ke draft
+- **regenerate()** - POST `/{id}/regenerate` - Generate ulang items dari aktivitas
+- **print()** - GET `/{id}/print` - Tampilan cetak untuk rapat
+
+**Item Management (AJAX):**
+- **addItem()** - POST `/{id}/items` - Tambah asset ke rekapitulasi
+- **updateItem()** - PUT `/items/{id}` - Update status/notes item
+- **removeItem()** - DELETE `/items/{id}` - Hapus item dari rekapitulasi
+- **availableAssets()** - GET `/{id}/available-assets` - Daftar asset yang belum ada
+
+Validasi store/update:
+- title: required, max:255
+- period_start: required, date
+- period_end: required, date, after:period_start
+- summary: nullable, max:2000
+
+
+## AssistantController
+
+Lokasi: `app/Http/Controllers/AssistantController.php`
+
+Route: `/assistant`
+
+**index()** - GET - Halaman AI Assistant
+
+
+## Auth Controllers (Laravel Breeze)
+
+Lokasi: `app/Http/Controllers/Auth/`
+
+Standard authentication:
+- AuthenticatedSessionController - Login/logout
+- RegisteredUserController - Register
+- PasswordResetLinkController - Lupa password
+- NewPasswordController - Reset password
+- PasswordController - Ubah password

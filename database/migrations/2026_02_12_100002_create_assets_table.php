@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Tabel Project Assets - Objek penilaian dengan workflow stage 1-13
+     * Tabel Assets - Objek penilaian dengan workflow stage 1-13
+     * 
+     * Asset langsung terhubung ke client (debitur, pt_cv, atau pt_anak)
      * 
      * Stage Workflow:
      * 1. Inisiasi          - Masuknya permintaan penilaian
@@ -26,12 +28,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('project_assets_kanban', function (Blueprint $table) {
+        Schema::create('assets_kanban', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->constrained('projects_kanban')->onDelete('cascade');
-            $table->string('asset_code', 20)->unique()->nullable(); // AST-2026-0001
+            $table->foreignId('client_id')->constrained('clients_kanban')->onDelete('cascade');
             $table->string('name'); // Nama objek
-            $table->text('description')->nullable();
             $table->string('asset_type', 30)->default('lainnya'); 
             // tanah, bangunan, tanah_bangunan, mesin, kendaraan, inventaris, aset_tak_berwujud, lainnya
             
@@ -49,8 +49,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             
-            $table->index(['project_id', 'current_stage']);
-            $table->index(['project_id', 'position']); // For ordering in board
+            $table->index(['client_id', 'current_stage']);
+            $table->index(['client_id', 'position']); // For ordering in board
             $table->index('current_stage');
             $table->index('priority');
         });
@@ -58,6 +58,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('project_assets_kanban');
+        Schema::dropIfExists('assets_kanban');
     }
 };

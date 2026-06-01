@@ -8,18 +8,37 @@ return new class extends Migration
 {
     /**
      * Tabel Clients - Menyimpan data klien
-     * 1 Client bisa punya banyak Project
+     * 
+     * Type:
+     * - bank: Client perbankan yang memiliki debitur
+     * - pt_cv: Client PT/CV yang langsung memiliki project atau memiliki PT anak
+     * - debitur: Debitur dari bank (child dari client bank)
+     * 
+     * Parent ID digunakan untuk:
+     * - Debitur: parent_id = ID bank
+     * - PT Anak: parent_id = ID PT induk
+     * 
+     * Alur:
+     * - Bank → Debitur (child) → Assets
+     * - PT/CV → Assets
+     * - PT/CV Besar → PT Anak (child) → Assets
      */
     public function up(): void
     {
         Schema::create('clients_kanban', function (Blueprint $table) {
             $table->id();
-            $table->string('name');                     // Nama kontak person
+            $table->string('name');                     // Nama kontak person / debitur
             $table->string('company_name')->nullable(); // Nama perusahaan/instansi
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->text('address')->nullable();
+            $table->string('spk_number')->nullable();   // Nomor SPK untuk bank
+            $table->string('type', 20)->default('bank'); // bank / pt_cv / debitur
+            $table->foreignId('parent_id')              // Self-referential: debitur->bank, pt_anak->pt_induk
+                ->nullable()
+                ->constrained('clients_kanban')
+                ->onDelete('cascade');
             $table->timestamps();
+            
+            $table->index('type');
+            $table->index('parent_id');
         });
     }
 

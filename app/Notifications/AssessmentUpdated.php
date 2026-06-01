@@ -8,14 +8,14 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
-use App\Models\ProjectAssetKanban;
+use App\Models\AssetKanban;
 use App\Models\User;
 
 class AssessmentUpdated extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    protected ProjectAssetKanban $asset;
+    protected AssetKanban $asset;
     protected string $type; // 'stage_change', 'new_note', 'document_uploaded'
     protected User $actor;
     protected ?string $additionalInfo;
@@ -23,7 +23,7 @@ class AssessmentUpdated extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(ProjectAssetKanban $asset, string $type, User $actor, ?string $additionalInfo = null)
+    public function __construct(AssetKanban $asset, string $type, User $actor, ?string $additionalInfo = null)
     {
         $this->asset = $asset;
         $this->type = $type;
@@ -38,14 +38,12 @@ class AssessmentUpdated extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
-        
-        // Only send Telegram if user has telegram_chat_id configured
+        // Only Telegram channel - database notification is handled by Notification model
         if (!empty($notifiable->telegram_chat_id)) {
-            $channels[] = TelegramChannel::class;
+            return [TelegramChannel::class];
         }
         
-        return $channels;
+        return [];
     }
 
     /**
@@ -53,16 +51,21 @@ class AssessmentUpdated extends Notification implements ShouldQueue
      */
     public function toTelegram(object $notifiable): TelegramMessage
     {
+        // Guard: ensure telegram_chat_id exists
+        if (empty($notifiable->telegram_chat_id)) {
+            throw new \RuntimeException("User {$notifiable->id} has no telegram_chat_id");
+        }
+        
         // Use config('app.url') instead of url() helper for queue context
         $appUrl = config('app.url');
         $assetUrl = rtrim($appUrl, '/') . "/kanban/assets/{$this->asset->id}";
-        $stageName = ProjectAssetKanban::STAGES[$this->asset->current_stage] ?? 'Unknown';
+        $stageName = AssetKanban::STAGES[$this->asset->current_stage] ?? 'Unknown';
         
         switch ($this->type) {
             case 'stage_change':
                 $emoji = "🔄";
                 $title = "Status Berubah!";
-                $content = "Asset *{$this->asset->name}* ({$this->asset->asset_code}) kini berada di stage: *{$stageName}*.";
+                $content = "*{$this->actor->name}* memindahkan asset *{$this->asset->name}* ke stage: *{$stageName}*.";
                 if ($this->additionalInfo) {
                     $content .= "\n\n📝 Catatan: " . Str::limit($this->additionalInfo, 100);
                 }
@@ -89,19 +92,20 @@ class AssessmentUpdated extends Notification implements ShouldQueue
             case 'priority_change':
                 $emoji = "⚠️";
                 $title = "Prioritas Berubah!";
-                $priorityName = ProjectAssetKanban::PRIORITIES[$this->asset->priority] ?? $this->asset->priority;
-                $content = "Asset *{$this->asset->name}* kini memiliki prioritas: *{$priorityName}*.";
+                $priorityName = AssetKanban::PRIORITIES[$this->asset->priority] ?? $this->asset->priority;
+                $content = "*{$this->actor->name}* mengubah prioritas asset *{$this->asset->name}* menjadi: *{$priorityName}*.";
                 break;
                 
             default:
                 $emoji = "🔔";
                 $title = "Update Asset";
-                $content = "Ada update pada asset *{$this->asset->name}*.";
+                $content = "*{$this->actor->name}* melakukan update pada asset *{$this->asset->name}*.";
         }
 
+        $clientName = $this->asset->client->display_name ?? 'Unknown';
         $message = TelegramMessage::create()
             ->to($notifiable->telegram_chat_id)
-            ->content("{$emoji} *{$title}*\n\nHalo {$notifiable->name},\n{$content}\n\n🏢 Project: {$this->asset->project->name}\n\n📋 Kode Asset: {$this->asset->asset_code}");
+            ->content("{$emoji} *{$title}*\n\nHalo {$notifiable->name},\n{$content}\n\n🏢 Client: {$clientName}");
         
         // Only add button if URL is not localhost (Telegram rejects localhost URLs)
         if (!str_contains($appUrl, 'localhost') && !str_contains($appUrl, '127.0.0.1')) {
@@ -124,8 +128,7 @@ class AssessmentUpdated extends Notification implements ShouldQueue
             'type' => $this->type,
             'asset_id' => $this->asset->id,
             'asset_name' => $this->asset->name,
-            'asset_code' => $this->asset->asset_code,
-            'project_id' => $this->asset->project_id,
+            'client_id' => $this->asset->client_id,
             'actor_id' => $this->actor->id,
             'actor_name' => $this->actor->name,
             'additional_info' => $this->additionalInfo,

@@ -1,192 +1,141 @@
 @extends('layouts.app')
 
-@section('title', 'Daftar Klien')
+@section('title', 'Klien')
 
 @section('content')
-<div>
+<div class="max-w-5xl mx-auto">
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Daftar Klien</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-1">Kelola data klien perusahaan</p>
-        </div>
-        @if(auth()->user()->hasAdminAccess())
-        <a href="{{ route('kanban.clients.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg font-medium text-sm transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Tambah Klien
-        </a>
-        @endif
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Klien</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Kelola data perusahaan dan debitur</p>
     </div>
 
-    {{-- Alert Messages --}}
+    {{-- Alert --}}
     @if(session('success'))
-    <div class="mb-6 p-4 rounded-lg bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800">
-        <p class="text-green-700 dark:text-green-400">{{ session('success') }}</p>
+    <div class="mb-6 px-4 py-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+        <p class="text-sm text-green-700 dark:text-green-400">{{ session('success') }}</p>
     </div>
     @endif
 
-    @if(session('error'))
-    <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800">
-        <p class="text-red-700 dark:text-red-400">{{ session('error') }}</p>
+    {{-- Stats Overview --}}
+    <div class="grid grid-cols-4 gap-3 mb-8">
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
+            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $stats['bank'] + $stats['pt_cv_induk'] + $stats['debitur'] + $stats['pt_cv_anak'] }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
+            <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ $stats['bank'] }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Bank</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
+            <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">{{ $stats['pt_cv_induk'] + $stats['pt_cv_anak'] }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">PT/CV</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
+            <p class="text-3xl font-bold text-orange-600 dark:text-orange-400">{{ $stats['debitur'] }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Debitur</p>
+        </div>
     </div>
-    @endif
 
-    {{-- Filters & Search --}}
-    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 mb-6">
-        <form action="{{ route('kanban.clients.index') }}" method="GET" class="flex flex-col sm:flex-row gap-4">
-            <div class="flex-1">
-                <input type="text" name="search" value="{{ request('search') }}" 
-                       placeholder="Cari nama, perusahaan, email..." 
-                       class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+    {{-- Main Navigation Cards --}}
+    <div class="grid md:grid-cols-2 gap-4 mb-8">
+        {{-- Perusahaan --}}
+        <a href="{{ route('kanban.clients.perusahaan') }}" class="group relative bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white overflow-hidden hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="relative">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <svg class="w-5 h-5 opacity-50 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold">Perusahaan</h2>
+                <p class="text-blue-100 text-sm mt-1">Bank & PT/CV Induk</p>
+                <div class="flex gap-4 mt-4 pt-4 border-t border-white/20">
+                    <div>
+                        <p class="text-2xl font-bold">{{ $stats['bank'] }}</p>
+                        <p class="text-xs text-blue-200">Bank</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold">{{ $stats['pt_cv_induk'] }}</p>
+                        <p class="text-xs text-blue-200">PT/CV</p>
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </button>
-            @if(request('search'))
-            <a href="{{ route('kanban.clients.index') }}" class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">Reset</a>
-            @endif
-        </form>
+        </a>
+
+        {{-- Debitur --}}
+        <a href="{{ route('kanban.clients.debitur') }}" class="group relative bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white overflow-hidden hover:shadow-lg hover:shadow-orange-500/25 transition-all duration-300">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="relative">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <svg class="w-5 h-5 opacity-50 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold">Debitur</h2>
+                <p class="text-orange-100 text-sm mt-1">Debitur & Anak Perusahaan</p>
+                <div class="flex gap-4 mt-4 pt-4 border-t border-white/20">
+                    <div>
+                        <p class="text-2xl font-bold">{{ $stats['debitur'] }}</p>
+                        <p class="text-xs text-orange-200">Debitur</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold">{{ $stats['pt_cv_anak'] }}</p>
+                        <p class="text-xs text-orange-200">PT/CV Anak</p>
+                    </div>
+                </div>
+            </div>
+        </a>
     </div>
 
-    {{-- Stats Cards --}}
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Klien</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $clients->total() }}</p>
+    {{-- Quick Add --}}
+    <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
+        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">Tambah Cepat</h3>
+        <div class="grid grid-cols-3 gap-3">
+            <a href="{{ route('kanban.clients.create.bank') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition group">
+                <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900 dark:text-white text-sm">Bank</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">+ debitur</p>
+                </div>
+            </a>
+            <a href="{{ route('kanban.clients.create.perusahaan-induk') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/10 transition group">
+                <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition">
+                    <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900 dark:text-white text-sm">PT/CV</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">+ anak</p>
+                </div>
+            </a>
+            <a href="{{ route('kanban.clients.create.klien') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition group">
+                <div class="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition">
+                    <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900 dark:text-white text-sm">Klien</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">individual</p>
+                </div>
+            </a>
         </div>
-        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Dengan Proyek</p>
-            <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $clients->filter(fn($c) => $c->projects_count > 0)->count() }}</p>
-        </div>
-        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Klien Baru</p>
-            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $clients->filter(fn($c) => $c->created_at->isCurrentMonth())->count() }}</p>
-        </div>
-        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Proyek</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $clients->sum('projects_count') }}</p>
-        </div>
-    </div>
-
-    {{-- Client Table --}}
-    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50 dark:bg-gray-800">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Klien</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Kontak</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Proyek</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Terdaftar</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
-                    @forelse($clients as $client)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center flex-shrink-0">
-                                    <span class="text-sm font-semibold text-brand-600 dark:text-brand-400">
-                                        {{ strtoupper(substr($client->name, 0, 2)) }}
-                                    </span>
-                                </div>
-                                <div>
-                                    <a href="{{ route('kanban.clients.show', $client) }}" class="font-medium text-gray-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400">
-                                        {{ $client->name }}
-                                    </a>
-                                    @if($client->company_name)
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $client->company_name }}</p>
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm">
-                                @if($client->email)
-                                <div class="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                    <span>{{ $client->email }}</span>
-                                </div>
-                                @endif
-                                @if($client->phone)
-                                <div class="flex items-center gap-1 text-gray-600 dark:text-gray-400 mt-1">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                    </svg>
-                                    <span>{{ $client->phone }}</span>
-                                </div>
-                                @endif
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $client->projects_count > 0 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400' }}">
-                                {{ $client->projects_count ?? 0 }} proyek
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {{ $client->created_at->format('d M Y') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right">
-                            <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('kanban.clients.show', $client) }}" class="p-2 text-gray-500 hover:text-brand-600 dark:text-gray-400 dark:hover:text-brand-400 transition" title="Lihat">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </a>
-                                @if(auth()->user()->hasAdminAccess())
-                                <a href="{{ route('kanban.clients.edit', $client) }}" class="p-2 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition" title="Edit">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </a>
-                                @if($client->projects_count == 0)
-                                <form action="{{ route('kanban.clients.destroy', $client) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus klien ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition" title="Hapus">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </form>
-                                @endif
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center">
-                                <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                <p class="text-gray-500 dark:text-gray-400">Belum ada klien terdaftar</p>
-                                @if(auth()->user()->hasAdminAccess())
-                                <a href="{{ route('kanban.clients.create') }}" class="mt-2 text-brand-600 hover:text-brand-700 dark:text-brand-400 font-medium">Tambah klien pertama →</a>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        
-        {{-- Pagination --}}
-        @if($clients->hasPages())
-        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800">
-            {{ $clients->withQueryString()->links() }}
-        </div>
-        @endif
     </div>
 </div>
 @endsection
