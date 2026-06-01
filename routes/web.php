@@ -156,23 +156,23 @@ Route::middleware('auth')->group(function () {
         // ----------------------------------------
         // PROJECTS - Admin for delete, users for rest
         // ----------------------------------------
-        Route::controller(ProjectController::class)->prefix('projects')->name('projects.')->group(function () {
-            // Read & Stats - All users
-            Route::get('/', 'index')->name('index');
-            Route::get('/statistics', 'statistics')->name('statistics');
-            Route::get('/{project}', 'show')->name('show')->whereNumber('project');
+        // Route::controller(ProjectController::class)->prefix('projects')->name('projects.')->group(function () {
+        //     // Read & Stats - All users
+        //     Route::get('/', 'index')->name('index');
+        //     Route::get('/statistics', 'statistics')->name('statistics');
+        //     Route::get('/{project}', 'show')->name('show')->whereNumber('project');
 
-            // Create/Update - All users (can manage their assigned projects)
-            Route::get('/create', 'create')->name('create');
-            Route::post('/', 'store')->name('store');
-            Route::get('/{project}/edit', 'edit')->name('edit')->whereNumber('project');
-            Route::put('/{project}', 'update')->name('update')->whereNumber('project');
+        //     // Create/Update - All users (can manage their assigned projects)
+        //     Route::get('/create', 'create')->name('create');
+        //     Route::post('/', 'store')->name('store');
+        //     Route::get('/{project}/edit', 'edit')->name('edit')->whereNumber('project');
+        //     Route::put('/{project}', 'update')->name('update')->whereNumber('project');
 
-            // Delete - Admin only
-            Route::delete('/{project}', 'destroy')->name('destroy')
-                ->whereNumber('project')
-                ->middleware('admin');
-        });
+        //     // Delete - Admin only
+        //     Route::delete('/{project}', 'destroy')->name('destroy')
+        //         ->whereNumber('project')
+        //         ->middleware('admin');
+        // });
 
         // ----------------------------------------
         // ASSETS - Users can manage, admin for delete
