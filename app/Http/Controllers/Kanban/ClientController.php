@@ -292,7 +292,7 @@ class ClientController extends Controller
     {
         $client->load([
             'assets' => fn($q) => $q
-                ->select('id', 'client_id', 'name', 'asset_type', 'current_stage', 'priority', 'created_at')
+                ->select('id', 'client_id', 'name', 'asset_type', 'current_stage', 'created_at')
                 ->latest()
                 ->limit(20),
             'children' => fn($q) => $q->select('id', 'parent_id', 'name', 'type', 'company_name')->withCount('assets'),

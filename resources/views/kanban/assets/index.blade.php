@@ -150,12 +150,6 @@
             <div class="kanban-cards p-2 space-y-2" data-stage="{{ $stageNum }}">
                 @foreach($assetsByStage[$stageNum] as $asset)
                 <div class="kanban-card relative bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:border-gray-400 dark:hover:border-gray-500 transition" data-asset-id="{{ $asset->id }}">
-                    @if($asset->priority === 'critical')
-                    <div class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500"></div>
-                    @elseif($asset->priority === 'high')
-                    <div class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-orange-500"></div>
-                    @endif
-
                     <div class="relative">
                         <a href="{{ route('kanban.assets.show', $asset) }}" class="font-medium text-sm text-gray-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 line-clamp-2">
                             {{ $asset->name }}

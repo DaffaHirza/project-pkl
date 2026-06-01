@@ -111,7 +111,7 @@ class RecapitulationController extends Controller
         $recapitulation->load([
             'creator:id,name',
             'items' => fn($q) => $q->with([
-                'asset:id,name,asset_type,current_stage,priority,client_id',
+                'asset:id,name,asset_type,current_stage,client_id',
                 'asset.client:id,name,company_name'
             ])->orderBy('work_status')->orderByDesc('stage_end')
         ]);
@@ -318,7 +318,7 @@ class RecapitulationController extends Controller
         $recapitulation->load([
             'creator:id,name',
             'items' => fn($q) => $q->with([
-                'asset:id,name,asset_type,current_stage,priority,client_id',
+                'asset:id,name,asset_type,current_stage,client_id',
                 'asset.client:id,name,company_name'
             ])->orderBy('work_status')
         ]);

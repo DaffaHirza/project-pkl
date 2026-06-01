@@ -141,11 +141,7 @@
                                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ $asset->asset_type_label }} • {{ $asset->location ?: 'Lokasi belum diisi' }}</p>
                             </div>
                             <div class="text-right ml-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    {{ $asset->priority === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : '' }}
-                                    {{ $asset->priority === 'warning' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' : '' }}
-                                    {{ $asset->priority === 'normal' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400' : '' }}
-                                ">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400">
                                     Stage {{ $asset->current_stage }}
                                 </span>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $asset->stage_label }}</p>

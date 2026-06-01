@@ -7,15 +7,11 @@
     <!-- Sidebar Header -->
     <div class="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
         <a href="{{ url('/') }}" class="flex items-center gap-3">
-            <span class="text-2xl flex items-center justify-center font-bold text-brand-600 dark:text-brand-400">
-                <div class="w-10 h-10 rounded-lg bg-brand-500 flex items-center justify-center text-white font-bold text-lg">
-                    K
-                </div>
-                <div class="flex flex-col ml-2">
-                    <span class="text-xs font-normal text-gray-500 dark:text-gray-400">Kantor Jasa Penilai Publik</span>
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">KJPP</span>
-                </div>
-            </span>
+            <img src="{{ asset('images/image.png') }}" alt="Logo Kantor Jasa Penilai Publik" class="h-10 w-auto" />
+            <div class="flex flex-col">
+                <span class="text-xs font-normal text-gray-500 dark:text-gray-400">KJPP Mushofah dan Rekan</span>
+                <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Cabang Semarang</span>
+            </div>
         </a>
 
         <button class="block lg:hidden" @click.stop="sidebarToggle = !sidebarToggle" aria-controls="sidebar"
@@ -104,7 +100,7 @@
                                         'text-brand-500 dark:text-brand-400' :
                                         'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
                                     <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Kanban.Dashboard' ? 'bg-brand-500' : 'bg-gray-400'"></span>
-                                    Dashboard
+                                    Ringkasan Tugas
                                 </a>
                             </li>
                             <li>
@@ -124,7 +120,7 @@
                                         'text-brand-500 dark:text-brand-400' :
                                         'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
                                     <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Kanban.Clients' ? 'bg-brand-500' : 'bg-gray-400'"></span>
-                                    Klien
+                                    List Klien
                                 </a>
                             </li>
                             <li>
@@ -144,7 +140,7 @@
                                         'text-brand-500 dark:text-brand-400' :
                                         'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'">
                                     <span class="w-1.5 h-1.5 rounded-full" :class="selected === 'Kanban.Recapitulations' ? 'bg-brand-500' : 'bg-gray-400'"></span>
-                                    Rekapitulasi
+                                    Rekapitulasi Tugas
                                 </a>
                             </li>
                         </ul>

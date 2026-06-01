@@ -21,7 +21,6 @@ class AssetKanban extends Model
         'asset_type',
         'location',
         'current_stage',
-        'priority',
         'position',
     ];
 
@@ -61,11 +60,6 @@ class AssetKanban extends Model
         'lainnya' => 'Lainnya',
     ];
 
-    public const PRIORITIES = [
-        'normal' => 'Normal',
-        'warning' => 'Warning',
-        'critical' => 'Critical',
-    ];
 
     // ==========================================
     // RELATIONSHIPS
@@ -101,11 +95,6 @@ class AssetKanban extends Model
     public function getAssetTypeLabelAttribute(): string
     {
         return self::ASSET_TYPES[$this->asset_type] ?? $this->asset_type;
-    }
-
-    public function getPriorityLabelAttribute(): string
-    {
-        return self::PRIORITIES[$this->priority] ?? $this->priority;
     }
 
     public function getProgressAttribute(): int
@@ -186,17 +175,6 @@ class AssetKanban extends Model
     public function scopeActive($query)
     {
         return $query->where('current_stage', '<', 13);
-    }
-
-    public function scopePriority($query, string $priority)
-    {
-        return $query->where('priority', $priority);
-    }
-
-    public function scopeNeedsAttention($query)
-    {
-        return $query->whereIn('priority', ['warning', 'critical'])
-            ->where('current_stage', '<', 13);
     }
 
     public function scopeOrdered($query)

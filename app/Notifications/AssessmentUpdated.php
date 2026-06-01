@@ -63,25 +63,22 @@ class AssessmentUpdated extends Notification implements ShouldQueue
         
         switch ($this->type) {
             case 'stage_change':
-                $emoji = "🔄";
-                $title = "Status Berubah!";
+                $title = "Status Telah Berubah";
                 $content = "*{$this->actor->name}* memindahkan asset *{$this->asset->name}* ke stage: *{$stageName}*.";
                 if ($this->additionalInfo) {
-                    $content .= "\n\n📝 Catatan: " . Str::limit($this->additionalInfo, 100);
+                    $content .= "\n\nCatatan: " . Str::limit($this->additionalInfo, 100);
                 }
                 break;
                 
             case 'new_note':
-                $emoji = "📝";
-                $title = "Catatan Baru!";
+                $title = "Ada Catatan Baru!";
                 $content = "{$this->actor->name} menambahkan catatan pada *{$this->asset->name}*.";
                 if ($this->additionalInfo) {
-                    $content .= "\n\n💬 \"" . Str::limit($this->additionalInfo, 100) . "\"";
+                    $content .= "\n\n\"" . Str::limit($this->additionalInfo, 100) . "\"";
                 }
                 break;
                 
             case 'document_uploaded':
-                $emoji = "📎";
                 $title = "Dokumen Baru!";
                 $content = "{$this->actor->name} mengupload dokumen pada *{$this->asset->name}*.";
                 if ($this->additionalInfo) {
@@ -89,15 +86,7 @@ class AssessmentUpdated extends Notification implements ShouldQueue
                 }
                 break;
                 
-            case 'priority_change':
-                $emoji = "⚠️";
-                $title = "Prioritas Berubah!";
-                $priorityName = AssetKanban::PRIORITIES[$this->asset->priority] ?? $this->asset->priority;
-                $content = "*{$this->actor->name}* mengubah prioritas asset *{$this->asset->name}* menjadi: *{$priorityName}*.";
-                break;
-                
             default:
-                $emoji = "🔔";
                 $title = "Update Asset";
                 $content = "*{$this->actor->name}* melakukan update pada asset *{$this->asset->name}*.";
         }
@@ -105,7 +94,7 @@ class AssessmentUpdated extends Notification implements ShouldQueue
         $clientName = $this->asset->client->display_name ?? 'Unknown';
         $message = TelegramMessage::create()
             ->to($notifiable->telegram_chat_id)
-            ->content("{$emoji} *{$title}*\n\nHalo {$notifiable->name},\n{$content}\n\n🏢 Client: {$clientName}");
+            ->content("*{$title}*\n\nHi kamu {$notifiable->name},\n{$content}\n\nClient: {$clientName}");
         
         // Only add button if URL is not localhost (Telegram rejects localhost URLs)
         if (!str_contains($appUrl, 'localhost') && !str_contains($appUrl, '127.0.0.1')) {

@@ -87,38 +87,17 @@
                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
         </div>
 
-        {{-- Priority & Stage --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Prioritas
-                </label>
-                <select name="priority" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
-                    <option value="normal" {{ old('priority', $asset->priority) === 'normal' ? 'selected' : '' }}>Normal</option>
-                    <option value="warning" {{ old('priority', $asset->priority) === 'warning' ? 'selected' : '' }}>Warning</option>
-                    <option value="critical" {{ old('priority', $asset->priority) === 'critical' ? 'selected' : '' }}>Kritikal</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Stage Saat Ini
-                </label>
-                <select name="current_stage" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
-                    @foreach(\App\Models\AssetKanban::STAGES as $num => $name)
-                    <option value="{{ $num }}" {{ old('current_stage', $asset->current_stage) == $num ? 'selected' : '' }}>{{ $num }}. {{ $name }}</option>
-                    @endforeach
-                </select>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Untuk pindah stage, disarankan gunakan tombol stage di halaman detail</p>
-            </div>
-        </div>
-
-        {{-- Notes --}}
+        {{-- Stage --}}
         <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Catatan Internal
+                Stage Saat Ini
             </label>
-            <textarea name="notes" rows="2" 
-                      class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">{{ old('notes', $asset->notes) }}</textarea>
+            <select name="current_stage" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
+                @foreach(\App\Models\AssetKanban::STAGES as $num => $name)
+                <option value="{{ $num }}" {{ old('current_stage', $asset->current_stage) == $num ? 'selected' : '' }}>{{ $num }}. {{ $name }}</option>
+                @endforeach
+            </select>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Untuk pindah stage, disarankan gunakan tombol stage di halaman detail</p>
         </div>
 
         {{-- Submit --}}

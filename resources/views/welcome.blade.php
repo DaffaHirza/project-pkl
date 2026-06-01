@@ -20,11 +20,7 @@
                 <div class="flex justify-between items-center h-16">
                     <!-- Logo -->
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/20">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
-                        </div>
+                        <img src="{{ asset('images/image.png') }}" alt="Logo Kantor Jasa Penilai Publik" class="h-10 w-auto" />
                         <div class="hidden sm:block">
                             <span class="font-semibold text-gray-900 dark:text-white text-sm">KJPP Mushofah dan Rekan</span>
                             <span class="block text-xs text-gray-500 dark:text-gray-400">Cabang Semarang</span>
@@ -52,10 +48,10 @@
         <!-- Hero Section -->
         <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
             <!-- Background Pattern -->
-            <div class="absolute inset-0 bg-gradient-to-br from-brand-50 via-white to-brand-100 dark:from-gray-900 dark:via-gray-dark dark:to-gray-900"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-ocean-50 via-white to-brand-50 dark:from-gray-900 dark:via-gray-dark dark:to-gray-900"></div>
             <div class="absolute inset-0 opacity-30">
-                <div class="absolute top-20 left-10 w-72 h-72 bg-brand-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-                <div class="absolute top-40 right-10 w-72 h-72 bg-brand-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+                <div class="absolute top-20 left-10 w-72 h-72 bg-ocean-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+                <div class="absolute top-40 right-10 w-72 h-72 bg-brand-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
                 <div class="absolute bottom-20 left-1/2 w-72 h-72 bg-brand-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-500"></div>
             </div>
 
@@ -238,21 +234,21 @@
         </section>
 
         <!-- CTA Section -->
-        <section class="py-20 bg-brand-500">
+        <section class="py-20 bg-ocean-500">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Siap Memulai?</h2>
-                <p class="text-brand-100 text-lg mb-8 max-w-2xl mx-auto">
+                <p class="text-ocean-100 text-lg mb-8 max-w-2xl mx-auto">
                     Hubungi kami sekarang untuk konsultasi gratis dan dapatkan penawaran terbaik untuk kebutuhan penilaian aset Anda.
                 </p>
                 @auth
-                    <a href="{{ url('/dashboard') }}" class="inline-flex items-center px-8 py-3.5 text-base font-medium text-brand-500 bg-white rounded-xl hover:bg-brand-50 transition-all shadow-lg">
+                    <a href="{{ url('/dashboard') }}" class="inline-flex items-center px-8 py-3.5 text-base font-medium text-brand-600 bg-white rounded-xl hover:bg-brand-50 transition-all shadow-lg">
                         Buka Dashboard
                         <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                         </svg>
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="inline-flex items-center px-8 py-3.5 text-base font-medium text-brand-500 bg-white rounded-xl hover:bg-brand-50 transition-all shadow-lg">
+                    <a href="{{ route('login') }}" class="inline-flex items-center px-8 py-3.5 text-base font-medium text-brand-600 bg-white rounded-xl hover:bg-brand-50 transition-all shadow-lg">
                         Masuk Sekarang
                         <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -268,11 +264,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
                         <div class="flex items-center gap-3 mb-4">
-                            <div class="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                            </div>
+                            <img src="{{ asset('images/image.png') }}" alt="Logo Kantor Jasa Penilai Publik" class="h-10 w-auto" />
                             <div>
                                 <span class="font-semibold text-white text-sm">KJPP Mushofah dan Rekan</span>
                                 <span class="block text-xs text-gray-400">Cabang Semarang</span>

@@ -30,11 +30,6 @@
         <div>
             <div class="flex items-center gap-3 mb-2">
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $asset->name }}</h1>
-                @if($asset->priority === 'critical')
-                <span class="px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 rounded">Kritikal</span>
-                @elseif($asset->priority === 'high')
-                <span class="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 rounded">Tinggi</span>
-                @endif
             </div>
             <p class="text-gray-600 dark:text-gray-400">{{ ucfirst(str_replace('_', ' ', $asset->asset_type)) }}</p>
         </div>

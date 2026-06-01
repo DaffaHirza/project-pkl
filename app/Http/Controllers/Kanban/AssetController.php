@@ -18,7 +18,7 @@ class AssetController extends Controller
     public function index(Request $request)
     {
         $query = AssetKanban::query()
-            ->select('id', 'client_id', 'name', 'asset_type', 'current_stage', 'priority', 'position', 'updated_at')
+            ->select('id', 'client_id', 'name', 'asset_type', 'current_stage', 'position', 'updated_at')
             ->with(['client:id,name,company_name']);
 
         // Filter by client
@@ -135,9 +135,8 @@ class AssetController extends Controller
             ->get();
         
         $assetTypes = AssetKanban::ASSET_TYPES;
-        $priorities = AssetKanban::PRIORITIES;
 
-        return view('kanban.assets.edit', compact('asset', 'clients', 'assetTypes', 'priorities'));
+        return view('kanban.assets.edit', compact('asset', 'clients', 'assetTypes'));
     }
 
     /**
@@ -149,7 +148,6 @@ class AssetController extends Controller
             'name' => 'required|string|max:255|min:3',
             'asset_type' => 'required|string|in:' . implode(',', array_keys(AssetKanban::ASSET_TYPES)),
             'location' => 'nullable|string|max:500',
-            'priority' => 'required|in:normal,warning,critical',
         ]);
 
         $validated['name'] = strip_tags(trim($validated['name']));
@@ -273,30 +271,5 @@ class AssetController extends Controller
         $asset->update(['position' => $validated['position']]);
 
         return response()->json(['success' => true]);
-    }
-
-    /**
-     * Update priority with notification for critical
-     */
-    public function updatePriority(Request $request, AssetKanban $asset)
-    {
-        $validated = $request->validate([
-            'priority' => 'required|in:normal,warning,critical',
-        ]);
-
-        $oldPriority = $asset->priority;
-        $newPriority = $validated['priority'];
-
-        $asset->update(['priority' => $newPriority]);
-
-        // Notify if changed to critical
-        if ($newPriority === 'critical' && $oldPriority !== 'critical') {
-            KanbanNotificationService::notifyPriorityCritical($asset, Auth::user());
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Priority diubah ke ' . AssetKanban::PRIORITIES[$newPriority],
-        ]);
     }
 }

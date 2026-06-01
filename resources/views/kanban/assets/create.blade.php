@@ -87,28 +87,16 @@
                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
         </div>
 
-        {{-- Priority & Initial Stage --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Prioritas
-                </label>
-                <select name="priority" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
-                    <option value="normal" {{ old('priority', 'normal') === 'normal' ? 'selected' : '' }}>Normal</option>
-                    <option value="warning" {{ old('priority') === 'warning' ? 'selected' : '' }}>Warning</option>
-                    <option value="critical" {{ old('priority') === 'critical' ? 'selected' : '' }}>Kritikal</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Stage Awal
-                </label>
-                <select name="current_stage" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
-                    @foreach(\App\Models\AssetKanban::STAGES as $num => $name)
-                    <option value="{{ $num }}" {{ old('current_stage', 1) == $num ? 'selected' : '' }}>{{ $num }}. {{ $name }}</option>
-                    @endforeach
-                </select>
-            </div>
+        {{-- Initial Stage --}}
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Stage Awal
+            </label>
+            <select name="current_stage" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500">
+                @foreach(\App\Models\AssetKanban::STAGES as $num => $name)
+                <option value="{{ $num }}" {{ old('current_stage', 1) == $num ? 'selected' : '' }}>{{ $num }}. {{ $name }}</option>
+                @endforeach
+            </select>
         </div>
 
         {{-- Notes --}}

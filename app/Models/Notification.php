@@ -48,7 +48,6 @@ class Notification extends Model
         'asset_created' => 'Asset Baru Dibuat',
         'asset_document_uploaded' => 'Dokumen Asset Diupload',
         'asset_note_added' => 'Catatan Asset Ditambahkan',
-        'asset_priority_critical' => 'Asset Priority Critical',
         
         // Client types
         'client_created' => 'Client Baru Ditambahkan',
@@ -125,7 +124,6 @@ class Notification extends Model
             'asset_created' => 'plus-circle',
             'asset_document_uploaded' => 'upload',
             'asset_note_added' => 'message-circle',
-            'asset_priority_critical' => 'alert-triangle',
             'client_created' => 'users',
             'system' => 'info',
         ];
@@ -143,7 +141,6 @@ class Notification extends Model
             'asset_created' => 'green',
             'asset_document_uploaded' => 'blue',
             'asset_note_added' => 'gray',
-            'asset_priority_critical' => 'red',
             'client_created' => 'blue',
             'system' => 'gray',
         ];

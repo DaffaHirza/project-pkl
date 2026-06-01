@@ -84,27 +84,27 @@ class KanbanSeeder extends Seeder
         // Create assets directly linked to clients
         $assets = [
             // Debitur 1 assets (via bank)
-            ['client' => $debitur1, 'name' => 'Gudang A - Blok 1', 'type' => 'bangunan', 'stage' => 4, 'priority' => 'normal'],
-            ['client' => $debitur1, 'name' => 'Gudang B - Blok 2', 'type' => 'bangunan', 'stage' => 3, 'priority' => 'normal'],
+            ['client' => $debitur1, 'name' => 'Gudang A - Blok 1', 'type' => 'bangunan', 'stage' => 4],
+            ['client' => $debitur1, 'name' => 'Gudang B - Blok 2', 'type' => 'bangunan', 'stage' => 3],
             
             // Debitur 2 assets (via bank)
-            ['client' => $debitur2, 'name' => 'Ruko 3 Lantai No. 15', 'type' => 'tanah_bangunan', 'stage' => 6, 'priority' => 'warning'],
+            ['client' => $debitur2, 'name' => 'Ruko 3 Lantai No. 15', 'type' => 'tanah_bangunan', 'stage' => 6],
             
             // PT Anak 1 assets (via PT Group)
-            ['client' => $ptAnak1, 'name' => 'Rumah Tinggal Jl. Kemang Raya', 'type' => 'tanah_bangunan', 'stage' => 10, 'priority' => 'normal'],
-            ['client' => $ptAnak1, 'name' => 'Tanah Kavling A-01', 'type' => 'tanah', 'stage' => 2, 'priority' => 'normal'],
+            ['client' => $ptAnak1, 'name' => 'Rumah Tinggal Jl. Kemang Raya', 'type' => 'tanah_bangunan', 'stage' => 10],
+            ['client' => $ptAnak1, 'name' => 'Tanah Kavling A-01', 'type' => 'tanah', 'stage' => 2],
             
             // PT Anak 2 assets (via PT Group)
-            ['client' => $ptAnak2, 'name' => 'Mesin Tenun Rapier T-500', 'type' => 'mesin', 'stage' => 5, 'priority' => 'critical'],
-            ['client' => $ptAnak2, 'name' => 'Mesin Dyeing JT-2000', 'type' => 'mesin', 'stage' => 4, 'priority' => 'critical'],
-            ['client' => $ptAnak2, 'name' => 'Forklift Toyota 7FBR-18', 'type' => 'kendaraan', 'stage' => 3, 'priority' => 'warning'],
+            ['client' => $ptAnak2, 'name' => 'Mesin Tenun Rapier T-500', 'type' => 'mesin', 'stage' => 5],
+            ['client' => $ptAnak2, 'name' => 'Mesin Dyeing JT-2000', 'type' => 'mesin', 'stage' => 4],
+            ['client' => $ptAnak2, 'name' => 'Forklift Toyota 7FBR-18', 'type' => 'kendaraan', 'stage' => 3],
             
             // PT Induk direct assets
-            ['client' => $ptInduk, 'name' => 'Gedung Kantor Pusat', 'type' => 'tanah_bangunan', 'stage' => 13, 'priority' => 'normal'],
+            ['client' => $ptInduk, 'name' => 'Gedung Kantor Pusat', 'type' => 'tanah_bangunan', 'stage' => 13],
             
             // Standalone PT assets
-            ['client' => $ptStandalone, 'name' => 'Tanah Kavling BSD', 'type' => 'tanah', 'stage' => 1, 'priority' => 'normal'],
-            ['client' => $ptStandalone, 'name' => 'Gedung 3 Lantai', 'type' => 'tanah_bangunan', 'stage' => 8, 'priority' => 'normal'],
+            ['client' => $ptStandalone, 'name' => 'Tanah Kavling BSD', 'type' => 'tanah', 'stage' => 1],
+            ['client' => $ptStandalone, 'name' => 'Gedung 3 Lantai', 'type' => 'tanah_bangunan', 'stage' => 8],
         ];
 
         $createdAssets = collect();
@@ -114,7 +114,6 @@ class KanbanSeeder extends Seeder
                 'name' => $a['name'],
                 'asset_type' => $a['type'],
                 'current_stage' => $a['stage'],
-                'priority' => $a['priority'],
                 'position' => $idx,
                 'location' => 'Jakarta',
             ]);

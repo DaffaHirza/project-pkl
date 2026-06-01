@@ -189,7 +189,6 @@ Route::middleware('auth')->group(function () {
             Route::put('/{asset}', 'update')->name('update')->whereNumber('asset');
             Route::post('/{asset}/move-stage', 'moveStage')->name('move-stage')->whereNumber('asset');
             Route::post('/{asset}/update-position', 'updatePosition')->name('update-position')->whereNumber('asset');
-            Route::post('/{asset}/update-priority', 'updatePriority')->name('update-priority')->whereNumber('asset');
 
             // Delete - Admin only
             Route::delete('/{asset}', 'destroy')->name('destroy')

@@ -31,10 +31,6 @@ Service untuk kirim notifikasi. Kirim ke:
 - Dipanggil saat buat client baru
 - Kirim ke database saja
 
-**notifyPriorityCritical(asset, changedBy)**
-- Dipanggil saat priority jadi critical
-- Kirim ke database saja
-
 **Catatan penting:**
 - Notifikasi tidak dikirim ke user yang melakukan aksi (exclude self)
 - Jika ada telegram_chat_id yang sama, hanya kirim 1 pesan (deduplikasi)
@@ -50,7 +46,6 @@ Laravel Notification class untuk kirim ke Telegram.
 - stage_change - 🔄 Status Berubah!
 - new_note - 📝 Catatan Baru!
 - document_uploaded - 📎 Dokumen Baru!
-- priority_change - ⚠️ Prioritas Berubah!
 
 **Format pesan Telegram:**
 

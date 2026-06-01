@@ -184,7 +184,7 @@ Model utama untuk asset yang dinilai, dengan 13 tahap workflow Kanban.
 
 ### Fillable
 ```php
-'client_id', 'name', 'asset_type', 'location', 'current_stage', 'priority', 'position'
+'client_id', 'name', 'asset_type', 'location', 'current_stage', 'position'
 ```
 
 ### Casts
@@ -225,12 +225,6 @@ ASSET_TYPES = [
     'lainnya'          => 'Lainnya',
 ]
 
-// Prioritas
-PRIORITIES = [
-    'normal'   => 'Normal',
-    'warning'  => 'Warning',
-    'critical' => 'Critical',
-]
 ```
 
 ### Relationships
@@ -245,7 +239,6 @@ PRIORITIES = [
 |-----------|--------|-----------|
 | `stage_label` | string | Nama stage dari STAGES |
 | `asset_type_label` | string | Label tipe dari ASSET_TYPES |
-| `priority_label` | string | Label prioritas |
 | `progress` | int | Persentase progress (0-100) |
 | `bank` | ClientKanban\|null | Bank jika asset milik debitur |
 
@@ -263,17 +256,12 @@ PRIORITIES = [
 | `atStage($stage)` | Filter by stage tertentu |
 | `completed()` | Asset di stage 13 (Arsip) |
 | `active()` | Asset belum selesai (stage < 13) |
-| `priority($priority)` | Filter by prioritas |
-| `needsAttention()` | Asset warning/critical yang aktif |
 | `ordered()` | Order by position |
 
 ### Contoh Penggunaan
 ```php
 // Pindahkan asset ke stage berikutnya
 $asset->moveToNextStage(auth()->id(), 'Dokumen lengkap');
-
-// Get asset yang perlu perhatian
-$urgent = AssetKanban::needsAttention()->with('client')->get();
 
 // Progress percentage
 echo "Progress: {$asset->progress}%"; // "Progress: 38%"
@@ -637,7 +625,6 @@ TYPES = [
     'asset_created'            => 'Asset Baru Dibuat',
     'asset_document_uploaded'  => 'Dokumen Asset Diupload',
     'asset_note_added'         => 'Catatan Asset Ditambahkan',
-    'asset_priority_critical'  => 'Asset Priority Critical',
     
     // Client
     'client_created'           => 'Client Baru Ditambahkan',
@@ -654,7 +641,6 @@ TYPES = [
 | asset_created | plus-circle | green |
 | asset_document_uploaded | upload | blue |
 | asset_note_added | message-circle | gray |
-| asset_priority_critical | alert-triangle | red |
 | client_created | users | blue |
 | system | info | gray |
 
@@ -701,7 +687,6 @@ Notification::notify($user, 'asset_created', [
 
 // Buat notifikasi ke semua admin
 $admins = User::admins()->get();
-Notification::notifyMany($admins, 'asset_priority_critical', $data);
 
 // Get notifikasi unread
 $unread = Notification::where('notifiable_id', $user->id)
@@ -753,7 +738,6 @@ Notification::where('notifiable_id', $user->id)
          │ id              │◄─────┘              │
          │ client_id       │                     │
          │ current_stage   │                     │
-         │ priority        │                     │
          └────────┬────────┘                     │
                   │                              │
          ┌────────┴────────┐                     │
