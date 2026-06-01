@@ -6,11 +6,15 @@ use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Kanban\DashboardController;
 use App\Http\Controllers\Kanban\ClientController;
-use App\Http\Controllers\Kanban\ProjectController;
 use App\Http\Controllers\Kanban\AssetController;
 use App\Http\Controllers\Kanban\DocumentController;
 use App\Http\Controllers\Kanban\NoteController;
+
 use Illuminate\Support\Facades\Http;
+
+use App\Http\Controllers\Kanban\RecapitulationController;
+use App\Http\Controllers\Kanban\ProjectController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => view('welcome'));
@@ -19,53 +23,7 @@ Route::get('/dashboard', fn() => view('dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/debug/gemini-models', function () {
-        if (!config('app.debug')) {
-            abort(403, 'Debug route is disabled.');
-        }
-
-        $apiKey = (string) config('gemini.api_key', env('GEMINI_API_KEY', ''));
-        if (trim($apiKey) === '') {
-            return response()->json([
-                'ok' => false,
-                'message' => 'GEMINI_API_KEY belum di-set.',
-            ], 500);
-        }
-
-        $baseUrl = rtrim((string) config('gemini.base_url', 'https://generativelanguage.googleapis.com/v1beta'), '/');
-        if ($baseUrl === '' || !preg_match('/^https?:\/\//i', $baseUrl)) {
-            $baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
-        }
-
-        $url = $baseUrl . '/models';
-        $response = Http::timeout((int) config('gemini.request_timeout', 30))
-            ->withQueryParameters(['key' => $apiKey])
-            ->get($url);
-
-        if ($response->failed()) {
-            return response()->json([
-                'ok' => false,
-                'status' => $response->status(),
-                'url' => $url,
-                'error' => $response->json() ?? $response->body(),
-            ], $response->status());
-        }
-
-        $models = $response->json('models', []);
-        $generateContentModels = array_values(array_filter($models, function ($model) {
-            $methods = $model['supportedGenerationMethods'] ?? [];
-            return in_array('generateContent', $methods, true);
-        }));
-
-        return response()->json([
-            'ok' => true,
-            'url' => $url,
-            'total_models' => count($models),
-            'generate_content_models' => array_map(fn($m) => $m['name'] ?? '-', $generateContentModels),
-            'models_raw' => $models,
-        ]);
-    })->name('debug.gemini-models');
+Route::middleware(['auth', 'check.status'])->group(function () {
 
     // Profile
     Route::controller(ProfileController::class)->prefix('profile')->name('profile.')->group(function () {
@@ -83,11 +41,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/', 'store')->name('store');
         Route::get('/{assistantDocument}', 'show')->name('show')->whereNumber('assistantDocument');
         Route::get('/{assistantDocument}/edit', 'edit')->name('pages.edit')->whereNumber('assistantDocument');
+        Route::get('/{assistantDocument}/show', 'show')->name('pages.show')->whereNumber('assistantDocument');
         Route::put('/{assistantDocument}', 'update')->name('update')->whereNumber('assistantDocument');
         Route::delete('/{assistantDocument}', 'destroy')->name('destroy')->whereNumber('assistantDocument');
     });
-
-    Route::get('/tracking', [TrackingController::class, 'index'])->name('tracking.index');
 
     // ============================================
     // NOTIFICATIONS
@@ -115,18 +72,35 @@ Route::middleware('auth')->group(function () {
         // Dashboard - All authenticated users
         Route::controller(DashboardController::class)->group(function () {
             Route::get('/', 'index')->name('dashboard');
-            Route::get('/dashboard/data', 'data')->name('dashboard.data');
             Route::get('/activity-log', 'activityLog')->name('activity-log');
         });
 
         // ----------------------------------------
-        // CLIENTS - Admin only for CUD operations
+        // CLIENTS - All users can CRUD
         // ----------------------------------------
         Route::controller(ClientController::class)->prefix('clients')->name('clients.')->group(function () {
-            // Read - All users
-            Route::get('/', 'index')->name('index');
+            // List views
+            Route::get('/', 'index')->name('index'); // Type selector / overview
+            Route::get('/perusahaan', 'indexPerusahaan')->name('perusahaan'); // Bank & PT/CV Induk
+            Route::get('/debitur', 'indexDebitur')->name('debitur'); // Debitur & PT/CV Anak
             Route::get('/search', 'search')->name('search');
+
+            // Create forms
+            Route::get('/create', 'create')->name('create'); // Type selector
+            Route::get('/create/bank', 'createBank')->name('create.bank');
+            Route::get('/create/perusahaan-induk', 'createPerusahaanInduk')->name('create.perusahaan-induk');
+            Route::get('/create/klien', 'createKlien')->name('create.klien'); // Debitur / PT/CV anak
+
+            // Store
+            Route::post('/bank', 'storeBank')->name('store.bank');
+            Route::post('/perusahaan-induk', 'storePerusahaanInduk')->name('store.perusahaan-induk');
+            Route::post('/klien', 'storeKlien')->name('store.klien');
+
+            // Show/Edit/Delete
             Route::get('/{client}', 'show')->name('show')->whereNumber('client');
+            Route::get('/{client}/edit', 'edit')->name('edit')->whereNumber('client');
+            Route::put('/{client}', 'update')->name('update')->whereNumber('client');
+            Route::delete('/{client}', 'destroy')->name('destroy')->whereNumber('client');
 
             // Create/Update/Delete - Admin only
             Route::middleware('admin')->group(function () {
@@ -141,7 +115,7 @@ Route::middleware('auth')->group(function () {
         // ----------------------------------------
         // PROJECTS - Admin for delete, users for rest
         // ----------------------------------------
-        Route::controller(ProjectController::class)->prefix('projects')->name('projects.')->group(function () {
+        /* Route::controller(ProjectController::class)->prefix('projects')->name('projects.')->group(function () {
             // Read & Stats - All users
             Route::get('/', 'index')->name('index');
             Route::get('/statistics', 'statistics')->name('statistics');
@@ -157,7 +131,7 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{project}', 'destroy')->name('destroy')
                 ->whereNumber('project')
                 ->middleware('admin');
-        });
+        }); */
 
         // ----------------------------------------
         // ASSETS - Users can manage, admin for delete
@@ -165,13 +139,11 @@ Route::middleware('auth')->group(function () {
         Route::controller(AssetController::class)->prefix('assets')->name('assets.')->group(function () {
             // Read - All users
             Route::get('/', 'index')->name('index');
-            Route::get('/board', 'board')->name('board'); // Kanban board view
             Route::get('/{asset}', 'show')->name('show')->whereNumber('asset');
 
             // Create/Update/Operations - All users
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
-            Route::post('/bulk', 'bulkStore')->name('bulk-store');
             Route::get('/{asset}/edit', 'edit')->name('edit')->whereNumber('asset');
             Route::put('/{asset}', 'update')->name('update')->whereNumber('asset');
             Route::post('/{asset}/move-stage', 'moveStage')->name('move-stage')->whereNumber('asset');
@@ -189,8 +161,6 @@ Route::middleware('auth')->group(function () {
         // ----------------------------------------
         Route::controller(DocumentController::class)->group(function () {
             Route::prefix('assets/{asset}')->name('documents.')->whereNumber('asset')->group(function () {
-                Route::get('/documents', 'index')->name('index');
-                Route::get('/documents/stage/{stage}', 'byStage')->name('by-stage')->whereNumber('stage');
                 Route::post('/documents', 'store')->name('store');
             });
             Route::get('/documents/{document}/download', 'download')->name('documents.download')->whereNumber('document');
@@ -202,12 +172,37 @@ Route::middleware('auth')->group(function () {
         // ----------------------------------------
         Route::controller(NoteController::class)->group(function () {
             Route::prefix('assets/{asset}')->name('notes.')->whereNumber('asset')->group(function () {
-                Route::get('/notes', 'index')->name('index');
-                Route::get('/notes/stage/{stage}', 'byStage')->name('by-stage')->whereNumber('stage');
-                Route::get('/notes/activity-log', 'activityLog')->name('activity-log');
                 Route::post('/notes', 'store')->name('store');
             });
             Route::delete('/notes/{note}', 'destroy')->name('notes.destroy')->whereNumber('note');
+        });
+
+        // ----------------------------------------
+        // RECAPITULATIONS - Weekly progress reports
+        // ----------------------------------------
+        Route::controller(RecapitulationController::class)->prefix('recapitulations')->name('recapitulations.')->group(function () {
+            // List & Create
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+
+            // Single recapitulation
+            Route::get('/{recapitulation}', 'show')->name('show')->whereNumber('recapitulation');
+            Route::get('/{recapitulation}/edit', 'edit')->name('edit')->whereNumber('recapitulation');
+            Route::put('/{recapitulation}', 'update')->name('update')->whereNumber('recapitulation');
+            Route::delete('/{recapitulation}', 'destroy')->name('destroy')->whereNumber('recapitulation');
+
+            // Actions
+            Route::post('/{recapitulation}/publish', 'publish')->name('publish')->whereNumber('recapitulation');
+            Route::post('/{recapitulation}/unpublish', 'unpublish')->name('unpublish')->whereNumber('recapitulation');
+            Route::post('/{recapitulation}/regenerate', 'regenerate')->name('regenerate')->whereNumber('recapitulation');
+            Route::get('/{recapitulation}/print', 'print')->name('print')->whereNumber('recapitulation');
+
+            // Item management
+            Route::post('/{recapitulation}/items', 'addItem')->name('addItem')->whereNumber('recapitulation');
+            Route::put('/items/{item}', 'updateItem')->name('updateItem')->whereNumber('item');
+            Route::delete('/items/{item}', 'removeItem')->name('removeItem')->whereNumber('item');
+            Route::get('/{recapitulation}/available-assets', 'availableAssets')->name('availableAssets')->whereNumber('recapitulation');
         });
     });
 
@@ -215,6 +210,8 @@ Route::middleware('auth')->group(function () {
     // ADMIN ONLY ROUTES
     // ============================================
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', fn() => view('admin.beranda'))->name('dashboard');
+
         // User management - Superuser only
         Route::middleware('role:superuser')->group(function () {
             // Future: user management routes
@@ -222,6 +219,18 @@ Route::middleware('auth')->group(function () {
 
         // Reports & Stats - Admin+
         Route::get('/reports', fn() => view('admin.reports'))->name('reports');
+
+        // Account management shortcut for admin sidebar
+        Route::get('/account', fn() => redirect()->route('admin.users.index'))->name('account');
+        Route::controller(UserController::class)->prefix('users')->name('users.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('/{user}', 'show')->name('show');
+            Route::get('/{user}/edit', 'edit')->name('edit');
+            Route::put('/{user}', 'update')->name('update');
+            Route::delete('/{user}', 'destroy')->name('destroy');
+        });
     });
 });
 

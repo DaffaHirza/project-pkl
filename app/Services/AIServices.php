@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Log;
 
 class AIServices
 {
+    private int $totalTokenInput = 0;
+    private int $totalTokenOutput = 0;
+
     public function __construct(
         private AIClientService $aiClient,
         private DocumentTextExtractor $textExtractor,
@@ -46,7 +49,7 @@ class AIServices
 
         $laporanUtamaItem->update([
             'hasil_ai' => 'Dokumen acuan utama - divalidasi per bagian.',
-            'status_verifikasi' => 'ditemukan',
+            'status_verifikasi' => 'pending',
         ]);
 
         $dokumenPendukung = [];
@@ -155,7 +158,13 @@ class AIServices
                 ? $this->sectionAnalyzer->buildSectionPromptAiOnly($sectionName, $sectionSnippet, $instruction)
                 : $this->sectionAnalyzer->buildSectionPrompt($sectionName, $sectionSnippet, $relevantDocs, $instruction, $availableDocs);
 
-            $hasilValidasi = $this->aiClient->analyze($prompt);
+            $aiResponse = $this->aiClient->analyzeWithUsage($prompt);
+            $hasilValidasi = $aiResponse['content'];
+
+            // Accumulate token usage
+            $this->totalTokenInput += $aiResponse['usage']['token_input'] ?? 0;
+            $this->totalTokenOutput += $aiResponse['usage']['token_output'] ?? 0;
+
             $parsedResult = $this->sectionAnalyzer->parseAiResponse($hasilValidasi);
             $status = ($parsedResult['status'] ?? 'TIDAK VALID') === 'VALID'
                 ? 'ditemukan'
@@ -179,8 +188,16 @@ class AIServices
             sleep(1);
         }
 
+        $laporanUtamaStatus = 'pending';
+        if ($totalSection > 0) {
+            $laporanUtamaStatus = $totalValid === $totalSection
+                ? 'ditemukan'
+                : 'tidak_ditemukan';
+        }
+
         $laporanUtamaItem->update([
             'hasil_ai' => $this->resultFormatter->buildLaporanUtamaInsightMarkdown($hasilPerSection),
+            'status_verifikasi' => $laporanUtamaStatus,
         ]);
 
         $kesimpulanMarkdown = $this->resultFormatter->buildFinalConclusion($hasilPerSection);
@@ -242,6 +259,8 @@ class AIServices
             'kesimpulan' => $kesimpulanMarkdown,
             'skor' => $skor,
             'status' => $status,
+            'token_input' => $this->totalTokenInput,
+            'token_output' => $this->totalTokenOutput,
         ]);
 
         Log::info('Section-based analysis completed', [

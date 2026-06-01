@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Kanban;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProjectAssetKanban;
+use App\Models\AssetKanban;
 use App\Models\AssetDocumentKanban;
 use App\Services\KanbanNotificationService;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 class DocumentController extends Controller
 {
     // Upload multiple documents for an asset
-    public function store(Request $request, ProjectAssetKanban $asset)
+    public function store(Request $request, AssetKanban $asset)
     {
         $validated = $request->validate([
             'files' => 'required|array|min:1',
@@ -132,29 +132,5 @@ class DocumentController extends Controller
         }
 
         return back()->with('success', 'File berhasil dihapus.');
-    }
-
-    // Get documents by stage
-    public function byStage(ProjectAssetKanban $asset, int $stage)
-    {
-        $documents = $asset->documents()
-            ->where('stage', $stage)
-            ->with('uploader')
-            ->latest()
-            ->get();
-
-        return response()->json($documents);
-    }
-
-    // Get all documents for an asset
-    public function index(ProjectAssetKanban $asset)
-    {
-        $documents = $asset->documents()
-            ->with('uploader')
-            ->latest()
-            ->get()
-            ->groupBy('stage');
-
-        return response()->json($documents);
     }
 }

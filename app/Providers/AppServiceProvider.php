@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Models\AssetDocumentKanban;
 use App\Models\AssistantDocument;
+use App\Models\Document;
 use App\Models\Notification;
+use App\Observers\DocumentObserver;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
@@ -29,6 +31,9 @@ class AppServiceProvider extends ServiceProvider
         if (app()->environment('production') || str_contains(config('app.url'), 'ngrok')) {
             URL::forceScheme('https');
         }
+
+        // Register model observers
+        Document::observe(DocumentObserver::class);
 
         // Explicit model binding for kanban documents
         Route::model('document', AssetDocumentKanban::class);

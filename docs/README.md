@@ -1,119 +1,99 @@
-# KJPP Mushofah dan Rekan - Sistem Penilaian Asset
+# KJPP Mushofah - Sistem Penilaian Asset
 
 Sistem manajemen penilaian asset berbasis Kanban untuk KJPP Mushofah dan Rekan Cabang Semarang.
 
-## Quick Start
 
-### Prerequisites
+## Cara Menjalankan
+
+**Yang dibutuhkan:**
 - PHP 8.2+
 - Composer
 - Node.js 18+
 - PostgreSQL
-- Ngrok (untuk development)
 
-### 1. Clone & Install
+**Langkah instalasi:**
 
 ```bash
-# Clone repository
 git clone https://github.com/DaffaHirza/project-pkl.git
 cd project-pkl
-
-# Install PHP dependencies
 composer install
-
-# Install Node dependencies
 npm install
-
-# Copy environment file
 cp .env.example .env
-
-# Generate app key
 php artisan key:generate
 ```
 
-### 2. Konfigurasi Database
+**Setting database di .env:**
 
-Edit `.env`:
-```env
+```
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5432
 DB_DATABASE=projectpkl
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
+DB_USERNAME=username_kamu
+DB_PASSWORD=password_kamu
 ```
 
-### 3. Migrasi & Seed
+**Jalankan migrasi:**
 
 ```bash
-# Jalankan migrasi
 php artisan migrate
-
-# Seed data awal
 php artisan db:seed
 ```
 
-### 4. Jalankan Aplikasi
+**Jalankan aplikasi (3 terminal):**
 
 ```bash
-# Terminal 1 - Laravel Server
+# Terminal 1 - Server
 php artisan serve --port=8000
 
-# Terminal 2 - Vite (frontend)
+# Terminal 2 - Frontend 
 npm run dev
 
-# Terminal 3 - Queue Worker
+# Terminal 3 - Queue (untuk notifikasi)
 php artisan queue:work --tries=3
 ```
 
 Buka http://localhost:8000
 
----
+
+## Akun Default
+
+| Email | Password | Role |
+|-------|----------|------|
+| developer@kjpp.id | password | Superuser |
+| admin@kjpp.id | password | Admin |
+| supervisor@kjpp.id | password | Admin |
+| andi@kjpp.id | password | User |
+| budi@kjpp.id | password | User |
+| citra@kjpp.id | password | User |
+
 
 ## Fitur Utama
 
-### Kanban Board
-- 13 stage penilaian asset
-- Drag & drop untuk pindah stage
-- Filter berdasarkan project, status, prioritas
+- **Kanban Board** - 13 stage penilaian, drag & drop dengan SortableJS
+- **Manajemen Client** - Bank, PT/CV, Debitur dengan struktur hierarki
+- **Manajemen Asset** - CRUD asset dengan dokumen & catatan per stage
+- **Rekapitulasi** - Laporan progress mingguan untuk evaluasi meeting
+- **Notifikasi** - In-app + Telegram (real-time via queue)
+- **Dark Mode** - Toggle tema gelap/terang
 
-### Notifikasi
-- Notifikasi in-app real-time
-- Notifikasi Telegram (stage change & notes)
-
-### Manajemen Data
-- Client management
-- Project management
-- Asset management
-- Document upload
-- Notes/catatan internal
-
----
 
 ## Tech Stack
 
-- **Backend:** Laravel 11
+- **Backend:** Laravel 11 (PHP 8.2+)
 - **Frontend:** Blade + Tailwind CSS + Alpine.js
 - **Database:** PostgreSQL
-- **Queue:** Database driver
-- **Notification:** Telegram Bot API
+- **Queue:** Laravel Queue (database driver)
+- **External:** Telegram Bot API (notifikasi)
+- **Build:** Vite
 
----
 
-## Struktur Database
+## Dokumentasi Lainnya
 
-```
-users                  - Akun pengguna
-clients_kanban         - Data klien
-projects_kanban        - Data project/proyek
-project_assets_kanban  - Asset yang dinilai
-asset_documents_kanban - Dokumen pendukung
-asset_notes_kanban     - Catatan internal
-notifications          - Notifikasi sistem
-```
-
----
-
-## License
-
-Proprietary - KJPP Mushofah dan Rekan
+- [DATABASE.md](DATABASE.md) - Struktur tabel database
+- [MODELS.md](MODELS.md) - Eloquent models
+- [CONTROLLERS.md](CONTROLLERS.md) - Controllers & routes
+- [VIEWS.md](VIEWS.md) - Blade views
+- [SERVICES.md](SERVICES.md) - Service classes
+- [SETUP-TELEGRAM.md](SETUP-TELEGRAM.md) - Setup bot Telegram
+- [SETUP-NGROK.md](SETUP-NGROK.md) - Setup ngrok

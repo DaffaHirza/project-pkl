@@ -1,313 +1,916 @@
-# Dokumentasi Models
+# Models Documentation
 
-Lokasi: app/Models/
+Dokumentasi lengkap untuk semua model dalam sistem Kanban Asset Management.
 
----
-
-## 1. User.php
-
-Tabel: users
-
-### Deskripsi
-Model untuk manajemen user/pengguna sistem.
-
-### Kolom Database
-- id (primary key)
-- name (string) - Nama lengkap user
-- email (string, unique) - Email untuk login
-- password (string, hashed) - Password terenkripsi
-- role (string) - Role user: user, admin, superuser
-- is_active (boolean) - Status aktif/nonaktif
-- telegram_chat_id (string, nullable) - ID chat Telegram untuk notifikasi
-- last_login_at (datetime, nullable) - Waktu login terakhir
-- email_verified_at (datetime, nullable)
-- remember_token (string, nullable)
-- created_at, updated_at (timestamps)
-
-### Konstanta Role
-- ROLE_USER = 'user' - User biasa
-- ROLE_ADMIN = 'admin' - Admin
-- ROLE_SUPERUSER = 'superuser' - Developer/Superuser
-
-### Method Penting
-- isUser() - Cek apakah role = user
-- isAdmin() - Cek apakah role = admin
-- isSuperuser() - Cek apakah role = superuser
-- hasAdminAccess() - Cek apakah admin atau superuser
-- uploadedDocuments() - Relasi ke dokumen yang diupload
-- notes() - Relasi ke catatan yang dibuat
+**Lokasi:** `app/Models/`
 
 ---
 
-## 2. ClientKanban.php
+## Daftar Model
 
-Tabel: clients_kanban
-
-### Deskripsi
-Model untuk data klien/customer yang memiliki project penilaian.
-
-### Kolom Database
-- id (primary key)
-- name (string) - Nama PIC/kontak person
-- company_name (string, nullable) - Nama perusahaan
-- email (string, nullable, unique) - Email kontak
-- phone (string, nullable) - Nomor telepon
-- address (text, nullable) - Alamat lengkap
-- created_at, updated_at (timestamps)
-
-### Relasi
-- projects() - hasMany ke ProjectKanban (satu client punya banyak project)
-
-### Accessor
-- display_name - Menampilkan "Nama (Perusahaan)" jika ada company_name
-- projects_count - Jumlah total project
-- active_projects_count - Jumlah project aktif
+| Model | Tabel | Deskripsi |
+|-------|-------|-----------|
+| User | users | Akun pengguna sistem |
+| ClientKanban | clients_kanban | Data klien dengan hierarki |
+| AssetKanban | assets_kanban | Asset yang dinilai |
+| AssetDocumentKanban | asset_documents_kanban | Dokumen asset |
+| AssetNoteKanban | asset_notes_kanban | Catatan/aktivitas asset |
+| RecapitulationKanban | recapitulations_kanban | Rekapitulasi periodik |
+| RecapitulationItemKanban | recapitulation_items_kanban | Detail item rekapitulasi |
+| Notification | notifications | Notifikasi in-app |
 
 ---
 
-## 3. ProjectKanban.php
+## User.php
 
-Tabel: projects_kanban
+Model untuk akun pengguna sistem dengan role-based access.
 
-### Deskripsi
-Model untuk project penilaian asset. Satu client bisa punya banyak project.
+### Traits
+- `HasFactory` - Factory untuk testing
+- `Notifiable` - Untuk Laravel Notifications (termasuk Telegram)
 
-### Kolom Database
-- id (primary key)
-- client_id (foreign key ke clients_kanban)
-- project_code (string, auto-generate) - Format: PRJ-YYYY-XXX
-- name (string) - Nama project
-- description (text, nullable) - Deskripsi project
-- due_date (date, nullable) - Tanggal deadline
-- status (string) - Status: active, completed, cancelled
-- created_at, updated_at, deleted_at (timestamps + soft delete)
+### Fillable
+```php
+'name', 'email', 'password', 'role', 'is_active', 'telegram_chat_id', 'last_login_at'
+```
 
-### Konstanta Status
-- active = Aktif
-- completed = Selesai
-- cancelled = Dibatalkan
+### Hidden
+```php
+'password', 'remember_token'
+```
 
-### Relasi
-- client() - belongsTo ke ClientKanban
-- assets() - hasMany ke ProjectAssetKanban
+### Casts
+```php
+'email_verified_at' => 'datetime',
+'password' => 'hashed',
+'is_active' => 'boolean',
+'last_login_at' => 'datetime',
+```
 
-### Accessor
-- status_label - Label status dalam bahasa Indonesia
-- assets_count - Jumlah asset
-- progress - Persentase progress keseluruhan (0-100)
-- assets_by_stage - Asset dikelompokkan per stage
+### Constants
 
-### Auto-generate
-Saat membuat project baru, project_code otomatis di-generate dengan format PRJ-YYYY-XXX.
+```php
+// Role Types
+ROLE_USER      = 'user'           // User biasa
+ROLE_ADMIN     = 'admin'          // Admin
+ROLE_SUPERUSER = 'superuser'      // Developer/Superuser
 
----
+ROLES = [
+    'user'      => 'User',
+    'admin'     => 'Admin',
+    'superuser' => 'Superuser (Developer)',
+]
+```
 
-## 4. ProjectAssetKanban.php
+### Relationships
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `uploadedDocuments()` | HasMany → AssetDocumentKanban | Dokumen yang diupload user |
+| `assetNotes()` | HasMany → AssetNoteKanban | Catatan yang dibuat user |
 
-Tabel: project_assets_kanban
+### Methods
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `isUser()` | bool | Cek apakah role = user |
+| `isAdmin()` | bool | Cek apakah role = admin |
+| `isSuperuser()` | bool | Cek apakah role = superuser |
+| `hasAdminAccess()` | bool | Cek apakah admin ATAU superuser |
+| `updateLastLogin()` | void | Update timestamp login terakhir |
+| `routeNotificationForTelegram()` | string | Return telegram_chat_id untuk notif |
+| `can($ability, $args)` | bool | Override: Superuser bypass semua permission |
 
-### Deskripsi
-Model utama untuk asset yang dinilai. Setiap asset memiliki 13 stage penilaian.
+### Accessors
+| Attribute | Return | Deskripsi |
+|-----------|--------|-----------|
+| `role_name` | string | Label role dari ROLES constant |
 
-### Kolom Database
-- id (primary key)
-- project_id (foreign key ke projects_kanban)
-- asset_code (string, auto-generate) - Format: AST-YYYY-XXXX
-- name (string) - Nama asset
-- description (text, nullable) - Deskripsi asset
-- asset_type (string) - Jenis asset
-- location (string, nullable) - Lokasi asset
-- current_stage (integer, 1-13) - Stage saat ini
-- priority (string) - Prioritas: normal, warning, critical
-- position (integer) - Posisi untuk sorting di kanban
-- created_at, updated_at, deleted_at (timestamps + soft delete)
+### Scopes
+| Scope | Deskripsi |
+|-------|-----------|
+| `active()` | Filter user dengan is_active = true |
+| `admins()` | Filter admin dan superuser saja |
 
-### Konstanta - 13 STAGES
-1. Inisiasi
-2. Penawaran
-3. Kesepakatan
-4. Eksekusi Lapangan
-5. Analisis
-6. Review 1
-7. Draft Resume
-8. Approval Klien
-9. Draft Laporan
-10. Review 2
-11. Finalisasi
-12. Delivery & Payment
-13. Arsip
+### Contoh Penggunaan
+```php
+// Cek akses admin
+if ($user->hasAdminAccess()) {
+    // Tampilkan menu admin
+}
 
-### Konstanta - Tipe Asset
-- tanah = Tanah
-- bangunan = Bangunan
-- tanah_bangunan = Tanah & Bangunan
-- mesin = Mesin & Peralatan
-- kendaraan = Kendaraan
-- inventaris = Inventaris
-- aset_tak_berwujud = Aset Tak Berwujud
-- lainnya = Lainnya
+// Kirim notifikasi Telegram
+$user->notify(new AssessmentUpdated($asset, 'stage_change', $actor));
 
-### Konstanta - Prioritas
-- normal = Normal
-- warning = Warning (kuning)
-- critical = Critical (merah)
-
-### Relasi
-- project() - belongsTo ke ProjectKanban
-- documents() - hasMany ke AssetDocumentKanban
-- notes() - hasMany ke AssetNoteKanban
-
-### Method Penting
-- moveToStage(stage, userId, note) - Pindahkan asset ke stage tertentu
-- approve(userId, stage, note) - Setujui di stage tertentu
-- reject(userId, stage, note) - Tolak di stage tertentu
-- addNote(userId, stage, type, content) - Tambah catatan
-
-### Accessor
-- stage_label - Nama stage dalam bahasa Indonesia
-- asset_type_label - Label tipe asset
-- priority_label - Label prioritas
-- progress - Persentase progress (current_stage/13 * 100)
+// Get semua admin aktif
+$admins = User::active()->admins()->get();
+```
 
 ---
 
-## 5. AssetDocumentKanban.php
+## ClientKanban.php
 
-Tabel: asset_documents_kanban
+Model untuk data klien dengan struktur hierarki parent-child.
 
-### Deskripsi
-Model untuk dokumen pendukung asset. Dokumen disimpan per stage.
+### Traits
+- `HasFactory`
 
-### Kolom Database
-- id (primary key)
-- asset_id (foreign key ke project_assets_kanban)
-- uploaded_by (foreign key ke users)
-- stage (integer, 1-13) - Stage saat upload
-- file_name (string) - Nama file asli
-- file_path (string) - Path file di storage
-- file_type (string) - Ekstensi file
-- file_size (integer) - Ukuran file dalam bytes
-- description (text, nullable) - Deskripsi dokumen
-- created_at, updated_at (timestamps)
+### Fillable
+```php
+'name', 'company_name', 'spk_number', 'type', 'parent_id'
+```
 
-### Konstanta
-- MAX_FILE_SIZE = 20971520 (20MB)
-- ALLOWED_TYPES = pdf, doc, docx, xls, xlsx, ppt, pptx, jpg, jpeg, png, gif, webp, zip, rar, 7z, txt, csv
+### Constants
 
-### Relasi
-- asset() - belongsTo ke ProjectAssetKanban
-- uploader() - belongsTo ke User
+```php
+TYPES = [
+    'bank'    => 'Bank/Perbankan',    // Bank yang memiliki debitur
+    'pt_cv'   => 'PT/CV',             // Perusahaan (bisa induk/anak)
+    'debitur' => 'Debitur',           // Debitur dari bank
+]
+```
 
-### Accessor
-- stage_label - Nama stage upload
-- file_size_formatted - Ukuran file dalam KB/MB
-- download_url - URL untuk download
+### Struktur Hierarki
 
-### Method
-- deleteFile() - Hapus file dari storage
+```
+Bank (parent_id: null)
+└── Debitur 1 (parent_id: bank_id)
+    └── Asset A
+└── Debitur 2 (parent_id: bank_id)
+    └── Asset B
 
----
+PT Induk (parent_id: null)
+└── PT Anak (parent_id: pt_induk_id)
+    └── Asset C
+```
 
-## 6. AssetNoteKanban.php
+### Relationships
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `assets()` | HasMany → AssetKanban | Asset milik client ini |
+| `parent()` | BelongsTo → ClientKanban | Parent client |
+| `children()` | HasMany → ClientKanban | Semua child clients |
+| `debiturs()` | HasMany (filtered) | Khusus debitur (jika ini bank) |
+| `childCompanies()` | HasMany (filtered) | Khusus PT/CV anak |
 
-Tabel: asset_notes_kanban
+### Accessors
+| Attribute | Return | Deskripsi |
+|-----------|--------|-----------|
+| `display_name` | string | Format "Nama (Perusahaan)" atau "Nama" |
+| `total_assets_count` | int | Jumlah asset + asset dari children |
+| `type_name` | string | Label tipe dari TYPES constant |
+| `children_count` | int | Jumlah child clients |
 
-### Deskripsi
-Model untuk catatan/komentar pada asset. Mencatat history perubahan stage, approval, rejection, dan catatan bebas.
+### Contoh Penggunaan
+```php
+// Mendapatkan semua debitur dari bank
+$bank = ClientKanban::find($id);
+$debiturs = $bank->debiturs()->with('assets')->get();
 
-### Kolom Database
-- id (primary key)
-- asset_id (foreign key ke project_assets_kanban)
-- user_id (foreign key ke users)
-- stage (integer, 1-13) - Stage saat catatan dibuat
-- type (string) - Tipe catatan
-- content (text) - Isi catatan
-- created_at, updated_at (timestamps)
+// Total asset termasuk dari debitur/anak
+$totalAssets = $client->total_assets_count;
 
-### Konstanta - Tipe Catatan
-- note = Catatan biasa
-- stage_change = Perubahan stage (otomatis)
-- approval = Persetujuan
-- rejection = Penolakan
-
-### Relasi
-- asset() - belongsTo ke ProjectAssetKanban
-- user() - belongsTo ke User
-
-### Accessor
-- stage_label - Nama stage
-- type_label - Label tipe catatan
-
-### Method
-- isStageChange() - Cek apakah catatan perubahan stage
-- isApproval() - Cek apakah catatan approval
-- isRejection() - Cek apakah catatan rejection
+// Display nama lengkap
+echo $client->display_name; // "PT ABC (Bank XYZ)"
+```
 
 ---
 
-## 7. Notification.php
+## AssetKanban.php
 
-Tabel: notifications
+Model utama untuk asset yang dinilai, dengan 13 tahap workflow Kanban.
 
-### Deskripsi
-Model untuk sistem notifikasi in-app. Menggunakan UUID sebagai primary key.
+### Traits
+- `HasFactory`
+- `SoftDeletes` - Soft delete untuk asset
 
-### Kolom Database
-- id (uuid, primary key)
-- type (string) - Tipe notifikasi
-- notifiable_type (string) - Model yang menerima (App\Models\User)
-- notifiable_id (integer) - ID user penerima
-- data (json) - Data notifikasi
-- read_at (datetime, nullable) - Waktu dibaca
-- created_at, updated_at (timestamps)
+### Fillable
+```php
+'client_id', 'name', 'asset_type', 'location', 'current_stage', 'priority', 'position'
+```
 
-### Konstanta - Tipe Notifikasi
-Asset:
-- asset_stage_changed = Stage Asset Berubah
-- asset_created = Asset Baru Dibuat
-- asset_document_uploaded = Dokumen Asset Diupload
-- asset_note_added = Catatan Asset Ditambahkan
-- asset_priority_critical = Asset Priority Critical
+### Casts
+```php
+'current_stage' => 'integer',
+'position' => 'integer',
+```
 
-Project:
-- project_created = Project Baru Dibuat
-- project_stage_changed = Stage Project Berubah
-- project_assigned = Ditugaskan ke Project
-- project_completed = Project Selesai
+### Constants
 
-Client:
-- client_created = Client Baru Ditambahkan
+```php
+// 13 Stages Workflow
+STAGES = [
+    1  => 'Inisiasi',
+    2  => 'Penawaran',
+    3  => 'Kesepakatan',
+    4  => 'Eksekusi Lapangan',
+    5  => 'Analisis',
+    6  => 'Review 1',
+    7  => 'Draft Resume',
+    8  => 'Approval Klien',
+    9  => 'Draft Laporan',
+    10 => 'Review 2',
+    11 => 'Finalisasi',
+    12 => 'Delivery & Payment',
+    13 => 'Arsip',
+]
 
-Lainnya:
-- approval_required = Perlu Approval
-- approval_completed = Approval Selesai
-- system = Sistem
+// Tipe Asset
+ASSET_TYPES = [
+    'tanah'            => 'Tanah',
+    'bangunan'         => 'Bangunan',
+    'tanah_bangunan'   => 'Tanah & Bangunan',
+    'mesin'            => 'Mesin & Peralatan',
+    'kendaraan'        => 'Kendaraan',
+    'inventaris'       => 'Inventaris',
+    'aset_tak_berwujud'=> 'Aset Tak Berwujud',
+    'lainnya'          => 'Lainnya',
+]
 
-### Method Static
-- notify(user, type, data) - Buat notifikasi baru untuk user
+// Prioritas
+PRIORITIES = [
+    'normal'   => 'Normal',
+    'warning'  => 'Warning',
+    'critical' => 'Critical',
+]
+```
 
-### Scope
-- unread() - Filter notifikasi belum dibaca
-- read() - Filter notifikasi sudah dibaca
-- ofType(type) - Filter berdasarkan tipe
-- recent(limit) - Ambil notifikasi terbaru
+### Relationships
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `client()` | BelongsTo → ClientKanban | Client pemilik asset |
+| `documents()` | HasMany → AssetDocumentKanban | Dokumen asset |
+| `notes()` | HasMany → AssetNoteKanban | Catatan/log asset |
+
+### Accessors
+| Attribute | Return | Deskripsi |
+|-----------|--------|-----------|
+| `stage_label` | string | Nama stage dari STAGES |
+| `asset_type_label` | string | Label tipe dari ASSET_TYPES |
+| `priority_label` | string | Label prioritas |
+| `progress` | int | Persentase progress (0-100) |
+| `bank` | ClientKanban\|null | Bank jika asset milik debitur |
+
+### Stage Methods
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `moveToStage($stage, $userId, $note)` | bool | Pindah ke stage tertentu |
+| `moveToNextStage($userId, $note)` | bool | Pindah ke stage berikutnya |
+| `moveToPreviousStage($userId, $note)` | bool | Pindah ke stage sebelumnya |
+| `isCompleted()` | bool | Cek apakah sudah di stage 13 |
+
+### Scopes
+| Scope | Deskripsi |
+|-------|-----------|
+| `atStage($stage)` | Filter by stage tertentu |
+| `completed()` | Asset di stage 13 (Arsip) |
+| `active()` | Asset belum selesai (stage < 13) |
+| `priority($priority)` | Filter by prioritas |
+| `needsAttention()` | Asset warning/critical yang aktif |
+| `ordered()` | Order by position |
+
+### Contoh Penggunaan
+```php
+// Pindahkan asset ke stage berikutnya
+$asset->moveToNextStage(auth()->id(), 'Dokumen lengkap');
+
+// Get asset yang perlu perhatian
+$urgent = AssetKanban::needsAttention()->with('client')->get();
+
+// Progress percentage
+echo "Progress: {$asset->progress}%"; // "Progress: 38%"
+
+// Get asset per stage untuk kanban board
+foreach (AssetKanban::STAGES as $num => $label) {
+    $assets = AssetKanban::atStage($num)->ordered()->get();
+}
+```
+
+---
+
+## AssetDocumentKanban.php
+
+Model untuk dokumen yang diupload pada asset.
+
+### Traits
+- `HasFactory`
+
+### Fillable
+```php
+'asset_id', 'uploaded_by', 'stage', 'file_name', 'file_path', 'file_type', 'file_size', 'description'
+```
+
+### Casts
+```php
+'stage' => 'integer',
+'file_size' => 'integer',
+```
+
+### Constants
+
+```php
+MAX_FILE_SIZE = 104857600      // 100MB dalam bytes
+
+ALLOWED_TYPES = [
+    'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',  // Dokumen
+    'jpg', 'jpeg', 'png', 'gif', 'webp',                  // Gambar
+    'zip', 'rar', '7z',                                   // Arsip
+    'txt', 'csv',                                         // Text
+]
+```
+
+### Boot Events
+```php
+// Otomatis hapus file dari storage saat model dihapus
+static::deleting(function ($document) {
+    $document->deleteFile();
+});
+```
+
+### Relationships
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `asset()` | BelongsTo → AssetKanban | Asset pemilik dokumen |
+| `uploader()` | BelongsTo → User | User yang upload |
+
+### Accessors
+| Attribute | Return | Deskripsi |
+|-----------|--------|-----------|
+| `stage_label` | string | Nama stage dari AssetKanban::STAGES |
+| `file_size_human` | string | Ukuran format human (KB/MB) |
+| `file_url` | string | URL publik untuk akses file |
+
+### Methods
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `isImage()` | bool | Cek apakah file adalah gambar |
+| `isPdf()` | bool | Cek apakah file adalah PDF |
+| `deleteFile()` | bool | Hapus file dari storage |
+| `getDownloadResponse()` | Response | Download response untuk controller |
+
+### Scopes
+| Scope | Deskripsi |
+|-------|-----------|
+| `atStage($stage)` | Filter dokumen by stage |
+| `images()` | Hanya file gambar |
+| `documents()` | Hanya file non-gambar |
+
+### Contoh Penggunaan
+```php
+// Upload dokumen
+$document = AssetDocumentKanban::create([
+    'asset_id' => $asset->id,
+    'uploaded_by' => auth()->id(),
+    'stage' => $asset->current_stage,
+    'file_name' => $file->getClientOriginalName(),
+    'file_path' => $path,
+    'file_type' => $file->extension(),
+    'file_size' => $file->getSize(),
+]);
+
+// Get dokumen gambar saja
+$images = $asset->documents()->images()->get();
+
+// Display ukuran file
+echo $document->file_size_human; // "2.5 MB"
+```
+
+---
+
+## AssetNoteKanban.php
+
+Model untuk catatan dan log aktivitas pada asset.
+
+### Traits
+- `HasFactory`
+
+### Fillable
+```php
+'asset_id', 'user_id', 'stage', 'type', 'content'
+```
+
+### Casts
+```php
+'stage' => 'integer',
+```
+
+### Constants
+
+```php
+TYPES = [
+    'note'         => 'Catatan',          // Catatan manual dari user
+    'stage_change' => 'Perubahan Stage',  // Otomatis saat pindah stage
+    'approval'     => 'Approval',         // Persetujuan
+    'rejection'    => 'Penolakan',        // Penolakan/hambatan (untuk status "Terhambat")
+]
+```
+
+### Relationships
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `asset()` | BelongsTo → AssetKanban | Asset terkait |
+| `user()` | BelongsTo → User | User pembuat catatan |
+
+### Accessors
+| Attribute | Return | Deskripsi |
+|-----------|--------|-----------|
+| `stage_label` | string | Nama stage |
+| `type_label` | string | Label tipe dari TYPES |
+
+### Scopes
+| Scope | Deskripsi |
+|-------|-----------|
+| `atStage($stage)` | Filter by stage |
+| `ofType($type)` | Filter by tipe |
+| `notesOnly()` | Hanya catatan manual (type = note) |
+| `activityLog()` | Log aktivitas (stage_change, approval, rejection) |
+
+### Contoh Penggunaan
+```php
+// Tambah catatan manual
+AssetNoteKanban::create([
+    'asset_id' => $asset->id,
+    'user_id' => auth()->id(),
+    'stage' => $asset->current_stage,
+    'type' => 'note',
+    'content' => 'Dokumen sudah diterima dari klien',
+]);
+
+// Get activity log
+$activities = $asset->notes()->activityLog()->latest()->get();
+
+// Cek ada hambatan (untuk status "Terhambat" di rekapitulasi)
+$hasBlocker = $asset->notes()->ofType('rejection')->exists();
+```
+
+---
+
+## RecapitulationKanban.php
+
+Model untuk rekapitulasi periodik pekerjaan.
+
+### Fillable
+```php
+'title', 'period_start', 'period_end', 'summary', 'status', 'created_by', 'published_at'
+```
+
+### Casts
+```php
+'period_start' => 'date',
+'period_end' => 'date',
+'published_at' => 'datetime',
+```
+
+### Constants
+
+```php
+STATUS_DRAFT     = 'draft'
+STATUS_PUBLISHED = 'published'
+
+STATUSES = [
+    'draft'     => 'Draft',
+    'published' => 'Dipublikasikan',
+]
+```
+
+### Relationships
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `creator()` | BelongsTo → User | User pembuat |
+| `items()` | HasMany → RecapitulationItemKanban | Detail item rekapitulasi |
+
+### Accessors
+| Attribute | Return | Deskripsi |
+|-----------|--------|-----------|
+| `status_label` | string | Label status |
+| `period_label` | string | Format "01 Jan 2026 - 07 Jan 2026" |
+| `duration_days` | int | Jumlah hari periode |
+| `progress_summary` | array | Ringkasan progress items |
+| `completion_rate` | float | Persentase item completed |
+
+### Methods
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `publish()` | bool | Set status ke published |
+| `unpublish()` | bool | Set status ke draft |
+| `isPublished()` | bool | Cek apakah sudah published |
+| `generateTitle($start, $end)` | string | Generate judul otomatis |
+
+### Scopes
+| Scope | Deskripsi |
+|-------|-----------|
+| `published()` | Hanya yang dipublikasikan |
+| `draft()` | Hanya draft |
+| `forPeriod($date)` | Filter yang mencakup tanggal tertentu |
+| `recent($limit)` | Terbaru, limit default 10 |
+
+### Contoh Penggunaan
+```php
+// Buat rekapitulasi mingguan
+$recap = RecapitulationKanban::create([
+    'title' => 'Rekapitulasi 1-7 Jan 2026',
+    'period_start' => '2026-01-01',
+    'period_end' => '2026-01-07',
+    'status' => 'draft',
+    'created_by' => auth()->id(),
+]);
+
+// Get progress summary
+$summary = $recap->progress_summary;
+// ['total' => 10, 'completed' => 5, 'in_progress' => 3, ...]
+
+// Publikasikan
+$recap->publish();
+```
+
+---
+
+## RecapitulationItemKanban.php
+
+Model untuk detail item dalam rekapitulasi.
+
+### Fillable
+```php
+'recapitulation_id', 'asset_id', 'stage_start', 'stage_end', 'work_status', 'activities', 'notes', 'next_actions'
+```
+
+### Casts
+```php
+'stage_start' => 'integer',
+'stage_end' => 'integer',
+```
+
+### Constants
+
+```php
+// Status Pekerjaan
+STATUS_NOT_STARTED    = 'not_started'
+STATUS_IN_PROGRESS    = 'in_progress'
+STATUS_COMPLETED      = 'completed'
+STATUS_BLOCKED        = 'blocked'
+STATUS_PENDING_REVIEW = 'pending_review'
+
+WORK_STATUSES = [
+    'not_started'    => 'Belum Dikerjakan',
+    'in_progress'    => 'Sedang Dikerjakan',
+    'completed'      => 'Selesai',
+    'blocked'        => 'Terhambat',
+    'pending_review' => 'Menunggu Review',
+]
+
+WORK_STATUS_COLORS = [
+    'not_started'    => 'gray',
+    'in_progress'    => 'blue',
+    'completed'      => 'green',
+    'blocked'        => 'red',
+    'pending_review' => 'yellow',
+]
+```
+
+### Relationships
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `recapitulation()` | BelongsTo → RecapitulationKanban | Rekapitulasi induk |
+| `asset()` | BelongsTo → AssetKanban | Asset terkait |
+
+### Accessors
+| Attribute | Return | Deskripsi |
+|-----------|--------|-----------|
+| `work_status_label` | string | Label status |
+| `work_status_color` | string | Warna untuk UI |
+| `stage_start_label` | string | Nama stage awal |
+| `stage_end_label` | string | Nama stage akhir |
+| `stage_progress` | int | Jumlah stage yang dilalui |
+| `has_progress` | bool | Ada progress (stage_end > stage_start) |
+| `progress_percentage` | float | Persentase progress |
+
+### Contoh Penggunaan
+```php
+// Tambah item ke rekapitulasi
+RecapitulationItemKanban::create([
+    'recapitulation_id' => $recap->id,
+    'asset_id' => $asset->id,
+    'stage_start' => 3,
+    'stage_end' => 5,
+    'work_status' => 'in_progress',
+    'activities' => 'Survey lapangan, pengumpulan data',
+    'notes' => 'Menunggu dokumen dari klien',
+]);
+
+// Cek apakah ada progress
+if ($item->has_progress) {
+    echo "Progress: {$item->stage_progress} stage";
+}
+```
+
+---
+
+## Notification.php
+
+Model untuk notifikasi in-app dengan UUID.
+
+### Traits
+- `HasUuids` - Menggunakan UUID sebagai primary key
+
+### Primary Key
+```php
+protected $keyType = 'string';
+public $incrementing = false;
+```
+
+### Fillable
+```php
+'id', 'type', 'notifiable_type', 'notifiable_id', 'data', 'read_at'
+```
+
+### Casts
+```php
+'data' => 'array',      // JSON data
+'read_at' => 'datetime',
+```
+
+### Constants
+
+```php
+// Tipe Notifikasi (hanya yang digunakan)
+TYPES = [
+    // Asset
+    'asset_stage_changed'      => 'Stage Asset Berubah',
+    'asset_created'            => 'Asset Baru Dibuat',
+    'asset_document_uploaded'  => 'Dokumen Asset Diupload',
+    'asset_note_added'         => 'Catatan Asset Ditambahkan',
+    'asset_priority_critical'  => 'Asset Priority Critical',
+    
+    // Client
+    'client_created'           => 'Client Baru Ditambahkan',
+    
+    // System
+    'system'                   => 'Sistem',
+]
+```
+
+### Icon & Color Mapping
+| Type | Icon | Color |
+|------|------|-------|
+| asset_stage_changed | git-branch | purple |
+| asset_created | plus-circle | green |
+| asset_document_uploaded | upload | blue |
+| asset_note_added | message-circle | gray |
+| asset_priority_critical | alert-triangle | red |
+| client_created | users | blue |
+| system | info | gray |
+
+### Relationships
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `notifiable()` | MorphTo | User/entity penerima notifikasi |
+
+### Accessors
+| Attribute | Return | Deskripsi |
+|-----------|--------|-----------|
+| `title` | string | Judul dari data atau TYPES |
+| `message` | string | Pesan dari data |
+| `icon` | string | Nama icon berdasarkan type |
+| `color` | string | Warna berdasarkan type |
+| `action_url` | string\|null | URL aksi dari data |
+
+### Methods
+| Method | Return | Deskripsi |
+|--------|--------|-----------|
+| `isRead()` | bool | Sudah dibaca? |
+| `isUnread()` | bool | Belum dibaca? |
+| `markAsRead()` | void | Tandai sudah dibaca |
+| `markAsUnread()` | void | Tandai belum dibaca |
+| `notify($user, $type, $data)` | Notification | Buat notifikasi untuk 1 user |
+| `notifyMany($users, $type, $data)` | void | Buat notifikasi untuk banyak user |
+
+### Scopes
+| Scope | Deskripsi |
+|-------|-----------|
+| `unread()` | Notifikasi belum dibaca |
+| `read()` | Notifikasi sudah dibaca |
+| `recent()` | 30 hari terakhir |
+| `ofType($type)` | Filter by tipe |
+
+### Contoh Penggunaan
+```php
+// Buat notifikasi
+Notification::notify($user, 'asset_created', [
+    'title' => 'Asset Baru',
+    'message' => 'Asset "Gedung A" telah dibuat',
+    'action_url' => route('kanban.assets.show', $asset),
+]);
+
+// Buat notifikasi ke semua admin
+$admins = User::admins()->get();
+Notification::notifyMany($admins, 'asset_priority_critical', $data);
+
+// Get notifikasi unread
+$unread = Notification::where('notifiable_id', $user->id)
+    ->unread()
+    ->recent()
+    ->get();
+
+// Tandai semua sudah dibaca
+Notification::where('notifiable_id', $user->id)
+    ->unread()
+    ->update(['read_at' => now()]);
+```
 
 ---
 
 ## Diagram Relasi
 
 ```
-User (1) ──────────────── (M) AssetDocumentKanban
-  │                              │
-  │                              │
-  └──── (M) AssetNoteKanban ─────┘
-                │
-                │
-ClientKanban (1) ── (M) ProjectKanban (1) ── (M) ProjectAssetKanban (1) ─┬─ (M) AssetDocumentKanban
-                                                                         │
-                                                                         └─ (M) AssetNoteKanban
+┌─────────────────┐
+│      User       │
+├─────────────────┤
+│ id              │
+│ name            │
+│ email           │
+│ role            │
+│ telegram_chat_id│
+└────────┬────────┘
+         │
+         │ 1:N
+         ▼
+┌─────────────────┐      ┌─────────────────┐
+│  Notification   │      │ AssetNoteKanban │
+└─────────────────┘      └────────┬────────┘
+                                  │
+         ┌─────────────────┐      │ N:1
+         │  ClientKanban   │◄─────┼──────────────┐
+         ├─────────────────┤      │              │
+         │ id              │      │              │
+         │ name            │      │              │
+         │ type            │      │              │
+         │ parent_id ──────┼──┐   │              │
+         └────────┬────────┘  │   │              │
+                  │           │   │              │
+                  │ 1:N       │   │              │
+                  ▼           │   │              │
+         ┌─────────────────┐  │   │              │
+         │   AssetKanban   │◄─┘   │              │
+         ├─────────────────┤      │              │
+         │ id              │◄─────┘              │
+         │ client_id       │                     │
+         │ current_stage   │                     │
+         │ priority        │                     │
+         └────────┬────────┘                     │
+                  │                              │
+         ┌────────┴────────┐                     │
+         │ 1:N             │ 1:N                 │
+         ▼                 ▼                     │
+┌─────────────────┐ ┌─────────────────┐          │
+│AssetDocKanban   │ │AssetNoteKanban  │──────────┘
+└─────────────────┘ └─────────────────┘
+
+┌─────────────────┐      ┌─────────────────────┐
+│RecapKanban      │─────▶│RecapItemKanban      │
+│                 │ 1:N  │                     │
+│ period_start    │      │ asset_id ──────────▶│ AssetKanban
+│ period_end      │      │ work_status         │
+└─────────────────┘      └─────────────────────┘
 ```
 
-Keterangan:
-- (1) = One
-- (M) = Many
+---
+
+## Tips Performa
+
+### Eager Loading
+```php
+// ❌ N+1 Problem
+$assets = AssetKanban::all();
+foreach ($assets as $asset) {
+    echo $asset->client->name; // Query setiap iterasi
+}
+
+// ✅ Eager Loading
+$assets = AssetKanban::with('client')->get();
+foreach ($assets as $asset) {
+    echo $asset->client->name; // Tidak ada query tambahan
+}
+```
+
+### Select Specific Columns
+```php
+// ✅ Hanya ambil kolom yang diperlukan
+$assets = AssetKanban::select('id', 'name', 'current_stage', 'client_id')
+    ->with('client:id,name')
+    ->get();
+```
+
+### Count vs Load
+```php
+// ❌ Load semua lalu count
+$count = $client->assets->count();
+
+// ✅ Count langsung di database
+$count = $client->assets()->count();
+```
+
+**Method:**
+
+- isRead(), isUnread() - Cek status baca
+- markAsRead() - Tandai sudah dibaca
+- markAsUnread() - Tandai belum dibaca
+- notify(user, type, data) - Buat notifikasi baru (static)
+
+**Accessor:**
+
+- title - Judul dari data atau TYPES
+- message - Pesan dari data
+- icon - Icon berdasarkan type
+- color - Warna berdasarkan type
+- action_url - URL aksi dari data
+
+**Scope:**
+
+- unread() - Filter belum dibaca
+- read() - Filter sudah dibaca
+- recent() - 30 hari terakhir
+- ofType(type) - Filter by type
+
+## RecapitulationKanban.php
+
+Model untuk rekapitulasi progress mingguan.
+
+**Fillable:** title, period_start, period_end, summary, status, created_by, published_at
+
+**Status constants:**
+
+- STATUS_DRAFT = 'draft'
+- STATUS_PUBLISHED = 'published'
+
+**Relasi:**
+
+- creator() - User pembuat rekapitulasi
+- items() - Item-item pekerjaan
+
+**Method:**
+
+- publish() - Publikasikan rekapitulasi
+- unpublish() - Kembalikan ke draft
+- generateTitle() - Generate judul otomatis berdasarkan periode
+- getSuggestedPeriod() - Dapatkan saran periode (7-14 hari dari hari ini)
+
+**Accessor:**
+
+- status_label - Label status (Draft/Dipublikasikan)
+- period_label - Format "DD MMM - DD MMM YYYY"
+- duration_days - Jumlah hari dalam periode
+- progress_summary - Ringkasan progress (X dari Y selesai)
+- completion_rate - Persentase penyelesaian
+
+**Scope:**
+
+- published() - Filter dipublikasikan
+- draft() - Filter draft
+- inPeriod(start, end) - Filter by periode
+
+## RecapitulationItemKanban.php
+
+Model untuk item pekerjaan dalam rekapitulasi.
+
+**Fillable:** recapitulation_id, asset_id, stage_start, stage_end, work_status, activities, notes, next_actions
+
+**Work Status constants:**
+
+- not_started - Belum Dimulai
+- in_progress - Dalam Proses
+- completed - Selesai
+- blocked - Terhambat
+- pending_review - Menunggu Review
+
+**WORK_STATUS_COLORS:**
+
+- not_started - gray
+- in_progress - blue
+- completed - green
+- blocked - red
+- pending_review - yellow
+
+**Relasi:**
+
+- recapitulation() - Rekapitulasi parent
+- asset() - Asset terkait
+
+**Method:**
+
+- generateActivitiesFromNotes(periodStart, periodEnd) - Generate aktivitas dari catatan dalam periode
+- determineWorkStatus() - Tentukan status otomatis berdasarkan:
+  - `completed` jika stage_end >= 13 (Arsip)
+  - `pending_review` jika stage_end adalah 6 (Review 1) atau 10 (Review 2)
+  - `blocked` jika asset memiliki catatan tipe `rejection` dalam 14 hari terakhir
+  - `in_progress` jika stage_end > stage_start
+  - `not_started` jika tidak ada perubahan stage
+
+**Accessor:**
+
+- work_status_label - Label status in Indonesian
+- work_status_color - Warna untuk badge
+- stage_start_label - Label stage awal
+- stage_end_label - Label stage akhir
+- stage_progress - Jumlah stage yang dilalui
+
+**Cast:**
+
+- activities => array (JSON)

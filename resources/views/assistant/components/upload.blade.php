@@ -1,3 +1,7 @@
+@php
+    $isViewMode = $isViewMode ?? false;
+@endphp
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
     <div class="lg:col-span-1 flex flex-col h-full">
         <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -6,10 +10,11 @@
 
         <div class="relative w-full flex-grow min-h-[300px] h-full">
             <input id="main-upload" name="files[laporan_utama]" type="file" class="hidden" accept=".pdf"
-                onchange="handleFileSelect(this, 'main')" required />
+                onchange="handleFileSelect(this, 'main')" {{ $isViewMode ? 'disabled' : '' }}
+                {{ $isViewMode ? '' : 'required' }} />
 
             <label for="main-upload" id="main-default"
-                class="flex flex-col justify-center items-center w-full h-full p-6 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 hover:bg-blue-50 hover:border-blue-500 transition-all cursor-pointer absolute inset-0">
+                class="flex flex-col justify-center items-center w-full h-full p-6 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 hover:bg-blue-50 hover:border-blue-500 transition-all cursor-pointer absolute inset-0 {{ $isViewMode ? 'pointer-events-none opacity-60' : '' }}">
                 <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -23,7 +28,7 @@
 
             <div id="main-preview"
                 class="hidden absolute inset-0 w-full h-full bg-white border-2 border-blue-500 rounded-2xl flex-col items-center justify-center p-4 shadow-sm z-10">
-                <button type="button" onclick="removeFile('main')"
+                <button type="button" onclick="removeFile('main')" {{ $isViewMode ? 'disabled' : '' }}
                     class="absolute top-3 right-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full p-1 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
@@ -55,10 +60,11 @@
                 </label>
                 <div class="relative w-full h-32 min-h-[140px]">
                     <input id="upload-proposal" name="files[proposal]" type="file" class="hidden"
-                        onchange="handleFileSelect(this, 'proposal')" accept=".pdf,.docx,.doc" required />
+                        onchange="handleFileSelect(this, 'proposal')" accept=".pdf,.docx,.doc"
+                        {{ $isViewMode ? 'disabled' : '' }} {{ $isViewMode ? '' : 'required' }} />
 
                     <label for="upload-proposal" id="default-proposal"
-                        class="flex flex-col justify-center items-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer absolute inset-0">
+                        class="flex flex-col justify-center items-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer absolute inset-0 {{ $isViewMode ? 'pointer-events-none opacity-60' : '' }}">
                         <svg class="w-6 h-6 text-gray-400 mb-1" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
@@ -69,7 +75,7 @@
 
                     <div id="preview-proposal"
                         class="hidden absolute inset-0 w-full h-full bg-blue-50 border border-blue-200 rounded-xl flex flex-col items-center justify-center p-2 z-10">
-                        <button type="button" onclick="removeFile('proposal')"
+                        <button type="button" onclick="removeFile('proposal')" {{ $isViewMode ? 'disabled' : '' }}
                             class="absolute top-2 right-2 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-full p-0.5 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -99,10 +105,11 @@
                 </label>
                 <div class="relative w-full h-32 min-h-[140px]">
                     <input id="upload-kertas_kerja" name="files[kertas_kerja]" type="file" class="hidden"
-                        onchange="handleFileSelect(this, 'kertas_kerja')" accept=".pdf,.docx,.doc" required />
+                        onchange="handleFileSelect(this, 'kertas_kerja')" accept=".pdf,.docx,.doc"
+                        {{ $isViewMode ? 'disabled' : '' }} {{ $isViewMode ? '' : 'required' }} />
 
                     <label for="upload-kertas_kerja" id="default-kertas_kerja"
-                        class="flex flex-col justify-center items-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer absolute inset-0">
+                        class="flex flex-col justify-center items-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer absolute inset-0 {{ $isViewMode ? 'pointer-events-none opacity-60' : '' }}">
                         <svg class="w-6 h-6 text-gray-400 mb-1" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
@@ -114,6 +121,7 @@
                     <div id="preview-kertas_kerja"
                         class="hidden absolute inset-0 w-full h-full bg-blue-50 border border-blue-200 rounded-xl flex flex-col items-center justify-center p-2 z-10">
                         <button type="button" onclick="removeFile('kertas_kerja')"
+                            {{ $isViewMode ? 'disabled' : '' }}
                             class="absolute top-2 right-2 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-full p-0.5 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -143,10 +151,11 @@
                 </label>
                 <div class="relative w-full h-32 min-h-[140px]">
                     <input id="upload-resume" name="files[resume]" type="file" class="hidden"
-                        onchange="handleFileSelect(this, 'resume')" accept=".pdf,.docx,.doc" required />
+                        onchange="handleFileSelect(this, 'resume')" accept=".pdf,.docx,.doc"
+                        {{ $isViewMode ? 'disabled' : '' }} {{ $isViewMode ? '' : 'required' }} />
 
                     <label for="upload-resume" id="default-resume"
-                        class="flex flex-col justify-center items-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer absolute inset-0">
+                        class="flex flex-col justify-center items-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer absolute inset-0 {{ $isViewMode ? 'pointer-events-none opacity-60' : '' }}">
                         <svg class="w-6 h-6 text-gray-400 mb-1" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
@@ -157,7 +166,7 @@
 
                     <div id="preview-resume"
                         class="hidden absolute inset-0 w-full h-full bg-blue-50 border border-blue-200 rounded-xl flex flex-col items-center justify-center p-2 z-10">
-                        <button type="button" onclick="removeFile('resume')"
+                        <button type="button" onclick="removeFile('resume')" {{ $isViewMode ? 'disabled' : '' }}
                             class="absolute top-2 right-2 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-full p-0.5 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -186,10 +195,11 @@
                 </label>
                 <div class="relative w-full h-32 min-h-[140px]">
                     <input id="upload-sertifikat" name="files[sertifikat]" type="file" class="hidden"
-                        onchange="handleFileSelect(this, 'sertifikat')" accept=".pdf,.docx,.doc" required />
+                        onchange="handleFileSelect(this, 'sertifikat')" accept=".pdf,.docx,.doc"
+                        {{ $isViewMode ? 'disabled' : '' }} {{ $isViewMode ? '' : 'required' }} />
 
                     <label for="upload-sertifikat" id="default-sertifikat"
-                        class="flex flex-col justify-center items-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer absolute inset-0">
+                        class="flex flex-col justify-center items-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer absolute inset-0 {{ $isViewMode ? 'pointer-events-none opacity-60' : '' }}">
                         <svg class="w-6 h-6 text-gray-400 mb-1" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
@@ -200,7 +210,7 @@
 
                     <div id="preview-sertifikat"
                         class="hidden absolute inset-0 w-full h-full bg-blue-50 border border-blue-200 rounded-xl flex flex-col items-center justify-center p-2 z-10">
-                        <button type="button" onclick="removeFile('sertifikat')"
+                        <button type="button" onclick="removeFile('sertifikat')" {{ $isViewMode ? 'disabled' : '' }}
                             class="absolute top-2 right-2 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-full p-0.5 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

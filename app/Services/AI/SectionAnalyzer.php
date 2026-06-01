@@ -67,7 +67,7 @@ class SectionAnalyzer
 
     public function extractSectionFromLaporan(string $sectionName, string $laporanText, array $keywords): array
     {
-        $maxChars = (int) config('document_rules.max_snippet_chars', 3000);
+        $maxChars = (int) config('document_rules.max_snippet_chars', 7000);
         $fallbackParagraphs = (int) config('document_rules.fallback_paragraphs', 3);
         $minCharsAfterTitle = (int) config('document_rules.min_section_chars_after_title', 800);
         if ($minCharsAfterTitle <= 0) {

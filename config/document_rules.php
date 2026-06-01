@@ -241,6 +241,88 @@ return [
     'fallback_paragraphs' => 4,
 
     'laporan_sections' => [
+        'identitas_pihak' => [
+            'keywords' => [
+                'Kepada Yth',
+                'Pimpinan',
+                'Unit Kerja',
+                'Tempat',
+                'Alamat',
+                'perihal',
+            ],
+            'check_against' => ['proposal', 'resume'],
+            'instruction' => 'Ekstrak nama instansi setelah kata "Pimpinan", lokasi kota. Validasi apakah entitas-entitas tersebut konsisten dengan data yang ada di Resume dan Proposal. Laporkan jika ada perbedaan penulisan atau ketidaksesuaian data.',
+        ],
+        'referensi_legalitas' => [
+            'keywords' => [
+                'Perjanjian Kerja Sama',
+                'Surat Perintah',
+                'Proposal Penawaran Penilaian No.',
+                'Kertas Kerja',
+                'nama pemilik aset',
+            ],
+            'check_against' => ['proposal', 'resume', 'kertas_kerja'],
+            'instruction' => 'Temukan semua nomor referensi dokumen (PKS, Proposal, Kertas Kerja), tanggal penerbitannya dan aset milik di ambil dari resume penilaian aset. Cocokkan nomor-nomor tersebut dengan dokumen aslinya di file Proposal, Kertas Kerja dan resume. Pastikan setiap karakter (titik, garis miring, tahun) sama persis tanpa ada kesalahan ketik. Laporkan jika ada perbedaan penulisan atau ketidaksesuaian data.',
+        ],
+        'pemberi_tugas' => [
+            'keywords' => [
+                'Selaku Pemberi Tugas',
+                'Alamat dari pemberi tugas',
+                'Nama',
+                'Jabatan',
+                'Kuasa dari',
+            ],
+            'check_against' => ['proposal'],
+            'instruction' => 'Temukan semua data pemberi tugas (Nama, Jabatan, Alamat, Kuasa) dan cocokkan dengan data di proposal dan untuk nama dan jabatan diambil setelah kalimat UP: dan kuasa itu diambil dari resume penialian aset. Pastikan setiap karakter (titik, garis miring, tahun) sama persis tanpa ada kesalahan ketik. Laporkan jika ada perbedaan penulisan atau ketidaksesuaian data.',
+        ],
+        'pengguna_laporan' => [
+            'keywords' => [
+                'Pihak yang menggunakan',
+                'Alamat',
+            ],
+            'check_against' => ['proposal'],
+            'instruction' => 'Temukan semua data pihak yang menggunakan laporan (Nama, Alamat) dan cocokkan dengan data di proposal. Pastikan setiap karakter (titik, garis miring, tahun) sama persis tanpa ada kesalahan ketik. Laporkan jika ada perbedaan penulisan atau ketidaksesuaian data.',
+        ],
+        'objek_penilaian_dan_kepemilikan' => [
+            'keywords' => [
+                'calon debitur',
+                'Nama dari pemilik objek',
+                'Kepemilikan',
+                'Aset',
+                'Alamat',
+            ],
+            'check_against' => ['proposal', 'resume', 'kertas_kerja'],
+            'instruction' => 'Temukan semua data objek penilaian dan kepemilikan (Nama, Alamat, Kepemilikan) dan cocokkan dengan data di resume dan proposal. Ketika cari di proposal sesuaikan dengan objek penilaian dan bentuk kepemilikan sesuai dengan barisnya. Pastikan setiap karakter (titik, garis miring, tahun) sama persis tanpa ada kesalahan ketik. Laporkan jika ada perbedaan penulisan atau ketidaksesuaian data.',
+        ],
+        'kesimpulan_penilaian' => [
+            'keywords' => [
+                'Kesimpulan Nilai Pasar',
+                'Kesimpulan Nilai Likuidasi',
+                'Terbilang',
+            ],
+            'check_against' => ['resume', 'kertas_kerja'],
+            'instruction' => 'Temukan semua data kesimpulan penilaian (Nilai Pasar, Nilai Likuidasi, Terbilang) dan cocokkan dengan data di resume dan kertas kerja. Pastikan setiap karakter (titik, garis miring, tahun) sama persis tanpa ada kesalahan ketik. Laporkan jika ada perbedaan penulisan atau ketidaksesuaian data.',
+        ],
+        'ringkasan_penilaian' => [
+            'keywords' => [
+                'Laporan Penilaian Aset',
+                'Lokasi Aset',
+                'Bentuk Kepemilikan',
+                'Nomor Laporan ',
+                'Pemberian Tugas',
+                'Pengguna Laporan',
+                'Kesimpulan Nilai Pasar',
+                'Kesimpulan Nilai Likuidasi',
+                'Terbilang',
+            ],
+            'check_against' => ['resume', 'kertas_kerja', 'proposal'],
+            'instruction' => 'pada laporan aset sesuaikan lagi namanya di bagian kertas kerja dan proposal apakah sesuai/tidak. 
+            untuk Lokasi aset juga sesuaikan lagi dibagian resume dibagian uraian aset apakah sesuai/tidak.
+            untuk bentuk kepemilikan juga sesuaikan lagi di bagian kertas kerja sesuai namanya yaitu bisa dicalon debitur dan juga identitifkasi asetnya apa aja di resume bagian uraiannya coba apa aja.
+            untuk pemberi tugas juga sesuaikan lagi di bagian proposal dan untuk nama.
+            untuk pengguna laporan juga sesuaikan lagi di bagian proposal apakah sesuai/tidak. 
+            untuk kesimpulan nilai pasar, nilai likuidasi dan terbilang juga sesuaikan lagi di bagian resume dan kertas kerja apakah sesuai/tidak.',
+        ],
 
         /*
         |--------------------------------------------------------------------------

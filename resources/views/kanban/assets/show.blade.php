@@ -36,7 +36,7 @@
                 <span class="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 rounded">Tinggi</span>
                 @endif
             </div>
-            <p class="text-gray-600 dark:text-gray-400">{{ $asset->asset_code }} • {{ ucfirst(str_replace('_', ' ', $asset->asset_type)) }}</p>
+            <p class="text-gray-600 dark:text-gray-400">{{ ucfirst(str_replace('_', ' ', $asset->asset_type)) }}</p>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('kanban.assets.edit', $asset) }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition">
@@ -77,7 +77,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
-                    Kembali ke {{ \App\Models\ProjectAssetKanban::STAGES[$asset->current_stage - 1] ?? 'Prev' }}
+                    Kembali ke {{ \App\Models\AssetKanban::STAGES[$asset->current_stage - 1] ?? 'Prev' }}
                 </button>
             </form>
             @endif
@@ -87,7 +87,7 @@
                 @csrf
                 <input type="hidden" name="direction" value="next">
                 <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition">
-                    Lanjut ke {{ \App\Models\ProjectAssetKanban::STAGES[$asset->current_stage + 1] ?? 'Next' }}
+                    Lanjut ke {{ \App\Models\AssetKanban::STAGES[$asset->current_stage + 1] ?? 'Next' }}
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
@@ -110,7 +110,7 @@
                 </button>
                 <div x-show="open" @click.outside="open = false" x-transition
                     class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 py-1 z-50 max-h-80 overflow-y-auto">
-                    @foreach(\App\Models\ProjectAssetKanban::STAGES as $num => $label)
+                    @foreach(\App\Models\AssetKanban::STAGES as $num => $label)
                         @if($num != $asset->current_stage)
                         <form action="{{ route('kanban.assets.move-stage', $asset) }}" method="POST">
                             @csrf
@@ -148,28 +148,18 @@
                         <dd class="text-gray-900 dark:text-white">{{ $asset->location ?: '-' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-gray-500 dark:text-gray-400">Proyek</dt>
+                        <dt class="text-gray-500 dark:text-gray-400">Klien</dt>
                         <dd>
-                            <a href="{{ route('kanban.projects.show', $asset->project) }}" class="text-brand-600 dark:text-brand-400 hover:underline">
-                                {{ $asset->project->name }}
+                            <a href="{{ route('kanban.clients.show', $asset->client) }}" class="text-brand-600 dark:text-brand-400 hover:underline">
+                                {{ $asset->client->display_name }}
                             </a>
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-gray-500 dark:text-gray-400">Klien</dt>
-                        <dd>
-                            <a href="{{ route('kanban.clients.show', $asset->project->client) }}" class="text-brand-600 dark:text-brand-400 hover:underline">
-                                {{ $asset->project->client->name }}
-                            </a>
-                        </dd>
+                        <dt class="text-gray-500 dark:text-gray-400">Tipe Klien</dt>
+                        <dd class="text-gray-900 dark:text-white">{{ $asset->client->type_name ?? '-' }}</dd>
                     </div>
                 </dl>
-                @if($asset->description)
-                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-                    <dt class="text-gray-500 dark:text-gray-400 text-sm mb-1">Deskripsi</dt>
-                    <dd class="text-gray-900 dark:text-white text-sm">{{ $asset->description }}</dd>
-                </div>
-                @endif
             </div>
 
             {{-- Documents Section --}}
@@ -301,7 +291,7 @@
             <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
                 <h3 class="font-semibold text-gray-900 dark:text-white mb-4">13 Stage</h3>
                 <div class="space-y-1">
-                    @foreach(\App\Models\ProjectAssetKanban::STAGES as $num => $name)
+                    @foreach(\App\Models\AssetKanban::STAGES as $num => $name)
                     <div class="flex items-center gap-2 p-2 rounded 
                         {{ $num == $asset->current_stage ? 'bg-brand-50 dark:bg-brand-900/20' : '' }}">
                         @if($num < $asset->current_stage)
@@ -426,6 +416,16 @@ document.getElementById('uploadForm')?.addEventListener('submit', function(e) {
         <form action="{{ route('kanban.notes.store', $asset) }}" method="POST">
             @csrf
             <input type="hidden" name="stage" value="{{ $asset->current_stage }}">
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipe Catatan</label>
+                <select name="type" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                    <option value="note">Catatan</option>
+                    <option value="approval">Approval</option>
+                    <option value="rejection">Penolakan / Terhambat</option>
+                </select>
+                <p class="mt-1 text-xs text-gray-500">Pilih "Penolakan" jika asset terhambat untuk rekapitulasi</p>
+            </div>
             
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Catatan *</label>
