@@ -2,7 +2,6 @@
 
 namespace App\Observers;
 
-use App\Models\Document;
 use Illuminate\Support\Facades\DB;
 
 class DocumentObserver
@@ -10,7 +9,7 @@ class DocumentObserver
     /**
      * Handle the Document "created" event.
      */
-    public function created(Document $document): void
+    public function created($document): void
     {
         $this->updateUserTokenCount($document);
     }
@@ -18,7 +17,7 @@ class DocumentObserver
     /**
      * Handle the Document "updated" event.
      */
-    public function updated(Document $document): void
+    public function updated($document): void
     {
         $this->updateUserTokenCount($document);
     }
@@ -26,7 +25,7 @@ class DocumentObserver
     /**
      * Handle the Document "deleted" event.
      */
-    public function deleted(Document $document): void
+    public function deleted($document): void
     {
         $this->updateUserTokenCount($document);
     }
@@ -34,7 +33,7 @@ class DocumentObserver
     /**
      * Handle the Document "restored" event.
      */
-    public function restored(Document $document): void
+    public function restored($document): void
     {
         $this->updateUserTokenCount($document);
     }
@@ -42,7 +41,7 @@ class DocumentObserver
     /**
      * Handle the Document "force deleted" event.
      */
-    public function forceDeleted(Document $document): void
+    public function forceDeleted($document): void
     {
         $this->updateUserTokenCount($document);
     }
@@ -50,20 +49,27 @@ class DocumentObserver
     /**
      * Update user's total token count based on all their documents
      */
-    private function updateUserTokenCount(Document $document): void
+    private function updateUserTokenCount($document): void
     {
-        if (!$document->user_id) {
+        if (empty($document->user_id)) {
             return;
         }
 
-        $totalToken = $document->user
-            ->documents()
-            ->selectRaw('SUM(token_input + token_output) as total')
-            ->first()
-            ?->total ?? 0;
+        try {
+            // Sum token_input + token_output for all documents belonging to this user (Postgres compatible)
+            $totalToken = DB::table('documents')
+                ->where('user_id', $document->user_id)
+                ->selectRaw('SUM(COALESCE(token_input, 0) + COALESCE(token_output, 0)) as total')
+                ->value('total') ?? 0;
 
-        $document->user->update([
-            'jumlah_token' => max(0, (int) $totalToken),
-        ]);
+            // Update the user's total token usage in users table
+            DB::table('users')
+                ->where('id', $document->user_id)
+                ->update([
+                    'jumlah_token' => max(0, (int) $totalToken),
+                ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Observer token update failed: ' . $e->getMessage());
+        }
     }
 }

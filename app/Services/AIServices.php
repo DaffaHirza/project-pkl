@@ -263,6 +263,29 @@ class AIServices
             'token_output' => $this->totalTokenOutput,
         ]);
 
+        // Fail-safe: Update user's token usage count directly in the database (Postgres compatible)
+        if ($document->user_id) {
+            try {
+                $totalToken = \Illuminate\Support\Facades\DB::table('documents')
+                    ->where('user_id', $document->user_id)
+                    ->selectRaw('SUM(COALESCE(token_input, 0) + COALESCE(token_output, 0)) as total')
+                    ->value('total') ?? 0;
+
+                \Illuminate\Support\Facades\DB::table('users')
+                    ->where('id', $document->user_id)
+                    ->update([
+                        'jumlah_token' => max(0, (int) $totalToken),
+                    ]);
+
+                \Illuminate\Support\Facades\Log::info('User token count updated directly via fail-safe', [
+                    'user_id' => $document->user_id,
+                    'total_tokens' => $totalToken
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Fail-safe token update failed: ' . $e->getMessage());
+            }
+        }
+
         Log::info('Section-based analysis completed', [
             'document_id' => $document->id,
             'score' => $skor,

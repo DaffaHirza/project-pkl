@@ -30,11 +30,6 @@
         <div>
             <div class="flex items-center gap-3 mb-2">
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $asset->name }}</h1>
-                @if($asset->priority === 'critical')
-                <span class="px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 rounded">Kritikal</span>
-                @elseif($asset->priority === 'high')
-                <span class="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 rounded">Tinggi</span>
-                @endif
             </div>
             <p class="text-gray-600 dark:text-gray-400">{{ ucfirst(str_replace('_', ' ', $asset->asset_type)) }}</p>
         </div>
@@ -203,18 +198,61 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-1 opacity-50 group-hover:opacity-100 transition">
-                            @if($doc->file_path)
-                            <a href="{{ route('kanban.documents.download', $doc) }}" class="p-2 text-gray-500 hover:text-brand-500 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition" title="Download">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                            </a>
-                            <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="p-2 text-gray-500 hover:text-green-500 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition" title="Lihat/Preview">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                </svg>
-                            </a>
+                            @php
+                                $looksLikeDriveId = $doc->file_path
+                                    && !str_contains($doc->file_path, '/')
+                                    && strlen($doc->file_path) >= 20;
+
+                                $isGoogleDrive = $doc->storage_disk === 'google_drive'
+                                    || !empty($doc->drive_file_id)
+                                    || $looksLikeDriveId;
+
+                                $driveFileId = $doc->drive_file_id ?: ($isGoogleDrive ? $doc->file_path : null);
+                            @endphp
+
+                            @if($isGoogleDrive && $driveFileId)
+                                {{-- Download dari Google Drive lewat Laravel --}}
+                                <a href="{{ route('kanban.documents.download', $doc) }}"
+                                class="p-2 text-gray-500 hover:text-brand-500 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition"
+                                title="Download">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </a>
+
+                                {{-- Preview lewat Laravel, bukan langsung Storage/Drive --}}
+                                <a href="{{ route('kanban.documents.preview', $doc) }}"
+                                    target="_blank"
+                                    class="p-2 text-gray-500 hover:text-green-500 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition"
+                                    title="Lihat/Preview">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </a>
+                            @elseif($doc->file_path)
+                                {{-- Fallback file lokal lama --}}
+                                <a href="{{ route('kanban.documents.download', $doc) }}"
+                                class="p-2 text-gray-500 hover:text-brand-500 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition"
+                                title="Download">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </a>
+
+                                <a href="{{ route('kanban.documents.preview', $doc) }}"
+                                    target="_blank"
+                                    class="p-2 text-gray-500 hover:text-green-500 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition"
+                                    title="Lihat/Preview">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </a>
                             @endif
+
                             @if(auth()->user()->hasAdminAccess() || $doc->uploaded_by == auth()->id())
                             <form action="{{ route('kanban.documents.destroy', $doc) }}" method="POST" class="inline" onsubmit="return confirm('Hapus dokumen {{ $doc->file_name }}?')">
                                 @csrf
@@ -280,7 +318,7 @@
                     @endforeach
                 </div>
                 @else
-                <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-8">Belum ada catatan. Tambahkan catatan untuk memberitahu user lain alasan kenapa objek ini belum pindah stage.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-8">Belum ada catatan.</p>
                 @endif
             </div>
         </div>

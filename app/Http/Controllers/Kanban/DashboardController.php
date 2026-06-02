@@ -24,10 +24,6 @@ class DashboardController extends Controller
         $assetStats = AssetKanban::toBase()
             ->selectRaw("COUNT(*) as total")
             ->selectRaw("SUM(CASE WHEN current_stage = 13 THEN 1 ELSE 0 END) as completed")
-            ->selectRaw("SUM(CASE WHEN priority = 'critical' THEN 1 ELSE 0 END) as critical")
-            ->selectRaw("SUM(CASE WHEN priority = 'high' THEN 1 ELSE 0 END) as high")
-            ->selectRaw("SUM(CASE WHEN priority = 'normal' THEN 1 ELSE 0 END) as normal")
-            ->selectRaw("SUM(CASE WHEN priority = 'low' THEN 1 ELSE 0 END) as low")
             ->first();
 
         // Single query: Get all stage counts at once
@@ -44,21 +40,8 @@ class DashboardController extends Controller
             'total_debiturs' => (int) $clientStats->debiturs,
             'total_assets' => (int) $assetStats->total,
             'completed_assets' => (int) $assetStats->completed,
-            'critical_count' => (int) $assetStats->critical,
-            'high_count' => (int) $assetStats->high,
-            'normal_count' => (int) $assetStats->normal,
-            'low_count' => (int) $assetStats->low,
             'assets_by_stage' => $stageCounts->toArray(),
         ];
-
-        // Critical Assets
-        $criticalAssets = AssetKanban::with('client:id,name,company_name,type')
-            ->select('id', 'client_id', 'name', 'current_stage', 'priority', 'updated_at')
-            ->where('priority', 'critical')
-            ->where('current_stage', '<', 13)
-            ->latest('updated_at')
-            ->limit(10)
-            ->get();
 
         // Recent Activities (stage changes from notes)
         $recentActivities = AssetNoteKanban::with(['user:id,name', 'asset:id,name'])
@@ -69,7 +52,6 @@ class DashboardController extends Controller
 
         return view('kanban.dashboard', compact(
             'stats',
-            'criticalAssets',
             'recentActivities'
         ));
     }

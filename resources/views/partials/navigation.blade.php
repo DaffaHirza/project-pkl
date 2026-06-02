@@ -28,9 +28,7 @@
             </button>
 
             <a href="{{ url('/') }}" class="block flex-shrink-0 lg:hidden">
-                <span class="text-xl font-bold text-brand-600 dark:text-brand-400">
-                    {{ config('app.name', 'Laravel') }}
-                </span>
+                <img src="{{ asset('images/image.png') }}" alt="Logo Kantor Jasa Penilai Publik" class="h-7 w-auto" />
             </a>
         </div>
 

@@ -117,9 +117,7 @@
                                 Status</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Last
                                 Login</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                Token
-                            </th>
+
                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                                 Aksi</th>
                         </tr>
@@ -175,12 +173,7 @@
                                 <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
                                     {{ $user->last_login_at?->diffForHumans() ?? 'Belum pernah login' }}
                                 </td>
-                                <td class="px-4 py-3 text-sm">
-                                    <span
-                                        class="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2.5 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
-                                        {{ number_format($user->jumlah_token ?? 0) }}
-                                    </span>
-                                </td>
+
                                 <td class="px-6 py-4 align-top">
                                     <div class="flex gap-2">
                                         <a href="{{ route('admin.users.show', $user) }}"

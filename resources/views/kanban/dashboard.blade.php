@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Kanban')
+@section('title', 'Ringkasan Tugas')
 
 @section('content')
 <div class="space-y-6">
     {{-- Header --}}
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Overview sistem penilaian</p>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Ringkasan Tugas</h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Overview sistem</p>
         </div>
         <div class="flex gap-2">
             <a href="{{ route('kanban.assets.index') }}" 
@@ -58,7 +58,7 @@
     </div>
 
     {{-- Charts Section --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 gap-6">
         {{-- Stage Distribution Chart --}}
         <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Distribusi Stage</h3>
@@ -66,51 +66,10 @@
                 <canvas id="stageChart"></canvas>
             </div>
         </div>
-
-        {{-- Priority Distribution Chart --}}
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Distribusi Prioritas</h3>
-            <div class="relative h-64">
-                <canvas id="priorityChart"></canvas>
-            </div>
-        </div>
     </div>
 
     {{-- Bottom Section --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- Critical Assets --}}
-        <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 overflow-hidden">
-            <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                <h3 class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                    Prioritas Kritikal
-                </h3>
-                <span class="text-sm text-gray-500 dark:text-gray-400">{{ $stats['critical_count'] ?? 0 }} item</span>
-            </div>
-            <div class="divide-y divide-gray-100 dark:divide-gray-800 max-h-72 overflow-y-auto">
-                @forelse($criticalAssets ?? [] as $asset)
-                <a href="{{ route('kanban.assets.show', $asset) }}" class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                    <div class="min-w-0">
-                        <p class="font-medium text-gray-900 dark:text-white truncate">{{ $asset->name }}</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ $asset->client->display_name ?? '-' }}</p>
-                    </div>
-                    <span class="flex-shrink-0 text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2.5 py-1 rounded-full">
-                        Stage {{ $asset->current_stage }}
-                    </span>
-                </a>
-                @empty
-                <div class="p-6 text-center">
-                    <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                    </div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ada asset kritikal</p>
-                </div>
-                @endforelse
-            </div>
-        </div>
-
+    <div class="grid grid-cols-1 gap-6">
         {{-- Recent Activities --}}
         <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
@@ -223,41 +182,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         font: { size: 10 }
                     },
                     grid: { display: false }
-                }
-            }
-        }
-    });
-
-    // Priority Distribution Chart (Doughnut)
-    const priorityCtx = document.getElementById('priorityChart').getContext('2d');
-    new Chart(priorityCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Kritikal', 'Tinggi', 'Normal', 'Rendah'],
-            datasets: [{
-                data: [
-                    {{ $stats['critical_count'] ?? 0 }},
-                    {{ $stats['high_count'] ?? 0 }},
-                    {{ $stats['normal_count'] ?? 0 }},
-                    {{ $stats['low_count'] ?? 0 }}
-                ],
-                backgroundColor: ['#EF4444', '#F97316', '#22C55E', '#6B7280'],
-                borderWidth: 0,
-                spacing: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 20,
-                        font: { size: 12 }
-                    }
                 }
             }
         }

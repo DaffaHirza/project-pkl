@@ -82,7 +82,6 @@ Menyimpan asset yang dinilai (objek penilaian).
 - **asset_type** - tanah / bangunan / tanah_bangunan / mesin / kendaraan / inventaris / aset_tak_berwujud / lainnya
 - **location** - Alamat lokasi
 - **current_stage** - Stage 1-13
-- **priority** - normal / warning / critical
 - **position** - Urutan di kanban
 - **timestamps** + soft delete
 

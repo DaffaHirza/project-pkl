@@ -163,27 +163,4 @@ class KanbanNotificationService
         }
     }
 
-    /**
-     * Send notification when priority changes to critical
-     */
-    public static function notifyPriorityCritical(
-        AssetKanban $asset,
-        User $changedBy
-    ): void {
-        $data = [
-            'title' => 'Priority Critical!',
-            'message' => "Asset '{$asset->name}' ditandai sebagai CRITICAL oleh {$changedBy->name}",
-            'asset_id' => $asset->id,
-            'asset_name' => $asset->name,
-            'changed_by' => $changedBy->id,
-            'action_url' => route('kanban.assets.show', $asset->id),
-        ];
-
-        $users = User::where('id', '!=', $changedBy->id)->get();
-        
-        foreach ($users as $user) {
-            // Database notification only (no Telegram for priority changes)
-            Notification::notify($user, 'asset_priority_critical', $data);
-        }
-    }
 }

@@ -34,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Register model observers
         Document::observe(DocumentObserver::class);
+        AssistantDocument::observe(DocumentObserver::class);
 
         // Explicit model binding for kanban documents
         Route::model('document', AssetDocumentKanban::class);

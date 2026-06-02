@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Assistant\AsistantDocumentController;
-use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Kanban\DashboardController;
 use App\Http\Controllers\Kanban\ClientController;
@@ -65,7 +64,7 @@ Route::middleware(['auth', 'check.status'])->group(function () {
     });
 
     // ============================================
-    // KANBAN ROUTES (WITH ROLE-BASED ACCESS)
+    // KANBAN ROUTES
     // ============================================
     Route::prefix('kanban')->name('kanban.')->group(function () {
 
@@ -131,7 +130,7 @@ Route::middleware(['auth', 'check.status'])->group(function () {
             Route::delete('/{project}', 'destroy')->name('destroy')
                 ->whereNumber('project')
                 ->middleware('admin');
-        }); */
+        });  */
 
         // ----------------------------------------
         // ASSETS - Users can manage, admin for delete
@@ -148,7 +147,6 @@ Route::middleware(['auth', 'check.status'])->group(function () {
             Route::put('/{asset}', 'update')->name('update')->whereNumber('asset');
             Route::post('/{asset}/move-stage', 'moveStage')->name('move-stage')->whereNumber('asset');
             Route::post('/{asset}/update-position', 'updatePosition')->name('update-position')->whereNumber('asset');
-            Route::post('/{asset}/update-priority', 'updatePriority')->name('update-priority')->whereNumber('asset');
 
             // Delete - Admin only
             Route::delete('/{asset}', 'destroy')->name('destroy')
@@ -160,11 +158,21 @@ Route::middleware(['auth', 'check.status'])->group(function () {
         // DOCUMENTS - Users can manage own, admin for all
         // ----------------------------------------
         Route::controller(DocumentController::class)->group(function () {
-            Route::prefix('assets/{asset}')->name('documents.')->whereNumber('asset')->group(function () {
-                Route::post('/documents', 'store')->name('store');
-            });
-            Route::get('/documents/{document}/download', 'download')->name('documents.download')->whereNumber('document');
-            Route::delete('/documents/{document}', 'destroy')->name('documents.destroy')->whereNumber('document');
+            Route::post('/assets/{asset}/documents', 'store')
+                ->name('documents.store')
+                ->whereNumber('asset');
+
+            Route::get('/documents/{document}/preview', 'preview')
+                ->name('documents.preview')
+                ->whereNumber('document');
+
+            Route::get('/documents/{document}/download', 'download')
+                ->name('documents.download')
+                ->whereNumber('document');
+
+            Route::delete('/documents/{document}', 'destroy')
+                ->name('documents.destroy')
+                ->whereNumber('document');
         });
 
         // ----------------------------------------

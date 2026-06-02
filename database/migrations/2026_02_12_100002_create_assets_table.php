@@ -40,9 +40,6 @@ return new class extends Migration
             // Workflow Stage (1-13)
             $table->unsignedTinyInteger('current_stage')->default(1);
             
-            // Priority untuk visual kanban
-            $table->string('priority', 10)->default('normal'); // normal, warning, critical
-            
             // Posisi dalam kanban column
             $table->unsignedInteger('position')->default(0);
             
@@ -52,7 +49,6 @@ return new class extends Migration
             $table->index(['client_id', 'current_stage']);
             $table->index(['client_id', 'position']); // For ordering in board
             $table->index('current_stage');
-            $table->index('priority');
         });
     }
 

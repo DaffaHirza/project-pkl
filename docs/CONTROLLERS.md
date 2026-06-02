@@ -71,7 +71,7 @@ Lokasi: `app/Http/Controllers/Kanban/AssetController.php`
 
 Route: `/kanban/assets`
 
-**index()** - Daftar asset dengan filter (client, stage, priority) & search
+**index()** - Daftar asset dengan filter (client, stage) & search
   - Mengirim `stageCounts` ke view (jumlah asset per stage dari seluruh database)
 **board()** - Kanban board 13 stage dengan drag & drop
 **create()** - Form tambah asset
@@ -82,14 +82,12 @@ Route: `/kanban/assets`
 **destroy()** - Soft delete asset (admin only)
 **moveStage()** - Pindah stage (untuk drag & drop) + kirim notifikasi Telegram
 **updatePosition()** - Update posisi dalam stage (untuk sorting)
-**updatePriority()** - Update priority asset
 
 Validasi store/update:
 - client_id: required, exists
 - name: required, min:3, max:255
 - asset_type: required, in:[types]
 - location: nullable, max:500
-- priority: required, in:normal,warning,critical
 
 
 ## DocumentController

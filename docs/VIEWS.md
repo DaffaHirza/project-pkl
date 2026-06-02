@@ -125,7 +125,7 @@ views/
 - Sudah dihapus, board sekarang memakai `kanban/assets/index.blade.php`
 
 **kanban/assets/create.blade.php**
-- Form: Client (searchable dropdown), Nama, Tipe Asset, Lokasi, Priority
+- Form: Client (searchable dropdown), Nama, Tipe Asset, Lokasi
 
 **kanban/assets/edit.blade.php**
 - Form edit asset
