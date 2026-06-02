@@ -24,3 +24,4 @@ Homestead.yaml
 Thumbs.db
 /docs
 /database/seeders
+storage/app/google/service-account.json
