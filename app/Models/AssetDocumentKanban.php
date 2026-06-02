@@ -23,6 +23,10 @@ class AssetDocumentKanban extends Model
         'file_type',
         'file_size',
         'description',
+        'storage_disk',
+        'drive_file_id',
+        'drive_web_view_link',
+        'drive_web_content_link',
     ];
 
     protected $casts = [

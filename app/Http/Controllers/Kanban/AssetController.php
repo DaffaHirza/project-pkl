@@ -9,6 +9,8 @@ use App\Services\KanbanNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\GoogleDriveService;
+use Illuminate\Support\Facades\Log;
 
 class AssetController extends Controller
 {
@@ -97,31 +99,66 @@ class AssetController extends Controller
     /**
      * Display asset detail with documents & notes grouped by stage
      */
-    public function show(AssetKanban $asset)
-    {
-        $asset->load([
-            'client:id,name,company_name,type,parent_id',
-            'client.parent:id,name,company_name',
-            'documents' => fn($q) => $q->select('id', 'asset_id', 'uploaded_by', 'stage', 'file_name', 'file_path', 'file_type', 'file_size', 'created_at')
-                                       ->with('uploader:id,name')
-                                       ->orderBy('created_at', 'desc'),
-            'notes' => fn($q) => $q->select('id', 'asset_id', 'user_id', 'stage', 'type', 'content', 'created_at')
-                                   ->with('user:id,name')
-                                   ->orderBy('created_at', 'desc')
-        ]);
+    // public function show(AssetKanban $asset)
+    // {
+    //     $asset->load([
+    //         'client:id,name,company_name,type,parent_id',
+    //         'client.parent:id,name,company_name',
+    //         'documents' => fn($q) => $q->select('id', 'asset_id', 'uploaded_by', 'stage', 'file_name', 'file_path', 'file_type', 'file_size', 'created_at')
+    //                                    ->with('uploader:id,name')
+    //                                    ->orderBy('created_at', 'desc'),
+    //         'notes' => fn($q) => $q->select('id', 'asset_id', 'user_id', 'stage', 'type', 'content', 'created_at')
+    //                                ->with('user:id,name')
+    //                                ->orderBy('created_at', 'desc')
+    //     ]);
         
-        $stages = AssetKanban::STAGES;
+    //     $stages = AssetKanban::STAGES;
         
-        // Group by stage efficiently (data already loaded)
-        $documentsByStage = collect($stages)->mapWithKeys(fn($label, $num) => [
-            $num => $asset->documents->where('stage', $num)->values()
-        ]);
+    //     // Group by stage efficiently (data already loaded)
+    //     $documentsByStage = collect($stages)->mapWithKeys(fn($label, $num) => [
+    //         $num => $asset->documents->where('stage', $num)->values()
+    //     ]);
         
-        $notesByStage = collect($stages)->mapWithKeys(fn($label, $num) => [
-            $num => $asset->notes->where('stage', $num)->values()
-        ]);
+    //     $notesByStage = collect($stages)->mapWithKeys(fn($label, $num) => [
+    //         $num => $asset->notes->where('stage', $num)->values()
+    //     ]);
 
-        return view('kanban.assets.show', compact('asset', 'stages', 'documentsByStage', 'notesByStage'));
+    //     return view('kanban.assets.show', compact('asset', 'stages', 'documentsByStage', 'notesByStage'));
+    // }
+
+    public function show(AssetKanban $asset, GoogleDriveService $googleDrive)
+    {
+        $asset->load(['client', 'documents', 'notes.user']);
+
+        try {
+            foreach ($asset->documents as $document) {
+                $driveFileId = $document->drive_file_id;
+
+                if (!$driveFileId) {
+                    $looksLikeDriveId = $document->file_path
+                        && !str_contains($document->file_path, '/')
+                        && strlen($document->file_path) >= 20;
+
+                    if ($document->storage_disk === 'google_drive' || $looksLikeDriveId) {
+                        $driveFileId = $document->file_path;
+                    }
+                }
+
+                if ($driveFileId && !$googleDrive->fileExists($driveFileId)) {
+                    $document->delete();
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Gagal sinkronisasi dokumen Google Drive pada halaman asset.', [
+                'asset_id' => $asset->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        $asset->refresh();
+        $asset->load(['client', 'documents', 'notes.user']);
+
+        return view('kanban.assets.show', compact('asset'));
     }
 
     /**
