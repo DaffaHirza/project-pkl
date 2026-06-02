@@ -23,8 +23,6 @@ return new class extends Migration
             $table->timestamp('last_login_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
-            $table->string('telegram_chat_id')->nullable()->after('is_active');
-            $table->index('telegram_chat_id');
             // Indexes
             $table->index('role');
             $table->index('is_active');
