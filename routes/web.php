@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Assistant\AsistantDocumentController;
-use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Kanban\DashboardController;
 use App\Http\Controllers\Kanban\ClientController;
@@ -106,7 +105,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // ============================================
-    // KANBAN ROUTES (WITH ROLE-BASED ACCESS)
+    // KANBAN ROUTES
     // ============================================
     Route::prefix('kanban')->name('kanban.')->group(function () {
 
@@ -142,37 +141,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/{client}/edit', 'edit')->name('edit')->whereNumber('client');
             Route::put('/{client}', 'update')->name('update')->whereNumber('client');
             Route::delete('/{client}', 'destroy')->name('destroy')->whereNumber('client');
-
-            // Create/Update/Delete - Admin only
-            Route::middleware('admin')->group(function () {
-                Route::get('/create', 'create')->name('create');
-                Route::post('/', 'store')->name('store');
-                Route::get('/{client}/edit', 'edit')->name('edit')->whereNumber('client');
-                Route::put('/{client}', 'update')->name('update')->whereNumber('client');
-                Route::delete('/{client}', 'destroy')->name('destroy')->whereNumber('client');
-            });
         });
-
-        // ----------------------------------------
-        // PROJECTS - Admin for delete, users for rest
-        // ----------------------------------------
-        // Route::controller(ProjectController::class)->prefix('projects')->name('projects.')->group(function () {
-        //     // Read & Stats - All users
-        //     Route::get('/', 'index')->name('index');
-        //     Route::get('/statistics', 'statistics')->name('statistics');
-        //     Route::get('/{project}', 'show')->name('show')->whereNumber('project');
-
-        //     // Create/Update - All users (can manage their assigned projects)
-        //     Route::get('/create', 'create')->name('create');
-        //     Route::post('/', 'store')->name('store');
-        //     Route::get('/{project}/edit', 'edit')->name('edit')->whereNumber('project');
-        //     Route::put('/{project}', 'update')->name('update')->whereNumber('project');
-
-        //     // Delete - Admin only
-        //     Route::delete('/{project}', 'destroy')->name('destroy')
-        //         ->whereNumber('project')
-        //         ->middleware('admin');
-        // });
 
         // ----------------------------------------
         // ASSETS - Users can manage, admin for delete
@@ -200,11 +169,22 @@ Route::middleware('auth')->group(function () {
         // DOCUMENTS - Users can manage own, admin for all
         // ----------------------------------------
         Route::controller(DocumentController::class)->group(function () {
-            Route::prefix('assets/{asset}')->name('documents.')->whereNumber('asset')->group(function () {
-                Route::post('/documents', 'store')->name('store');
-            });
-            Route::get('/documents/{document}/download', 'download')->name('documents.download')->whereNumber('document');
-            Route::delete('/documents/{document}', 'destroy')->name('documents.destroy')->whereNumber('document');
+            Route::post('/assets/{asset}/documents', 'store')
+                ->name('documents.store')
+                ->whereNumber('asset');
+
+            Route::get('/documents/{document}/preview', 'preview')
+                ->name('documents.preview')
+                ->whereNumber('document');
+
+            Route::get('/documents/{document}/download', 'download')
+                ->name('documents.download')
+                ->whereNumber('document');
+
+            Route::delete('/documents/{document}', 'destroy')
+                ->name('documents.destroy')
+                ->whereNumber('document');
+            
         });
 
         // ----------------------------------------
