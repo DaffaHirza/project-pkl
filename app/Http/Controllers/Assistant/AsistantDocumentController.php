@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use App\Services\AIServices;
 
 class AsistantDocumentController extends Controller
@@ -15,9 +16,21 @@ class AsistantDocumentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $documents = AssistantDocument::ownedBy(Auth::id())
+        $documentsQuery = AssistantDocument::ownedBy(Auth::id());
+
+        if ($request->filled('q')) {
+            $keyword = trim((string) $request->input('q'));
+
+            $documentsQuery->where(function ($query) use ($keyword) {
+                $query->where('judul', 'like', '%' . $keyword . '%')
+                    ->orWhere('kesimpulan', 'like', '%' . $keyword . '%');
+            });
+        }
+
+
+        $documents = $documentsQuery
             ->get();
 
         return view('assistant.index', compact('documents'));
@@ -104,7 +117,10 @@ class AsistantDocumentController extends Controller
     {
         $this->abortIfNotOwner($assistantDocument);
 
-        return response()->json($assistantDocument->load('documentItems'));
+        $document = $assistantDocument->load('documentItems');
+        session()->now('hasil_ai', $document);
+
+        return view('assistant.create', compact('document'));
     }
 
     /**
@@ -137,7 +153,31 @@ class AsistantDocumentController extends Controller
     {
         $this->abortIfNotOwner($assistantDocument);
 
-        abort(501, 'Delete belum diimplementasikan.');
+        DB::beginTransaction();
+
+        try {
+            $assistantDocument->load('documentItems');
+
+            foreach ($assistantDocument->documentItems as $item) {
+                if ($item->path_file) {
+                    Storage::disk('public')->delete($item->path_file);
+                }
+            }
+
+            $assistantDocument->documentItems()->delete();
+            $assistantDocument->delete();
+
+            DB::commit();
+
+            return redirect()->route('assistant.index')
+                ->with('success', 'Dokumen berhasil dihapus.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Error Delete Document: ' . $e->getMessage());
+
+            return redirect()->route('assistant.index')
+                ->with('error', 'Gagal menghapus dokumen.');
+        }
     }
 
     private function abortIfNotOwner(AssistantDocument $assistantDocument): void

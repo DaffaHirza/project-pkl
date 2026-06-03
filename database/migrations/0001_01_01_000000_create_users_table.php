@@ -23,10 +23,10 @@ return new class extends Migration
             $table->timestamp('last_login_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->index('telegram_chat_id');
             // Indexes
             $table->index('role');
             $table->index('is_active');
-            $table->index('telegram_chat_id');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

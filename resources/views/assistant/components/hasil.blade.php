@@ -136,23 +136,46 @@
         <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-center justify-between">
             <h3 class="text-gray-600 text-sm font-medium mb-4 uppercase tracking-wide">Tingkat Kecocokan</h3>
             <div class="flex justify-center mb-4">
-                <div class="relative w-32 h-32">
-                    <svg class="transform -rotate-90 w-32 h-32">
-                        <circle cx="64" cy="64" r="56" stroke="#e5e7eb" stroke-width="12"
+                <div class="relative w-40 h-40">
+                    @php
+                        $skor = $hasil ? $hasil->skor : 0;
+                        $circumference = 2 * 3.14159 * 56;
+                        $offset = $circumference - ($skor / 100) * $circumference;
+
+                        // Determine color based on score
+                        if ($skor >= 90) {
+                            $strokeColor = '#10b981'; // Green - COCOK
+                            $statusText = 'Cocok';
+                            $statusClass = 'text-green-600';
+                        } elseif ($skor >= 70) {
+                            $strokeColor = '#f59e0b'; // Amber - SEBAGIAN COCOK
+                            $statusText = 'Sebagian Cocok';
+                            $statusClass = 'text-amber-600';
+                        } else {
+                            $strokeColor = '#ef4444'; // Red - TIDAK COCOK
+                            $statusText = 'Tidak Cocok';
+                            $statusClass = 'text-red-600';
+                        }
+                    @endphp
+
+                    <svg class="transform -rotate-90 w-40 h-40">
+                        <!-- Background circle -->
+                        <circle cx="80" cy="80" r="56" stroke="#e5e7eb" stroke-width="14"
                             fill="none" />
-                        <circle cx="64" cy="64" r="56" stroke="#3b82f6" stroke-width="12" fill="none"
-                            stroke-dasharray="351.86" stroke-dashoffset="52.78"
-                            class="transition-all duration-1000 ease-out" />
+                        <!-- Progress circle -->
+                        <circle cx="80" cy="80" r="56" stroke="{{ $strokeColor }}" stroke-width="14"
+                            fill="none" stroke-linecap="round" stroke-dasharray="{{ $circumference }}"
+                            stroke-dashoffset="{{ $offset }}" class="transition-all duration-1000 ease-out" />
                     </svg>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="text-3xl font-bold text-gray-800">{{ $hasil ? $hasil->skor : '0' }}%</span>
+                    <div class="absolute inset-0 flex items-center justify-center flex-col">
+                        <span class="text-4xl font-bold text-gray-800">{{ $skor }}%</span>
                     </div>
                 </div>
             </div>
 
             <div class="text-center">
-                <p class="text-green-600 font-semibold text-lg">
-                    {{ $hasil ? $hasil->status_label : 'Belum Dianalisis' }}
+                <p class="{{ $statusClass }} font-semibold text-lg">
+                    {{ $statusText }}
                 </p>
             </div>
         </div>

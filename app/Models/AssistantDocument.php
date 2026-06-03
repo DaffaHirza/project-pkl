@@ -19,8 +19,9 @@ class AssistantDocument extends Model
         'skor',
         'kesimpulan',
         'status',
+        'token_input',
+        'token_output',
     ];
-    protected $guarded = ['id'];
 
     public function scopeOwnedBy(Builder $query, ?int $userId = null): Builder
     {

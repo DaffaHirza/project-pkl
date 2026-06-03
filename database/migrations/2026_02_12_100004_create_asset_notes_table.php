@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('type', 20)->default('note');    // note, stage_change, approval, rejection
             $table->text('content');                        // Isi catatan
             $table->timestamps();
-            
+
             $table->index(['asset_id', 'stage']);
             $table->index('type');
         });

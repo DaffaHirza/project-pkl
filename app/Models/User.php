@@ -17,7 +17,7 @@ class User extends Authenticatable
     // ==========================================
     // ROLE CONSTANTS
     // ==========================================
-    
+
     public const ROLE_USER = 'user';
     public const ROLE_ADMIN = 'admin';
     public const ROLE_SUPERUSER = 'superuser';
@@ -41,6 +41,7 @@ class User extends Authenticatable
         'is_active',
         'telegram_chat_id',
         'last_login_at',
+        'jumlah_token',
     ];
 
     /**
@@ -65,6 +66,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
+            'jumlah_token' => 'integer',
         ];
     }
 
@@ -152,13 +154,21 @@ class User extends Authenticatable
 
     public function routeNotificationForTelegram()
     {
-        return $this->telegram_chat_id; 
+        return $this->telegram_chat_id;
         // Pastikan user sudah input Chat ID mereka saat register/profile setup
     }
 
     // ==========================================
-    // KANBAN RELATIONSHIPS
+    // RELATIONSHIPS
     // ==========================================
+
+    /**
+     * Get all documents belonging to this user
+     */
+    public function documents()
+    {
+        return $this->hasMany(Document::class);
+    }
 
     /**
      * Get all documents uploaded by this user

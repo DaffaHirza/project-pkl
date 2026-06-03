@@ -3,6 +3,10 @@
 @section('title', 'AI Assistant')
 
 @section('content')
+    @php
+        $isViewMode = request()->routeIs('assistant.show') || request()->routeIs('assistant.pages.show');
+    @endphp
+
     <!-- Page Header -->
     <div class="flex items-center justify-between pb-5">
         <div class="w-full flex items-center justify-between dark:border-gray-700">
@@ -25,11 +29,18 @@
         <form id="uploadForm" action="{{ route('assistant.store') }}" method="POST" enctype="multipart/form-data"
             class="p-6 bg-white rounded-xl shadow-sm">
             @csrf
-            @include('assistant.components.upload')
+            @include('assistant.components.upload', ['isViewMode' => $isViewMode])
 
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-gray-100">
+            @if ($isViewMode)
+                <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                    Mode lihat aktif. Upload dan aksi simpan/analisis dinonaktifkan.
+                </div>
+            @endif
 
-                <button type="submit" name="action" value="analyze" id="btnAnalyze"
+            <div
+                class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-gray-100 {{ $isViewMode ? 'opacity-60 pointer-events-none' : '' }}">
+
+                <button type="submit" name="action" value="analyze" id="btnAnalyze" {{ $isViewMode ? 'disabled' : '' }}
                     class="w-full sm:w-auto flex items-center justify-center font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-xl px-6 py-2.5 gap-2 transition-all">
                     <span id="iconAnalyze">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -55,7 +66,7 @@
                     <span id="textAnalyze">Analisis Dokumen</span>
                 </button>
 
-                <button type="submit" name="action" value="savedraft"
+                <button type="submit" name="action" value="savedraft" {{ $isViewMode ? 'disabled' : '' }}
                     class="w-full sm:w-auto flex items-center justify-center font-medium text-white bg-gray-dark hover:bg-gray-900 rounded-xl px-6 py-2.5 gap-2 transition-all">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
@@ -74,8 +85,14 @@
     @include('assistant.components.hasil')
     <!-- End Hasil AI -->
     <script>
+        const isViewMode = @json($isViewMode);
+
         // 1. Logic Upload File
         function handleFileSelect(input, idSuffix) {
+            if (isViewMode) {
+                return;
+            }
+
             const file = input.files[0];
 
             const defaultViewId = idSuffix === 'main' ? 'main-default' : 'default-' + idSuffix;
@@ -98,6 +115,10 @@
         }
 
         function removeFile(idSuffix) {
+            if (isViewMode) {
+                return;
+            }
+
             const inputId = idSuffix === 'main' ? 'main-upload' : 'upload-' + idSuffix;
             const defaultViewId = idSuffix === 'main' ? 'main-default' : 'default-' + idSuffix;
             const previewViewId = idSuffix === 'main' ? 'main-preview' : 'preview-' + idSuffix;
@@ -116,6 +137,11 @@
 
         // 2. Logic Loading State (Agar User tidak Spam Klik)
         document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            if (isViewMode) {
+                e.preventDefault();
+                return;
+            }
+
             // Cek tombol mana yang diklik (kita deteksi lewat active element atau event submitter)
             const submitter = e.submitter;
 
@@ -137,6 +163,11 @@
         });
 
         document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            if (isViewMode) {
+                e.preventDefault();
+                return;
+            }
+
             // Cek tombol mana yang diklik
             const submitter = e.submitter;
 

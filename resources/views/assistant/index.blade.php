@@ -7,23 +7,7 @@
     <!-- Page Header -->
     <div class="flex items-center justify-between pb-5">
         <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">AI Assistant</h1>
-        <div class="relative inline-block">
-            <a href="{{ route('assistant.create') }}"
-                class="py-2 px-4 text-white inline-flex items-center gap-x-2 text-sm font-medium rounded-lg bg-brand-500 hover:bg-brand-600 disabled:opacity-50 disabled:pointer-events-none "
-                aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 13L15 13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
-                    <path d="M9 9L13 9" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
-                    <path d="M9 17L13 17" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
-                    <path
-                        d="M19 13V15C19 17.8284 19 19.2426 18.1213 20.1213C17.2426 21 15.8284 21 13 21H11C8.17157 21 6.75736 21 5.87868 20.1213C5 19.2426 5 17.8284 5 15V9C5 6.17157 5 4.75736 5.87868 3.87868C6.75736 3 8.17157 3 11 3"
-                        stroke="#FFFFFF" stroke-width="2" />
-                    <path d="M18 3L18 9" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
-                    <path d="M21 6L15 6" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
-                </svg>
-                Cek Document
-            </a>
-        </div>
+
     </div>
     <!-- Table Section -->
     <div class="w-full mx-auto">
@@ -33,7 +17,48 @@
                 <div class="min-w-full inline-block align-middle">
                     <div
                         class="bg-white border border-gray-200 rounded-xl shadow-2xs overflow-hidden dark:bg-neutral-900 dark:border-neutral-700">
+                        <div
+                            class="flex w-full justify-between items-center p-4 border-b border-gray-200 dark:border-neutral-700">
+                            <form method="GET" action="{{ route('assistant.index') }}"
+                                class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                                <div>
+                                    <label for="q"
+                                        class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
+                                        Cari Dokumen
+                                    </label>
+                                    <input type="text" id="q" name="q" value="{{ request('q') }}"
+                                        placeholder="Judul atau kesimpulan..."
+                                        class="py-2 px-3 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" />
+                                </div>
 
+
+
+                                <div class="flex flex-wrap gap-2">
+                                    <button type="submit"
+                                        class="py-2 px-4 text-white inline-flex items-center gap-x-2 text-sm font-medium rounded-lg bg-brand-500 hover:bg-brand-600 disabled:opacity-50 disabled:pointer-events-none">
+                                        Search
+                                    </button>
+                                </div>
+                            </form>
+                            <div class="relative inline-block">
+                                <a href="{{ route('assistant.create') }}"
+                                    class="py-2 px-4 text-white inline-flex items-center gap-x-2 text-sm font-medium rounded-lg bg-brand-500 hover:bg-brand-600 disabled:opacity-50 disabled:pointer-events-none "
+                                    aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 13L15 13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+                                        <path d="M9 9L13 9" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+                                        <path d="M9 17L13 17" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+                                        <path
+                                            d="M19 13V15C19 17.8284 19 19.2426 18.1213 20.1213C17.2426 21 15.8284 21 13 21H11C8.17157 21 6.75736 21 5.87868 20.1213C5 19.2426 5 17.8284 5 15V9C5 6.17157 5 4.75736 5.87868 3.87868C6.75736 3 8.17157 3 11 3"
+                                            stroke="#FFFFFF" stroke-width="2" />
+                                        <path d="M18 3L18 9" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+                                        <path d="M21 6L15 6" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                    Cek Document
+                                </a>
+                            </div>
+                        </div>
                         <!-- Table -->
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                             <thead class="bg-gray-50 dark:bg-neutral-800">
@@ -101,7 +126,7 @@
                                                 <div class="flex items-center gap-x-4">
                                                     <div>
                                                         <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200">{{ $document->id }}</span>
+                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200">{{ $loop->iteration }}</span>
                                                     </div>
                                                 </div>
                                             </a>
@@ -135,7 +160,7 @@
                                         <td class="px-6 py-4 align-top">
                                             <div class="flex gap-2">
                                                 <a href="{{ route('assistant.pages.edit', $document->id) }}"
-                                                    class="py-2 px-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                                    class="py-2 px-3 text-sm font-medium text-white bg-[#4F46E5] rounded-lg hover:bg-[#4F46E5]-700">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                         xmlns="http://www.w3.org/2000/svg">
                                                         <path
@@ -145,22 +170,48 @@
                                                             fill="#FFFFFF" />
                                                     </svg>
                                                 </a>
-                                                <button
-                                                    class="py-2 px-3 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-700">
-                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                                        xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M10 15L10 12" stroke="#FFFFFF" stroke-width="2"
-                                                            stroke-linecap="round" />
-                                                        <path d="M14 15L14 12" stroke="#FFFFFF" stroke-width="2"
-                                                            stroke-linecap="round" />
+                                                <a href="{{ route('assistant.show', $document->id) }}"
+                                                    class="py-2 px-3 text-sm font-medium text-white bg-[#0EA5E9] rounded-lg hover:bg-[#0EA5E9]-700">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24"
+                                                        fill="none" xmlns="http://www.w3.org/2000/svg">
                                                         <path
-                                                            d="M3 7H21C20.0681 7 19.6022 7 19.2346 7.15224C18.7446 7.35523 18.3552 7.74458 18.1522 8.23463C18 8.60218 18 9.06812 18 10V16C18 17.8856 18 18.8284 17.4142 19.4142C16.8284 20 15.8856 20 14 20H10C8.11438 20 7.17157 20 6.58579 19.4142C6 18.8284 6 17.8856 6 16V10C6 9.06812 6 8.60218 5.84776 8.23463C5.64477 7.74458 5.25542 7.35523 4.76537 7.15224C4.39782 7 3.93188 7 3 7Z"
-                                                            stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+                                                            d="M12 15C13.6568 15 15 13.6568 15 12C15 10.3432 13.6568 9 12 9C10.3432 9 9 10.3432 9 12C9 13.6568 10.3432 15 12 15Z"
+                                                            fill="white" />
+                                                        <path fill-rule="evenodd" clip-rule="evenodd"
+                                                            d="M12 19C17.5228 19 22 14.1538 22 12C22 9.84615 17.5228 5 12 5C6.47717 5 2 9.84615 2 12C2 14.1538 6.47717 19 12 19Z"
+                                                            stroke="white" stroke-width="1.5" stroke-linecap="round"
+                                                            stroke-linejoin="round" />
                                                         <path
-                                                            d="M10.0681 3.37059C10.1821 3.26427 10.4332 3.17033 10.7825 3.10332C11.1318 3.03632 11.5597 3 12 3C12.4403 3 12.8682 3.03632 13.2175 3.10332C13.5668 3.17033 13.8179 3.26427 13.9319 3.37059"
-                                                            stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+                                                            d="M12 15C13.6568 15 15 13.6568 15 12C15 10.3432 13.6568 9 12 9C10.3432 9 9 10.3432 9 12C9 13.6568 10.3432 15 12 15Z"
+                                                            stroke="white" stroke-width="1.5" stroke-linecap="round"
+                                                            stroke-linejoin="round" />
                                                     </svg>
-                                                </button>
+
+                                                </a>
+                                                <form action="{{ route('assistant.destroy', $document->id) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Yakin mau hapus dokumen ini?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        class="py-2 px-3 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-700">
+                                                        <svg width="24" height="24" viewBox="0 0 24 24"
+                                                            fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M10 15L10 12" stroke="#FFFFFF" stroke-width="2"
+                                                                stroke-linecap="round" />
+                                                            <path d="M14 15L14 12" stroke="#FFFFFF" stroke-width="2"
+                                                                stroke-linecap="round" />
+                                                            <path
+                                                                d="M3 7H21C20.0681 7 19.6022 7 19.2346 7.15224C18.7446 7.35523 18.3552 7.74458 18.1522 8.23463C18 8.60218 18 9.06812 18 10V16C18 17.8856 18 18.8284 17.4142 19.4142C16.8284 20 15.8856 20 14 20H10C8.11438 20 7.17157 20 6.58579 19.4142C6 18.8284 6 17.8856 6 16V10C6 9.06812 6 8.60218 5.84776 8.23463C5.64477 7.74458 5.25542 7.35523 4.76537 7.15224C4.39782 7 3.93188 7 3 7Z"
+                                                                stroke="#FFFFFF" stroke-width="2"
+                                                                stroke-linecap="round" />
+                                                            <path
+                                                                d="M10.0681 3.37059C10.1821 3.26427 10.4332 3.17033 10.7825 3.10332C11.1318 3.03632 11.5597 3 12 3C12.4403 3 12.8682 3.03632 13.2175 3.10332C13.5668 3.17033 13.8179 3.26427 13.9319 3.37059"
+                                                                stroke="#FFFFFF" stroke-width="2"
+                                                                stroke-linecap="round" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>

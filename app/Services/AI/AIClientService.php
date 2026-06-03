@@ -7,14 +7,20 @@ use Illuminate\Support\Facades\Log;
 
 class AIClientService
 {
-    public function analyze(string $promptFinal, string $imageData = '', bool $isImage = false, string $mimeType = ''): string
+
+
+    /**
+     * Analyze with token usage tracking
+     * Returns array with 'content' and 'usage' (token_input, token_output)
+     */
+    public function analyzeWithUsage(string $promptFinal, string $imageData = '', bool $isImage = false, string $mimeType = ''): array
     {
-        return $this->openrouter($promptFinal, $imageData, $isImage, $mimeType);
-        // return $this->geminiAI($promptFinal, $imageData, $isImage, $mimeType);
-        //return $this->analisisAILMStudio($promptFinal, $imageData);
+        //return $this->openrouterWithUsage($promptFinal, $imageData, $isImage, $mimeType);
+        //return $this->geminiAIWithUsage($promptFinal, $imageData, $isImage, $mimeType);
+        return $this->analisisAILMStudioWithUsage($promptFinal, $imageData);
     }
 
-    private function openrouter(string $promptFinal, string $imageData = '', bool $isImage = false, string $mimeType = ''): string
+    private function openrouterWithUsage(string $promptFinal, string $imageData = '', bool $isImage = false, string $mimeType = ''): array
     {
         $apiKey = (string) config('services.openrouter.key', '');
         if (trim($apiKey) === '') {
@@ -95,7 +101,18 @@ class AIClientService
                         ]);
 
                     if (!$response->failed()) {
-                        return $response['choices'][0]['message']['content'] ?? 'Tidak ada respon.';
+                        $responseData = $response->json();
+                        $content = $responseData['choices'][0]['message']['content'] ?? 'Tidak ada respon.';
+                        $tokenInput = (int) ($responseData['usage']['prompt_tokens'] ?? 0);
+                        $tokenOutput = (int) ($responseData['usage']['completion_tokens'] ?? 0);
+
+                        return [
+                            'content' => $content,
+                            'usage' => [
+                                'token_input' => $tokenInput,
+                                'token_output' => $tokenOutput,
+                            ],
+                        ];
                     }
 
                     $status = $response->status();
@@ -111,7 +128,10 @@ class AIClientService
                         break;
                     }
 
-                    return $lastError;
+                    return [
+                        'content' => $lastError,
+                        'usage' => ['token_input' => 0, 'token_output' => 0],
+                    ];
                 } catch (\Exception $e) {
                     $lastError = 'OpenRouter exception: ' . $e->getMessage();
                     if ($attempt < 2) {
@@ -124,16 +144,18 @@ class AIClientService
             }
         }
 
-        return $lastError;
+        return [
+            'content' => $lastError,
+            'usage' => ['token_input' => 0, 'token_output' => 0],
+        ];
     }
 
-    private function geminiAI(string $promptText, string $imageData = '', bool $isImage = false, string $mimeType = ''): string
+    private function geminiAIWithUsage(string $promptText, string $imageData = '', bool $isImage = false, string $mimeType = ''): array
     {
         $apiKey = (string) config('gemini.api_key', env('GEMINI_API_KEY', ''));
         if (trim($apiKey) === '') {
             throw new \Exception('Gemini API key not configured');
         }
-
 
         $timeout = (int) config('gemini.request_timeout', 300);
         if ($timeout <= 0) {
@@ -150,7 +172,7 @@ class AIClientService
             $parts = [["text" => $promptText]];
         }
 
-        $models = ['gemini-2.0-flash'];
+        $models = ['gemini-2.5-flash'];
         $lastError = 'Tidak ada respon.';
 
         foreach ($models as $model) {
@@ -158,7 +180,6 @@ class AIClientService
 
             for ($attempt = 1; $attempt <= 2; $attempt++) {
                 try {
-
                     $response = Http::timeout($timeout)
                         ->withHeaders(['Content-Type' => 'application/json'])
                         ->post($apiUrl, [
@@ -170,7 +191,18 @@ class AIClientService
                         ]);
 
                     if (!$response->failed()) {
-                        return $response['candidates'][0]['content']['parts'][0]['text'] ?? 'Tidak ada respon.';
+                        $responseData = $response->json();
+                        $content = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? 'Tidak ada respon.';
+                        $tokenInput = (int) ($responseData['usageMetadata']['promptTokenCount'] ?? 0);
+                        $tokenOutput = (int) ($responseData['usageMetadata']['candidatesTokenCount'] ?? 0);
+
+                        return [
+                            'content' => $content,
+                            'usage' => [
+                                'token_input' => $tokenInput,
+                                'token_output' => $tokenOutput,
+                            ],
+                        ];
                     }
 
                     $status = $response->status();
@@ -185,7 +217,10 @@ class AIClientService
                         break;
                     }
 
-                    return $lastError;
+                    return [
+                        'content' => $lastError,
+                        'usage' => ['token_input' => 0, 'token_output' => 0],
+                    ];
                 } catch (\Exception $e) {
                     $lastError = 'Exception: ' . $e->getMessage();
                     if ($attempt < 2) {
@@ -198,10 +233,18 @@ class AIClientService
             }
         }
 
-        return $lastError;
+        return [
+            'content' => $lastError,
+            'usage' => ['token_input' => 0, 'token_output' => 0],
+        ];
     }
 
-    private function analisisAILMStudio($promptFinal, $imageData = "", $isImage = false, $mimeType = '')
+
+
+    /**
+     * LM Studio with token usage tracking
+     */
+    private function analisisAILMStudioWithUsage($promptFinal, $imageData = "", $isImage = false, $mimeType = '')
     {
         $apiKey = env('LM_STUDIO_API_KEY', 'lm-studio');
         $baseUrl = rtrim(env('LM_STUDIO_BASE_URL', 'http://127.0.0.1:1234'), '/');
@@ -252,14 +295,33 @@ class AIClientService
             if ($response->failed()) {
                 $error = 'Error LM Studio: ' . $response->status() . ' - ' . $response->body();
                 Log::error('LM Studio API Error', ['error' => $error]);
-                return $error;
+                return [
+                    'content' => $error,
+                    'usage' => ['token_input' => 0, 'token_output' => 0],
+                ];
             }
 
-            return $response['choices'][0]['message']['content'] ?? 'Tidak ada respon.';
+            $responseData = $response->json();
+            $content = $responseData['choices'][0]['message']['content'] ?? 'Tidak ada respon.';
+
+            // Extract token usage from response
+            $tokenInput = (int) ($responseData['usage']['prompt_tokens'] ?? 0);
+            $tokenOutput = (int) ($responseData['usage']['completion_tokens'] ?? 0);
+
+            return [
+                'content' => $content,
+                'usage' => [
+                    'token_input' => $tokenInput,
+                    'token_output' => $tokenOutput,
+                ],
+            ];
         } catch (\Exception $e) {
             $error = 'Exception LM Studio: ' . $e->getMessage();
             Log::error('LM Studio Exception', ['error' => $error, 'trace' => $e->getTraceAsString()]);
-            return $error;
+            return [
+                'content' => $error,
+                'usage' => ['token_input' => 0, 'token_output' => 0],
+            ];
         }
     }
 }

@@ -6,95 +6,35 @@ class ValidationResultFormatter
 {
     public function buildFinalConclusion(array $hasilPerSection): string
     {
-        $markdown = "# Hasil Validasi Laporan Utama\n\n";
-        $markdown .= "Ringkasan dibagi menjadi dua bagian: insight AI-only dari Laporan Utama dan validasi silang dengan dokumen pendukung.\n\n";
-
-        $aiOnlyResults = [];
-        $compareResults = [];
+        $validSections = [];
+        $invalidSections = [];
 
         foreach ($hasilPerSection as $sectionName => $result) {
-            if (($result['mode'] ?? 'compare_documents') === 'ai_only') {
-                $aiOnlyResults[$sectionName] = $result;
-                continue;
-            }
-
-            $compareResults[$sectionName] = $result;
-        }
-
-        if (!empty($aiOnlyResults)) {
-            $markdown .= "## Insight AI Only (Laporan Utama)\n\n";
-            $markdown .= "Bagian ini dianalisis langsung dari isi Laporan Utama tanpa pembanding dokumen lain.\n\n";
-            $markdown .= "---\n\n";
-
-            foreach ($aiOnlyResults as $sectionName => $result) {
-                $statusBadge = ($result['status'] ?? 'tidak_ditemukan') === 'ditemukan' ? 'VALID' : 'INVALID';
-                $markdown .= "### {$statusBadge} - " . ucwords(str_replace('_', ' ', (string) $sectionName)) . "\n\n";
-                $markdown .= "Sumber: Laporan Utama (AI-only).\n\n";
-
-                $parsed = is_array($result['parsed_ai'] ?? null) ? $result['parsed_ai'] : [];
-                if (!empty($parsed)) {
-                    $markdown .= 'Status AI: ' . ($parsed['status'] ?? '-') . "\n\n";
-                    $markdown .= 'Catatan: ' . ($parsed['catatan'] ?? '-') . "\n\n";
-
-                    $anomali = $parsed['anomali_ditemukan'] ?? [];
-                    if (is_array($anomali) && !empty($anomali)) {
-                        $markdown .= "Anomali Ditemukan:\n";
-                        foreach ($anomali as $item) {
-                            $markdown .= '- ' . $item . "\n";
-                        }
-                        $markdown .= "\n";
-                    }
-                }
-
-                if (!empty($result['laporan_excerpt']) && ($result['laporan_excerpt'] ?? '-') !== '-') {
-                    $markdown .= 'Cuplikan Laporan: ' . $result['laporan_excerpt'] . "\n\n";
-                }
-
-                if (empty($parsed)) {
-                    $markdown .= ($result['hasil'] ?? '-') . "\n\n";
-                }
-                $markdown .= "---\n\n";
+            $sectionLabel = ucwords(str_replace('_', ' ', (string) $sectionName));
+            if (($result['status'] ?? 'tidak_ditemukan') === 'ditemukan') {
+                $validSections[] = $sectionLabel;
+            } else {
+                $invalidSections[] = $sectionLabel;
             }
         }
 
-        if (!empty($compareResults)) {
-            $markdown .= "## Validasi Dengan Dokumen Pendukung\n\n";
-            $markdown .= "Bagian ini membandingkan isi Laporan Utama dengan dokumen pembanding yang tersedia.\n\n";
-            $markdown .= "---\n\n";
+        $markdown = "KESIMPULAN VALIDASI DOKUMEN\n\n";
 
-            foreach ($compareResults as $sectionName => $result) {
-                $statusBadge = ($result['status'] ?? 'tidak_ditemukan') === 'ditemukan' ? 'VALID' : 'INVALID';
-                $markdown .= "### {$statusBadge} - " . ucwords(str_replace('_', ' ', (string) $sectionName)) . "\n\n";
-
-                $parsed = is_array($result['parsed_ai'] ?? null) ? $result['parsed_ai'] : [];
-                if (!empty($parsed)) {
-                    $markdown .= 'Status AI: ' . ($parsed['status'] ?? '-') . "\n\n";
-                    $markdown .= 'Catatan: ' . ($parsed['catatan'] ?? '-') . "\n\n";
-
-                    $anomali = $parsed['anomali_ditemukan'] ?? [];
-                    if (is_array($anomali) && !empty($anomali)) {
-                        $markdown .= "Anomali Ditemukan:\n";
-                        foreach ($anomali as $item) {
-                            $markdown .= '- ' . $item . "\n";
-                        }
-                        $markdown .= "\n";
-                    }
-                }
-
-                if (!empty($result['checked_against'])) {
-                    $markdown .= 'Dicek terhadap: ' . implode(', ', $result['checked_against']) . "\n\n";
-                }
-
-                if (empty($parsed)) {
-                    $markdown .= ($result['hasil'] ?? '-') . "\n\n";
-                }
-                $markdown .= "---\n\n";
+        if (empty($invalidSections)) {
+            $markdown .= "Semua bagian telah tervalidasi dengan baik. Tidak ada bagian yang invalid.\n\n";
+        } else {
+            $markdown .= "Bagian yang Valid:\n";
+            foreach ($validSections as $section) {
+                $markdown .= "- " . $section . "\n";
             }
+            $markdown .= "\nBagian yang Invalid:\n";
+            foreach ($invalidSections as $section) {
+                $markdown .= "- " . $section . "\n";
+            }
+            $markdown .= "\nBagian yang invalid perlu ditinjau dan diperbaiki kembali.\n\n";
         }
 
-        if (empty($aiOnlyResults) && empty($compareResults)) {
-            $markdown .= "Tidak ada hasil section yang dapat ditampilkan.\n\n";
-        }
+        $markdown .= "Terima kasih atas perhatian Anda.\n";
 
         return $markdown;
     }

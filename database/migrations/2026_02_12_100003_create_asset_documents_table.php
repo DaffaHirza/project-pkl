@@ -22,7 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('file_size');        // Ukuran dalam bytes (max 100MB)
             $table->text('description')->nullable();        // Keterangan file
             $table->timestamps();
-            
+
             $table->index(['asset_id', 'stage']);
         });
     }
