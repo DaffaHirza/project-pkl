@@ -1,32 +1,47 @@
-  # KJPP Mushofah dan Rekan - Sistem Penilaian Asset
+# KJPP Mushofah dan Rekan - Sistem Penilaian Aset
 
-Sistem manajemen penilaian asset berbasis Kanban untuk KJPP Mushofah dan Rekan Cabang Semarang.
+Sistem internal berbasis Kanban untuk membantu pengelolaan pekerjaan penilaian aset di KJPP Mushofah dan Rekan Cabang Semarang.
+
+Aplikasi ini digunakan untuk mencatat data klien, debitur, objek penilaian, progres tahapan pekerjaan, dokumen pendukung, catatan internal, serta rekapitulasi pekerjaan.
+
+## Fitur Utama
+
+- Manajemen data Bank, PT/CV Induk, Debitur, dan PT/CV Anak
+- Manajemen objek penilaian atau aset
+- Kanban board untuk monitoring progres pekerjaan
+- Filter berdasarkan kategori klien dan tipe aset
+- Checklist stage yang fleksibel dan tidak harus berurutan
+- Catatan internal, termasuk penanda hambatan atau penolakan
+- Upload, preview, dan download dokumen pendukung
+- Rekapitulasi progress pekerjaan untuk evaluasi internal
+- Notifikasi internal melalui integrasi layanan pendukung
+
+## Tech Stack
+
+- Laravel
+- Blade Template
+- Tailwind CSS
+- Alpine.js
+- PostgreSQL
+- Queue Worker
+- Integrasi layanan eksternal untuk notifikasi dan penyimpanan dokumen
 
 ## Quick Start
 
 ```bash
 # Install dependencies
-composer install && npm install
+composer install
+npm install
 
-# Setup database
+# Setup environment
 cp .env.example .env
 php artisan key:generate
+
+# Setup database
 php artisan migrate --seed
 
 # Run application
-php artisan serve --port=8000  # Terminal 1
-npm run dev                     # Terminal 2
-php artisan queue:work          # Terminal 3
+php artisan serve --port=8000
+npm run dev
+php artisan queue:work
 ```
-
-Buka http://localhost:8000
-
-## Tech Stack
-
-- Laravel 11 + Blade + Tailwind CSS + Alpine.js
-- PostgreSQL
-- Telegram Bot API
-
-## License
-
-Proprietary - KJPP Mushofah dan Rekan
