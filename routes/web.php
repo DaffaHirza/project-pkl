@@ -100,15 +100,6 @@ Route::middleware(['auth', 'check.status'])->group(function () {
             Route::get('/{client}/edit', 'edit')->name('edit')->whereNumber('client');
             Route::put('/{client}', 'update')->name('update')->whereNumber('client');
             Route::delete('/{client}', 'destroy')->name('destroy')->whereNumber('client');
-
-            // Create/Update/Delete - Admin only
-            Route::middleware('admin')->group(function () {
-                Route::get('/create', 'create')->name('create');
-                Route::post('/', 'store')->name('store');
-                Route::get('/{client}/edit', 'edit')->name('edit')->whereNumber('client');
-                Route::put('/{client}', 'update')->name('update')->whereNumber('client');
-                Route::delete('/{client}', 'destroy')->name('destroy')->whereNumber('client');
-            });
         });
 
         // ----------------------------------------
@@ -146,6 +137,7 @@ Route::middleware(['auth', 'check.status'])->group(function () {
             Route::get('/{asset}/edit', 'edit')->name('edit')->whereNumber('asset');
             Route::put('/{asset}', 'update')->name('update')->whereNumber('asset');
             Route::post('/{asset}/move-stage', 'moveStage')->name('move-stage')->whereNumber('asset');
+            Route::post('/{asset}/stage-checks/toggle', 'toggleStageCheck')->name('toggle-stage-check')->whereNumber('asset');
             Route::post('/{asset}/update-position', 'updatePosition')->name('update-position')->whereNumber('asset');
 
             // Delete - Admin only

@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\AssetDocumentKanban;
+use App\Models\AssetNoteKanban;
+use App\Models\AssetStageCheckKanban;
+use App\Models\ClientKanban;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\ClientKanban;
-use App\Models\AssetDocumentKanban;
-use App\Models\AssetNoteKanban;
 
 class AssetKanban extends Model
 {
@@ -53,8 +54,10 @@ class AssetKanban extends Model
         'tanah' => 'Tanah',
         'bangunan' => 'Bangunan',
         'tanah_bangunan' => 'Tanah & Bangunan',
-        'mesin' => 'Mesin & Peralatan',
         'kendaraan' => 'Kendaraan',
+        'mesin' => 'Mesin & Peralatan',
+        'bisnis' => 'Bisnis',
+        'personal_property' => 'Personal Property',
         'inventaris' => 'Inventaris',
         'aset_tak_berwujud' => 'Aset Tak Berwujud',
         'lainnya' => 'Lainnya',
@@ -81,6 +84,11 @@ class AssetKanban extends Model
     public function notes()
     {
         return $this->hasMany(AssetNoteKanban::class, 'asset_id');
+    }
+
+    public function stageChecks()
+    {
+        return $this->hasMany(AssetStageCheckKanban::class, 'asset_id');
     }
 
     // ==========================================
@@ -156,6 +164,16 @@ class AssetKanban extends Model
     public function isCompleted(): bool
     {
         return $this->current_stage === 13;
+    }
+
+    public function warningNotes()
+    {
+        return $this->notes()->whereIn('type', ['rejection', 'blocked']);
+    }
+
+    public function hasWarningNote(): bool
+    {
+        return $this->warningNotes()->exists();
     }
 
     // ==========================================

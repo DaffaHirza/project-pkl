@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Carbon\Carbon;
 
 class RecapitulationKanban extends Model
 {
@@ -27,7 +27,6 @@ class RecapitulationKanban extends Model
         'published_at' => 'datetime',
     ];
 
-    // Status constants
     public const STATUS_DRAFT = 'draft';
     public const STATUS_PUBLISHED = 'published';
 
@@ -35,10 +34,6 @@ class RecapitulationKanban extends Model
         self::STATUS_DRAFT => 'Draft',
         self::STATUS_PUBLISHED => 'Dipublikasikan',
     ];
-
-    // ==========================================
-    // RELATIONSHIPS
-    // ==========================================
 
     public function creator(): BelongsTo
     {
@@ -50,10 +45,6 @@ class RecapitulationKanban extends Model
         return $this->hasMany(RecapitulationItemKanban::class, 'recapitulation_id');
     }
 
-    // ==========================================
-    // ACCESSORS
-    // ==========================================
-
     public function getStatusLabelAttribute(): string
     {
         return self::STATUSES[$this->status] ?? $this->status;
@@ -61,9 +52,7 @@ class RecapitulationKanban extends Model
 
     public function getPeriodLabelAttribute(): string
     {
-        $start = $this->period_start->translatedFormat('d M Y');
-        $end = $this->period_end->translatedFormat('d M Y');
-        return "{$start} - {$end}";
+        return $this->period_start->translatedFormat('d M Y') . ' - ' . $this->period_end->translatedFormat('d M Y');
     }
 
     public function getDurationDaysAttribute(): int
@@ -73,30 +62,28 @@ class RecapitulationKanban extends Model
 
     public function getProgressSummaryAttribute(): array
     {
-        $items = $this->items;
-        
+        $items = $this->relationLoaded('items') ? $this->items : $this->items()->get();
+
         return [
             'total' => $items->count(),
-            'not_started' => $items->where('work_status', 'not_started')->count(),
-            'in_progress' => $items->where('work_status', 'in_progress')->count(),
-            'completed' => $items->where('work_status', 'completed')->count(),
-            'blocked' => $items->where('work_status', 'blocked')->count(),
-            'pending_review' => $items->where('work_status', 'pending_review')->count(),
+            'not_started' => $items->where('work_status', RecapitulationItemKanban::STATUS_NOT_STARTED)->count(),
+            'in_progress' => $items->where('work_status', RecapitulationItemKanban::STATUS_IN_PROGRESS)->count(),
+            'completed' => $items->where('work_status', RecapitulationItemKanban::STATUS_COMPLETED)->count(),
+            'blocked' => $items->where('work_status', RecapitulationItemKanban::STATUS_BLOCKED)->count(),
+            'pending_review' => $items->where('work_status', RecapitulationItemKanban::STATUS_PENDING_REVIEW)->count(),
         ];
     }
 
     public function getCompletionRateAttribute(): float
     {
-        $total = $this->items->count();
-        if ($total === 0) return 0;
-        
-        $completed = $this->items->where('work_status', 'completed')->count();
-        return round(($completed / $total) * 100, 1);
-    }
+        $summary = $this->progress_summary;
 
-    // ==========================================
-    // SCOPES
-    // ==========================================
+        if ($summary['total'] === 0) {
+            return 0;
+        }
+
+        return round(($summary['completed'] / $summary['total']) * 100, 1);
+    }
 
     public function scopePublished($query)
     {
@@ -107,21 +94,6 @@ class RecapitulationKanban extends Model
     {
         return $query->where('status', self::STATUS_DRAFT);
     }
-
-    public function scopeForPeriod($query, $date)
-    {
-        return $query->where('period_start', '<=', $date)
-                     ->where('period_end', '>=', $date);
-    }
-
-    public function scopeRecent($query, $limit = 10)
-    {
-        return $query->latest('period_end')->limit($limit);
-    }
-
-    // ==========================================
-    // METHODS
-    // ==========================================
 
     public function publish(): bool
     {
@@ -144,35 +116,24 @@ class RecapitulationKanban extends Model
         return $this->status === self::STATUS_PUBLISHED;
     }
 
-    /**
-     * Generate title based on period dates
-     */
     public static function generateTitle(Carbon $start, Carbon $end): string
     {
-        $weekNum = $start->weekOfMonth;
-        $month = $start->translatedFormat('F Y');
-        return "Rekapitulasi Minggu {$weekNum} {$month}";
+        return 'Rekapitulasi Minggu ' . $start->weekOfMonth . ' ' . $start->translatedFormat('F Y');
     }
 
-    /**
-     * Get suggested period for next recapitulation (weekly)
-     */
     public static function getSuggestedPeriod(): array
     {
         $lastRecap = self::latest('period_end')->first();
-        
-        if ($lastRecap) {
-            $start = $lastRecap->period_end->copy()->addDay();
-        } else {
-            // Start from beginning of current week
-            $start = now()->startOfWeek();
-        }
-        
-        $end = $start->copy()->addDays(6); // 7 days period
-        
+
+        $start = $lastRecap
+            ? $lastRecap->period_end->copy()->addDay()
+            : now()->startOfWeek();
+
+        $end = $start->copy()->addDays(6);
+
         return [
             'start' => $start,
-            'end' => min($end, now()), // Don't go beyond today
+            'end' => $end->greaterThan(now()) ? now() : $end,
         ];
     }
 }

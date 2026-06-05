@@ -25,7 +25,6 @@ class RecapitulationItemKanban extends Model
         'stage_end' => 'integer',
     ];
 
-    // Work status constants
     public const STATUS_NOT_STARTED = 'not_started';
     public const STATUS_IN_PROGRESS = 'in_progress';
     public const STATUS_COMPLETED = 'completed';
@@ -48,10 +47,6 @@ class RecapitulationItemKanban extends Model
         self::STATUS_PENDING_REVIEW => 'yellow',
     ];
 
-    // ==========================================
-    // RELATIONSHIPS
-    // ==========================================
-
     public function recapitulation(): BelongsTo
     {
         return $this->belongsTo(RecapitulationKanban::class, 'recapitulation_id');
@@ -61,10 +56,6 @@ class RecapitulationItemKanban extends Model
     {
         return $this->belongsTo(AssetKanban::class, 'asset_id');
     }
-
-    // ==========================================
-    // ACCESSORS
-    // ==========================================
 
     public function getWorkStatusLabelAttribute(): string
     {
@@ -88,7 +79,7 @@ class RecapitulationItemKanban extends Model
 
     public function getStageProgressAttribute(): int
     {
-        return $this->stage_end - $this->stage_start;
+        return max(0, $this->stage_end - $this->stage_start);
     }
 
     public function getHasProgressAttribute(): bool
@@ -98,51 +89,25 @@ class RecapitulationItemKanban extends Model
 
     public function getProgressPercentageAttribute(): float
     {
-        // Calculate progress as percentage of total 13 stages
-        return round(($this->stage_end / 13) * 100, 1);
+        $stage = max(0, min(13, (int) $this->stage_end));
+
+        return round(($stage / 13) * 100, 1);
     }
 
-    // ==========================================
-    // SCOPES
-    // ==========================================
-
-    public function scopeByStatus($query, string $status)
-    {
-        return $query->where('work_status', $status);
-    }
-
-    public function scopeWithProgress($query)
-    {
-        return $query->whereColumn('stage_end', '>', 'stage_start');
-    }
-
-    public function scopeBlocked($query)
-    {
-        return $query->where('work_status', self::STATUS_BLOCKED);
-    }
-
-    public function scopeCompleted($query)
-    {
-        return $query->where('work_status', self::STATUS_COMPLETED);
-    }
-
-    // ==========================================
-    // METHODS
-    // ==========================================
-
-    /**
-     * Auto-generate activities from asset notes within period
-     */
     public function generateActivitiesFromNotes(): string
     {
+        if (!$this->asset) {
+            return 'Tidak ada asset terkait.';
+        }
+
         $recapitulation = $this->recapitulation;
-        
+
         $notes = $this->asset->notes()
             ->whereBetween('created_at', [
-                $recapitulation->period_start->startOfDay(),
-                $recapitulation->period_end->endOfDay()
+                $recapitulation->period_start->copy()->startOfDay(),
+                $recapitulation->period_end->copy()->endOfDay(),
             ])
-            ->whereIn('type', ['stage_change', 'note', 'approval'])
+            ->whereIn('type', ['stage_change', 'note', 'rejection', 'blocked'])
             ->orderBy('created_at')
             ->get();
 
@@ -150,52 +115,50 @@ class RecapitulationItemKanban extends Model
             return 'Tidak ada aktivitas tercatat dalam periode ini.';
         }
 
-        $activities = $notes->map(function ($note) {
+        return $notes->map(function ($note) {
             $date = $note->created_at->format('d/m');
-            $type = match($note->type) {
+
+            $icon = match ($note->type) {
                 'stage_change' => '📍',
-                'approval' => '✅',
                 'rejection' => '❌',
+                'blocked' => '⚠️',
                 default => '📝',
             };
-            return "{$type} [{$date}] {$note->content}";
-        });
 
-        return $activities->implode("\n");
+            return "{$icon} [{$date}] {$note->content}";
+        })->implode("\n");
     }
 
-    /**
-     * Determine work status based on stage progress and notes
-     */
     public function determineWorkStatus(): string
     {
-        // Completed if final stage
-        if ($this->stage_end >= 13) {
-            return self::STATUS_COMPLETED;
-        }
-        
-        // Check if in review stages (6 = Review 1, 10 = Review 2)
-        if (in_array($this->stage_end, [6, 10])) {
-            return self::STATUS_PENDING_REVIEW;
-        }
-        
-        // Check for rejection notes (blocked)
+        // Cek catatan penolakan / hambatan dulu
+        // Karena kalau ada rejection/blocked, status kerja harus dianggap terhambat.
         if ($this->asset) {
-            $hasRejection = $this->asset->notes()
-                ->where('type', 'rejection')
+            $hasBlockingNote = $this->asset->notes()
+                ->whereIn('type', ['rejection', 'blocked'])
                 ->where('created_at', '>=', now()->subDays(14))
                 ->exists();
-            
-            if ($hasRejection) {
+
+            if ($hasBlockingNote) {
                 return self::STATUS_BLOCKED;
             }
         }
-        
-        // In progress if stage moved forward
+
+        // Completed jika sudah sampai stage akhir
+        if ($this->stage_end >= 13) {
+            return self::STATUS_COMPLETED;
+        }
+
+        // Pending review jika berada di stage review
+        if (in_array($this->stage_end, [6, 10], true)) {
+            return self::STATUS_PENDING_REVIEW;
+        }
+
+        // In progress jika ada kenaikan stage
         if ($this->stage_end > $this->stage_start) {
             return self::STATUS_IN_PROGRESS;
         }
-        
+
         return self::STATUS_NOT_STARTED;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-return     // Line cleaning configuration (to remove repetitive headers/footers)
+return [    // Line cleaning configuration (to remove repetitive headers/footers)
     'ignore_lines_if_contains' => [
         'KANTOR JASA PENILAI PUBLIK',
         'KANTOR PUSAT',
@@ -153,8 +153,7 @@ return     // Line cleaning configuration (to remove repetitive headers/footers)
       //       'instruction' => 'Analisis lingkungan sekitar aset di Laporan Utama: 1) Ekstrak daftar fasilitas umum, jalan utama, kepadatan penduduk, dan tipe bangunan sekitar. 2) Cek logika geospasial: apakah fasilitas yang disebutkan wajar berada di kota/kabupaten tersebut. 3) Cek kejanggalan: apakah ada bangunan sekitar yang terduplikasi secara tidak wajar di dalam daftar. Tentukan status VALID jika logis, atau TIDAK VALID jika ada anomali.',
       //   ],
     ],// 
-];
-             =================================================
+]];
 
 //             {
 //             \"status\": \"VALID / TIDAK VALID\",
@@ -187,7 +186,6 @@ return     // Line cleaning configuration (to remove repetitive headers/footers)
 //     ]
 
 // ];
-            =================================================
 
 //             {
 //             \"status\": \"VALID / TIDAK VALID\",

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class RecapitulationController extends Controller
 {
@@ -51,7 +52,7 @@ class RecapitulationController extends Controller
     {
         $suggestedPeriod = RecapitulationKanban::getSuggestedPeriod();
         $suggestedTitle = RecapitulationKanban::generateTitle(
-            $suggestedPeriod['start'], 
+            $suggestedPeriod['start'],
             $suggestedPeriod['end']
         );
 
@@ -64,29 +65,30 @@ class RecapitulationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'required|string|max:255|min:3',
             'period_start' => 'required|date',
             'period_end' => 'required|date|after_or_equal:period_start',
-            'summary' => 'nullable|string|max:2000',
-            'auto_generate' => 'boolean',
+            'summary' => 'nullable|string|max:3000',
+            'auto_generate' => 'nullable|boolean',
         ], [
             'title.required' => 'Judul rekapitulasi wajib diisi.',
             'period_start.required' => 'Tanggal mulai wajib diisi.',
             'period_end.required' => 'Tanggal akhir wajib diisi.',
-            'period_end.after_or_equal' => 'Tanggal akhir harus setelah atau sama dengan tanggal mulai.',
+            'period_end.after_or_equal' => 'Tanggal akhir tidak boleh lebih awal dari tanggal mulai.',
         ]);
 
         DB::beginTransaction();
+
         try {
             $recapitulation = RecapitulationKanban::create([
                 'title' => strip_tags(trim($validated['title'])),
                 'period_start' => $validated['period_start'],
                 'period_end' => $validated['period_end'],
-                'summary' => $validated['summary'] ? strip_tags($validated['summary']) : null,
+                'summary' => !empty($validated['summary']) ? strip_tags(trim($validated['summary'])) : null,
+                'status' => RecapitulationKanban::STATUS_DRAFT,
                 'created_by' => Auth::id(),
             ]);
 
-            // Auto-generate items if requested
             if ($request->boolean('auto_generate')) {
                 $this->generateItems($recapitulation);
             }
@@ -96,10 +98,12 @@ class RecapitulationController extends Controller
             return redirect()
                 ->route('kanban.recapitulations.show', $recapitulation)
                 ->with('success', 'Rekapitulasi berhasil dibuat.');
-
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'Gagal membuat rekapitulasi: ' . $e->getMessage());
+
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal membuat rekapitulasi: ' . $e->getMessage());
         }
     }
 
@@ -169,12 +173,24 @@ class RecapitulationController extends Controller
      */
     public function destroy(RecapitulationKanban $recapitulation)
     {
-        $title = $recapitulation->title;
-        $recapitulation->delete();
+        DB::beginTransaction();
 
-        return redirect()
-            ->route('kanban.recapitulations.index')
-            ->with('success', "Rekapitulasi '{$title}' berhasil dihapus.");
+        try {
+            $title = $recapitulation->title;
+
+            $recapitulation->items()->delete();
+            $recapitulation->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->route('kanban.recapitulations.index')
+                ->with('success', "Rekapitulasi '{$title}' berhasil dihapus.");
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return back()->with('error', 'Gagal menghapus rekapitulasi: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -214,14 +230,13 @@ class RecapitulationController extends Controller
         try {
             // Delete existing items
             $recapitulation->items()->delete();
-            
+
             // Generate new items
             $count = $this->generateItems($recapitulation);
-            
+
             DB::commit();
 
             return back()->with('success', "{$count} item berhasil di-generate ulang.");
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal regenerate items: ' . $e->getMessage());
@@ -272,7 +287,7 @@ class RecapitulationController extends Controller
         }
 
         $asset = AssetKanban::find($validated['asset_id']);
-        
+
         // Get stage at period start (from notes)
         $stageAtStart = $this->getAssetStageAtDate($asset, $recapitulation->period_start);
 
@@ -354,47 +369,72 @@ class RecapitulationController extends Controller
     /**
      * Generate items from active assets with activity in period
      */
-    private function generateItems(RecapitulationKanban $recapitulation): int
+    private function generateItems(RecapitulationKanban $recapitulation): void
     {
-        $periodStart = $recapitulation->period_start;
-        $periodEnd = $recapitulation->period_end;
+        $start = $recapitulation->period_start->copy()->startOfDay();
+        $end = $recapitulation->period_end->copy()->endOfDay();
 
-        // Get assets that have activity in this period
-        $assetIdsWithActivity = AssetNoteKanban::whereBetween('created_at', [
-            $periodStart->startOfDay(),
-            $periodEnd->endOfDay()
-        ])->distinct()->pluck('asset_id');
+        $assets = AssetKanban::query()
+            ->with('client')
+            ->where(function ($query) use ($start, $end) {
+                $query->whereBetween('created_at', [$start, $end])
+                    ->orWhereBetween('updated_at', [$start, $end]);
 
-        // Also include assets that are currently active (not completed)
-        $activeAssetIds = AssetKanban::where('current_stage', '<', 13)->pluck('id');
+                if (method_exists(AssetKanban::class, 'notes')) {
+                    $query->orWhereHas('notes', function ($noteQuery) use ($start, $end) {
+                        $noteQuery->whereBetween('created_at', [$start, $end]);
+                    });
+                }
+            })
+            ->get();
 
-        // Merge and unique
-        $assetIds = $assetIdsWithActivity->merge($activeAssetIds)->unique();
+        foreach ($assets as $asset) {
+            $stage = max(1, min(13, (int) ($asset->current_stage ?? 1)));
 
-        $count = 0;
-        foreach ($assetIds as $assetId) {
-            $asset = AssetKanban::find($assetId);
-            if (!$asset) continue;
-
-            // Get stage at period start
-            $stageAtStart = $this->getAssetStageAtDate($asset, $periodStart);
-
-            $item = $recapitulation->items()->create([
+            $item = new RecapitulationItemKanban([
+                'recapitulation_id' => $recapitulation->id,
                 'asset_id' => $asset->id,
-                'stage_start' => $stageAtStart,
-                'stage_end' => $asset->current_stage,
+                'stage_start' => $stage,
+                'stage_end' => $stage,
+                'activities' => $this->buildActivitiesFromAsset($asset, $recapitulation),
+                'notes' => null,
+                'next_actions' => null,
             ]);
 
-            // Auto-generate activities and determine status
-            $item->update([
-                'activities' => $item->generateActivitiesFromNotes(),
-                'work_status' => $item->determineWorkStatus(),
-            ]);
+            $item->setRelation('asset', $asset);
+            $item->work_status = $item->determineWorkStatus();
+            $item->save();
+        }
+    }
 
-            $count++;
+    private function buildActivitiesFromAsset(AssetKanban $asset, RecapitulationKanban $recapitulation): string
+    {
+        if (!method_exists($asset, 'notes')) {
+            return 'Belum ada aktivitas tercatat dalam periode ini.';
         }
 
-        return $count;
+        $notes = $asset->notes()
+            ->whereBetween('created_at', [
+                $recapitulation->period_start->copy()->startOfDay(),
+                $recapitulation->period_end->copy()->endOfDay(),
+            ])
+            ->orderBy('created_at')
+            ->get();
+
+        if ($notes->isEmpty()) {
+            return 'Belum ada aktivitas tercatat dalam periode ini.';
+        }
+
+        return $notes->map(function ($note) {
+            $icon = match ($note->type) {
+                'stage_change' => '• Perubahan stage',
+                'approval' => '• Approval',
+                'rejection' => '• Revisi / penolakan',
+                default => '• Catatan',
+            };
+
+            return $icon . ' [' . $note->created_at->format('d/m/Y') . '] ' . $note->content;
+        })->implode("\n");
     }
 
     /**

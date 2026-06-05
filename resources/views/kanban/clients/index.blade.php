@@ -54,7 +54,7 @@
                     </svg>
                 </div>
                 <h2 class="text-xl font-semibold">Perusahaan</h2>
-                <p class="text-blue-100 text-sm mt-1">Bank & PT/CV Induk</p>
+                <p class="text-blue-100 text-sm mt-1">Bank & PT Induk</p>
                 <div class="flex gap-4 mt-4 pt-4 border-t border-white/20">
                     <div>
                         <p class="text-2xl font-bold">{{ $stats['bank'] }}</p>
@@ -62,7 +62,7 @@
                     </div>
                     <div>
                         <p class="text-2xl font-bold">{{ $stats['pt_cv_induk'] }}</p>
-                        <p class="text-xs text-blue-200">PT/CV</p>
+                        <p class="text-xs text-blue-200">PT Induk</p>
                     </div>
                 </div>
             </div>
@@ -83,7 +83,7 @@
                     </svg>
                 </div>
                 <h2 class="text-xl font-semibold">Debitur</h2>
-                <p class="text-orange-100 text-sm mt-1">Debitur & Anak Perusahaan</p>
+                <p class="text-orange-100 text-sm mt-1">Debitur & PT/CV Anak</p>
                 <div class="flex gap-4 mt-4 pt-4 border-t border-white/20">
                     <div>
                         <p class="text-2xl font-bold">{{ $stats['debitur'] }}</p>
@@ -120,8 +120,8 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-medium text-gray-900 dark:text-white text-sm">PT/CV</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">+ anak</p>
+                    <p class="font-medium text-gray-900 dark:text-white text-sm">PT Induk</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">+ PT/CV anak</p>
                 </div>
             </a>
             <a href="{{ route('kanban.clients.create.klien') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition group">

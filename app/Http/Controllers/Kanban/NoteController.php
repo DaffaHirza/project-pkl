@@ -15,16 +15,12 @@ class NoteController extends Controller
     public function store(Request $request, AssetKanban $asset)
     {
         $validated = $request->validate([
-            'content' => 'required|string|min:3|max:2000',
-            'stage' => 'nullable|integer|min:1|max:13',
-            'type' => 'nullable|in:note,approval,rejection',
+            'stage' => 'required|integer|min:1|max:13',
+            'type' => 'required|in:note,rejection,blocked',
+            'content' => 'required|string|max:1000',
         ], [
-            'content.required' => 'Catatan wajib diisi.',
-            'content.min' => 'Catatan minimal 3 karakter.',
-            'content.max' => 'Catatan maksimal 2000 karakter.',
-            'stage.min' => 'Stage tidak valid.',
-            'stage.max' => 'Stage tidak valid.',
             'type.in' => 'Tipe catatan tidak valid.',
+            'content.required' => 'Isi catatan wajib diisi.',
         ]);
 
         // Sanitize content (remove dangerous HTML but keep basic formatting)
@@ -32,9 +28,9 @@ class NoteController extends Controller
 
         $note = $asset->notes()->create([
             'user_id' => Auth::id(),
-            'stage' => $validated['stage'] ?? $asset->current_stage,
-            'type' => $validated['type'] ?? 'note',
-            'content' => $content,
+            'stage' => $validated['stage'],
+            'type' => $validated['type'],
+            'content' => strip_tags(trim($validated['content'])),
         ]);
 
         // Notify all users when a new note is added
